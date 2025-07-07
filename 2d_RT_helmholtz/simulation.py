@@ -15,18 +15,23 @@ import pyvista
 
 from mesh_generation import generate_mesh
 
-pathname_calib = r'./2d_RT_helmholtz'
+pathname_calib = r'./2d_RT_helmholtz/'
 
 # Load the frequency vector
 freq_vec_init = scipy.io.loadmat(pathname_calib + 'freq_vec.mat')['freq_vec'].flatten()
 freq_vec = np.flip(freq_vec_init) # Flip to get up-chirp
 
+# Load the antenna position
+ant_pos = np.loadtxt(pathname_calib + 'ant_pos.txt')
+ant_pos_2D = ant_pos[:, [0, 2]] # Take receiver position in x and z dims only
+
 # Define some constants
 c = 299792458
-lam0 = c / freq_vec.max() # Let's do Helmholtz eq for the maximum frequency first
+interested_f = freq_vec.min()
+lam0 = c / interested_f
 
 # wavenumber in free space (air)
-k0 = 2* np.pi / lam0
+k0 = 2* np.pi * interested_f / c
 
 # Polynomial degree
 degree = 6
@@ -38,9 +43,6 @@ mesh_order = 2
 comm = MPI.COMM_WORLD
 
 # Generate the mesh
-
-# Options: Either make metal really high in refractive indices
-# Or make holes in the computational domains and set Dirichlet at those holes u = 0
 file_name = "domain.msh"
 generate_mesh(file_name, lam0, order=mesh_order)
 mesh, cell_tags, _ = gmshio.read_from_msh(file_name, comm, rank=0, gdim=2)
@@ -50,8 +52,12 @@ W = dolfinx.fem.functionspace(mesh, ("DG", 0))
 # Function: A finite element function that is represented by a function space (domain, element and dofmap) and a vector holding the degrees-of-freedom.
 k = dolfinx.fem.Function(W) # k is a function whose values vary across the mesh (input: cell. output: value of k at that cell)
 k.x.array[:] = k0 # x here just represent the variable of a degree of freedom
-n_refractive = 1.5 # Refractive index
+
+# Set refractive index for differrent geometry withing the computational domain
+n_refractive = 1.5 # Refractive index for the refraction geometry
+n_refractive_metal = 500 # Refractive index for the metal inlets
 k.x.array[cell_tags.find(1)] = n_refractive * k0 # Refraction geometry
+k.x.array[cell_tags.find(2)] = n_refractive_metal * k0
 
 # Visualize the mesh
 #pyvista.start_xvfb()
@@ -87,10 +93,18 @@ grid.cell_data["wavenumber"] = k.x.array.real
 export_function(grid, "wavenumber", show_mesh=True, tessellate=True)
 
 # Define source term at boundary
-
 n = ufl.FacetNormal(mesh)
 x = ufl.SpatialCoordinate(mesh)
-uinc = ufl.exp(1j * k * x[0])
+
+# Spherical wave as superpositions from all the antenna
+#source_pos = ant_pos_2D[1]
+#r = ufl.sqrt((x[0] - source_pos[0])**2 + (x[1] - source_pos[1])**2)
+#uinc = ufl.exp(1j * k * r)/ ( 4 * np.pi * r)
+uinc = 0
+for i in range(np.size(ant_pos_2D, 0)):
+    source_pos = ant_pos_2D[i, :]
+    r = ufl.sqrt((x[0] - source_pos[0])**2 + (x[1] - source_pos[1])**2)
+    uinc += ufl.exp(1j * k * r)/ ( 4 * np.pi * r)
 g = ufl.dot(ufl.grad(uinc), n) - 1j * k * uinc
 
 # Define the weak form of the problem
@@ -120,3 +134,6 @@ grid.point_data["Abs(u)"] = np.abs(uh.x.array)
 abs_u_vals = np.abs(uh.x.array)
 
 export_function(grid, "Abs(u)", show_mesh=False, tessellate=True)
+
+grid.point_data["Re(u)"] = np.real(uh.x.array)
+export_function(grid, "Re(u)", show_mesh=False, tessellate=True)
