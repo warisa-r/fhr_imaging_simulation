@@ -17,10 +17,6 @@ from dolfinx.fem import Function
 from dolfinx import fem
 
 from mesh_generation import generate_mesh
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from export_function import export_function
 
 pathname_calib = r'./data/'
 
@@ -80,9 +76,24 @@ sargs = dict(
     height=0.1,
 )
 
+
+def export_function(grid, name, show_mesh=False, tessellate=False):
+    grid.set_active_scalars(name)
+    plotter = pyvista.Plotter(window_size=(700, 700))
+    t_grid = grid.tessellate() if tessellate else grid
+    plotter.add_mesh(t_grid, show_edges=False, scalar_bar_args=sargs)
+    if show_mesh:
+        V = dolfinx.fem.functionspace(mesh, ("Lagrange", 1))
+        grid_mesh = pyvista.UnstructuredGrid(*vtk_mesh(V))
+        plotter.add_mesh(grid_mesh, style="wireframe", line_width=0.1, color="k")
+        plotter.view_xy()
+    plotter.view_xy()
+    plotter.camera.zoom(1.3)
+    plotter.export_html(f"./{name}.html")
+
 grid = pyvista.UnstructuredGrid(*vtk_mesh(mesh))
 grid.cell_data["wavenumber"] = k.x.array.real
-export_function(mesh, grid, "wavenumber", show_mesh=True, tessellate=True)
+export_function(grid, "wavenumber", show_mesh=True, tessellate=True)
 
 # Define source term at boundary
 n = ufl.FacetNormal(mesh)
@@ -131,9 +142,9 @@ uh.name = "u"
 topology, cells, geometry = vtk_mesh(V)
 grid = pyvista.UnstructuredGrid(topology, cells, geometry)
 grid.point_data["Abs(u)"] = np.abs(uh.x.array)
-export_function(mesh, grid, "Abs(u)", show_mesh=False, tessellate=True)
+export_function(grid, "Abs(u)", show_mesh=False, tessellate=True)
 
 grid.point_data["Re(u)"] = np.real(uh.x.array)
-export_function(mesh, grid, "Re(u)", show_mesh=False, tessellate=True)
+export_function(grid, "Re(u)", show_mesh=False, tessellate=True)
 
 #TODO: https://undabit.com/2d-helmholtz-monopole-in-square-room
