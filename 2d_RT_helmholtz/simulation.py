@@ -56,7 +56,7 @@ k.x.array[:] = k0 # x here just represent the variable of a degree of freedom
 # Set refractive index for differrent geometry withing the computational domain
 n_refractive = 1.5 # Refractive index for the refraction geometry
 n_refractive_metal = 500 # Refractive index for the metal inlets
-k.x.array[cell_tags.find(1)] = n_refractive * k0 # Refraction geometry
+k.x.array[cell_tags.find(1)] = n_refractive_metal * k0 # Refraction geometry
 k.x.array[cell_tags.find(2)] = n_refractive_metal * k0
 
 # Visualize the mesh
@@ -101,10 +101,9 @@ x = ufl.SpatialCoordinate(mesh)
 #r = ufl.sqrt((x[0] - source_pos[0])**2 + (x[1] - source_pos[1])**2)
 #uinc = ufl.exp(1j * k * r)/ ( 4 * np.pi * r)
 uinc = 0
-for i in range(np.size(ant_pos_2D, 0)):
-    source_pos = ant_pos_2D[i, :]
-    r = ufl.sqrt((x[0] - source_pos[0])**2 + (x[1] - source_pos[1])**2)
-    uinc += ufl.exp(1j * k * r)/ ( 4 * np.pi * r)
+source_pos = ant_pos_2D[0, :]
+r = ufl.sqrt((x[0] - source_pos[0])**2 + (x[1] - source_pos[1])**2)
+uinc += ufl.exp(1j * k * r)/ ( 4 * np.pi * r)
 g = ufl.dot(ufl.grad(uinc), n) - 1j * k * uinc
 
 # Define the weak form of the problem
@@ -130,9 +129,6 @@ uh.name = "u"
 topology, cells, geometry = vtk_mesh(V)
 grid = pyvista.UnstructuredGrid(topology, cells, geometry)
 grid.point_data["Abs(u)"] = np.abs(uh.x.array)
-
-abs_u_vals = np.abs(uh.x.array)
-
 export_function(grid, "Abs(u)", show_mesh=False, tessellate=True)
 
 grid.point_data["Re(u)"] = np.real(uh.x.array)
