@@ -3,6 +3,7 @@ import sys
 
 import numpy as np
 import scipy.io
+from scipy.special import hankel1
 
 import dolfinx.fem.petsc
 import ufl
@@ -12,6 +13,8 @@ from dolfinx.io import gmshio
 from dolfinx.plot import vtk_mesh
 import matplotlib.pyplot as plt
 import pyvista
+from dolfinx.fem import Function
+from dolfinx import fem
 
 from mesh_generation import generate_mesh
 
@@ -96,14 +99,24 @@ export_function(grid, "wavenumber", show_mesh=True, tessellate=True)
 n = ufl.FacetNormal(mesh)
 x = ufl.SpatialCoordinate(mesh)
 
-# Spherical wave as superpositions from all the antenna
+# Use a cylindrical wave instead (2D case)
 #source_pos = ant_pos_2D[1]
 #r = ufl.sqrt((x[0] - source_pos[0])**2 + (x[1] - source_pos[1])**2)
 #uinc = ufl.exp(1j * k * r)/ ( 4 * np.pi * r)
-uinc = 0
+
 source_pos = ant_pos_2D[0, :]
+x = ufl.SpatialCoordinate(mesh)
 r = ufl.sqrt((x[0] - source_pos[0])**2 + (x[1] - source_pos[1])**2)
-uinc += ufl.exp(1j * k * r)/ ( 4 * np.pi * r)
+
+# UFL does not support hankel1, so use a Function for boundary data
+def hankel_incident_eval(x):
+    r = np.sqrt((x[0] - source_pos[0])**2 + (x[1] - source_pos[1])**2)
+    r = np.where(r < 1e-12, 1e-12, r)
+    return 100* hankel1(0, float(k0) * r) #TODO: Why does this work???
+
+V = dolfinx.fem.functionspace(mesh, ("Lagrange", 1))
+uinc = fem.Function(V)
+uinc.interpolate(lambda x: hankel_incident_eval(x))
 g = ufl.dot(ufl.grad(uinc), n) - 1j * k * uinc
 
 # Define the weak form of the problem
@@ -133,3 +146,5 @@ export_function(grid, "Abs(u)", show_mesh=False, tessellate=True)
 
 grid.point_data["Re(u)"] = np.real(uh.x.array)
 export_function(grid, "Re(u)", show_mesh=False, tessellate=True)
+
+#TODO: https://undabit.com/2d-helmholtz-monopole-in-square-room
