@@ -117,8 +117,8 @@ u = ufl.TrialFunction(V)
 v = ufl.TestFunction(V)
 # LHS
 a = (
-    -ufl.inner(ufl.grad(u), ufl.grad(v)) * ufl.dx
-    + k**2 * ufl.inner(u, v) * ufl.dx
+    ufl.inner(ufl.grad(u), ufl.grad(v)) * ufl.dx
+    - k**2 * ufl.inner(u, v) * ufl.dx
     - 1j * k * ufl.inner(u, v) * ufl.ds # ds represents the computational domain boundary
 )
 L = ufl.inner(g, v) * ufl.ds # RHS

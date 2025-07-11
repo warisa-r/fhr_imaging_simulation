@@ -112,19 +112,16 @@ v_real, v_imag = ufl.split(v_mixed)
 
 # Bilinear form (LHS)
 a = (
-    # Real equation: -∇²u_real + k²u_real + k u_imag|∂Ω = 0
-    (-ufl.inner(ufl.grad(u_real), ufl.grad(v_real)) * ufl.dx
-    + k_real**2 * ufl.inner(u_real, v_real) * ufl.dx
-    - k_real * ufl.inner(u_imag, v_real) * ufl.ds)
+    (ufl.inner(ufl.grad(u_real), ufl.grad(v_real)) * ufl.dx
+     - k_real**2 * ufl.inner(u_real, v_real) * ufl.dx
+     + k_real * ufl.inner(u_imag, v_real) * ufl.ds)
     
-    # Imaginary equation: -∇²u_imag + k²u_imag - k u_real|∂Ω = 0
-    + (-ufl.inner(ufl.grad(u_imag), ufl.grad(v_imag)) * ufl.dx
-    + k_real**2 * ufl.inner(u_imag, v_imag) * ufl.dx
-    + k_real * ufl.inner(u_real, v_imag) * ufl.ds)
+    + (ufl.inner(ufl.grad(u_imag), ufl.grad(v_imag)) * ufl.dx
+       - k_real**2 * ufl.inner(u_imag, v_imag) * ufl.dx
+       - k_real * ufl.inner(u_real, v_imag) * ufl.ds) 
 )
-
 # Linear form (RHS)
-L = -(ufl.inner(g_real, v_real) * ufl.ds - ufl.inner(g_imag, v_imag) * ufl.ds)
+L = (ufl.inner(g_real, v_real) * ufl.ds + ufl.inner(g_imag, v_imag) * ufl.ds)
 
 # Solve the system
 opt = {
@@ -190,3 +187,4 @@ grid.point_data["Im(u)"] = uh_imag.x.array
 
 # Export visualizations
 export_function(mesh, grid, "Abs(u)", show_mesh=False, tessellate=True)
+export_function(mesh, grid, "Re(u)", show_mesh=False, tessellate=True)
