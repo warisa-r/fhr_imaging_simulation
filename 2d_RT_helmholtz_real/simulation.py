@@ -78,11 +78,24 @@ def hankel_incident_imag_eval(x):
     r = np.where(r < 1e-12, 1e-12, r)
     return np.imag(hankel1(0, float(k0) * r))
 
-V_scalar = dolfinx.fem.functionspace(mesh, ("Lagrange", 1))
+def approx_hankel_real(x):
+    r = np.sqrt((x[0] - transmitter_pos[0])**2 + (x[1] - transmitter_pos[1])**2)
+    r = np.where(r < 1e-12, 1e-12, r)  # avoid zero division
+    phase = k0 * r - np.pi / 4
+    return np.sqrt(2 / (np.pi * k0 * r)) * np.cos(phase)
+
+def approx_hankel_imag(x):
+    r = np.sqrt((x[0] - transmitter_pos[0])**2 + (x[1] - transmitter_pos[1])**2)
+    r = np.where(r < 1e-12, 1e-12, r)
+    phase = k0 * r - np.pi / 4
+    return np.sqrt(2 / (np.pi * k0 * r)) * np.sin(phase)
+
+
+V_scalar = dolfinx.fem.functionspace(mesh, ("Lagrange", degree))
 uinc_real = fem.Function(V_scalar)
 uinc_imag = fem.Function(V_scalar)
-uinc_real.interpolate(lambda x: hankel_incident_real_eval(x))
-uinc_imag.interpolate(lambda x: hankel_incident_imag_eval(x))
+uinc_real.interpolate(lambda x: approx_hankel_real(x)) # approx works better for splitting!
+uinc_imag.interpolate(lambda x: approx_hankel_imag(x))
 
 # Boundary source terms (split complex g = g_real + i*g_imag)
 # g = ufl.dot(ufl.grad(uinc), n) - 1j * k * uinc
@@ -138,8 +151,8 @@ uh_real = fem.Function(V)
 uh_imag = fem.Function(V)
 # Extract real and imaginary parts
 #uh_real, uh_imag = uh_mixed.split()
-uh_real.x.array[:] = uh_mixed.x.array[0::2]  # Every other starting from 0 (real parts)
-uh_imag.x.array[:] = uh_mixed.x.array[1::2]  # Every other starting from 1 (imag parts)
+uh_real = uh_mixed.sub(0).collapse()
+uh_imag = uh_mixed.sub(1).collapse()
 
 uh_real.name = "u_real"
 uh_imag.name = "u_imag"
