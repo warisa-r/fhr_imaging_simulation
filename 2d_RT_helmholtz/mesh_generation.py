@@ -16,7 +16,7 @@ def generate_mesh(filename: str, lmbda: int, order: int, verbose: bool = False):
         gmsh.initialize()
         gmsh.model.add("helmholtz_domain")
         gmsh.option.setNumber("General.Terminal", verbose)
-        gmsh.option.setNumber("Mesh.CharacteristicLengthFactor", 2 * lmbda)
+        gmsh.option.setNumber("Mesh.CharacteristicLengthFactor", lmbda * 1.25)
 
         rect = gmsh.model.occ.addRectangle(-0.2, -0.15, 0.0, 0.4, 0.3)
         p0 = add_disk(0.0, 0.0, 0.1)

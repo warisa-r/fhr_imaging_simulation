@@ -101,7 +101,7 @@ r = ufl.sqrt((x[0] - source_pos[0])**2 + (x[1] - source_pos[1])**2)
 def hankel_incident_eval(x):
     r = np.sqrt((x[0] - source_pos[0])**2 + (x[1] - source_pos[1])**2)
     r = np.where(r < 1e-12, 1e-12, r)
-    return 100* hankel1(0, float(k0) * r) #TODO: Why does this work???
+    return hankel1(0, float(k0) * r) #TODO: Why does this work???
 
 V = dolfinx.fem.functionspace(mesh, ("Lagrange", 1))
 uinc = fem.Function(V)

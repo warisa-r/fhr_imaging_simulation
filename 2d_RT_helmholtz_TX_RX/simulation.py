@@ -298,3 +298,5 @@ if rank == 0:
     print("Results saved:")
     print("- Real parts: 'simulation_results_real.csv'")
     print("- Imaginary parts: 'simulation_results_imag.csv'")
+
+# https://www.dolfin-adjoint.org/en/stable/documentation/stokes-shape-opt/stokes_problem.html
