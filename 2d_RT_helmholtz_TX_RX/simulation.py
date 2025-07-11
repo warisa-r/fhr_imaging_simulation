@@ -72,47 +72,104 @@ def run_sim(freq, transmitter_pos, receiver_pos, visualize = False):
 
     # Assigning material parameter
     W = dolfinx.fem.functionspace(mesh, ("DG", 0))
-    k = dolfinx.fem.Function(W)
-    k.x.array[:] = k0
+    k_real = dolfinx.fem.Function(W)
+    k_real.x.array[:] = k0
 
     # Set refractive index for different geometry within the computational domain
     n_refractive = 1.5 # Refractive index for the refraction geometry
     n_refractive_metal = 500 # Refractive index for the metal inlets
-    k.x.array[cell_tags.find(1)] = n_refractive * k0 # Refraction geometry
-    k.x.array[cell_tags.find(2)] = n_refractive_metal * k0
+    k_real.x.array[cell_tags.find(1)] = n_refractive * k0 # Refraction geometry
+    k_real.x.array[cell_tags.find(2)] = n_refractive_metal * k0
 
     # Define source term at boundary
     n = ufl.FacetNormal(mesh)
 
-    # UFL does not support hankel1, so use a Function for boundary data
-    def hankel_incident_eval(x):
+    # Split incident field into real and imaginary parts
+    def hankel_incident_real_eval(x):
         r = np.sqrt((x[0] - transmitter_pos[0])**2 + (x[1] - transmitter_pos[1])**2)
         r = np.where(r < 1e-12, 1e-12, r)
-        return hankel1(0, float(k0) * r)
+        return np.real(hankel1(0, float(k0) * r))
 
-    V = dolfinx.fem.functionspace(mesh, ("Lagrange", 1))
-    uinc = fem.Function(V)
-    uinc.interpolate(lambda x: hankel_incident_eval(x))
-    g = ufl.dot(ufl.grad(uinc), n) - 1j * k * uinc
+    def hankel_incident_imag_eval(x):
+        r = np.sqrt((x[0] - transmitter_pos[0])**2 + (x[1] - transmitter_pos[1])**2)
+        r = np.where(r < 1e-12, 1e-12, r)
+        return np.imag(hankel1(0, float(k0) * r))
 
-    # Define the weak form of the problem
+    V_scalar = dolfinx.fem.functionspace(mesh, ("Lagrange", 1))
+    uinc_real = fem.Function(V_scalar)
+    uinc_imag = fem.Function(V_scalar)
+    uinc_real.interpolate(lambda x: hankel_incident_real_eval(x))
+    uinc_imag.interpolate(lambda x: hankel_incident_imag_eval(x))
+
+    # Boundary source terms (split complex g = g_real + i*g_imag)
+    # g = ufl.dot(ufl.grad(uinc), n) - 1j * k * uinc
+    # g_real = Re(grad(uinc_real + i*uinc_imag) · n) - Re(-i * k * (uinc_real + i*uinc_imag))
+    # g_imag = Im(grad(uinc_real + i*uinc_imag) · n) - Im(-i * k * (uinc_real + i*uinc_imag))
+
+    g_real = (ufl.dot(ufl.grad(uinc_real), n) + k_real * uinc_imag)
+    g_imag = (ufl.dot(ufl.grad(uinc_imag), n) - k_real * uinc_real)
+
+    # Define the weak form for the real system
+    # Original: (-∇²u + k²u - ik u|∂Ω) = g
+    # Split: u = u_real + i*u_imag
+    # Real part: -∇²u_real + k²u_real + k u_imag|∂Ω = g_real
+    # Imag part: -∇²u_imag + k²u_imag - k u_real|∂Ω = g_imag
+
     element = basix.ufl.element("Lagrange", mesh.topology.cell_name(), degree)
     V = dolfinx.fem.functionspace(mesh, element)
 
-    u = ufl.TrialFunction(V)
-    v = ufl.TestFunction(V)
-    # LHS
-    a = (
-        -ufl.inner(ufl.grad(u), ufl.grad(v)) * ufl.dx
-        + k**2 * ufl.inner(u, v) * ufl.dx
-        - 1j * k * ufl.inner(u, v) * ufl.ds
-    )
-    L = ufl.inner(g, v) * ufl.ds # RHS
+    # Create mixed function space for (u_real, u_imag)
+    V_mixed = dolfinx.fem.functionspace(mesh, basix.ufl.mixed_element([element, element]))
 
+    # Define trial and test functions
+    u_mixed = ufl.TrialFunction(V_mixed)
+    v_mixed = ufl.TestFunction(V_mixed)
+
+    # Split into components
+    u_real, u_imag = ufl.split(u_mixed)
+    v_real, v_imag = ufl.split(v_mixed)
+
+    # Bilinear form (LHS)
+    a = (
+        # Real equation: -∇²u_real + k²u_real + k u_imag|∂Ω = 0
+        (-ufl.inner(ufl.grad(u_real), ufl.grad(v_real)) * ufl.dx
+        + k_real**2 * ufl.inner(u_real, v_real) * ufl.dx
+        + k_real * ufl.inner(u_imag, v_real) * ufl.ds)
+        
+        # Imaginary equation: -∇²u_imag + k²u_imag - k u_real|∂Ω = 0
+        + (-ufl.inner(ufl.grad(u_imag), ufl.grad(v_imag)) * ufl.dx
+        + k_real**2 * ufl.inner(u_imag, v_imag) * ufl.dx
+        - k_real * ufl.inner(u_real, v_imag) * ufl.ds)
+    )
+
+    # Linear form (RHS)
+    L = (ufl.inner(g_real, v_real) * ufl.ds + ufl.inner(g_imag, v_imag) * ufl.ds)
+
+    # Solve the system
     opt = {"ksp_type": "preonly", "pc_type": "lu"}
     problem = dolfinx.fem.petsc.LinearProblem(a, L, petsc_options=opt)
-    uh = problem.solve()
-    uh.name = "u"
+    uh_mixed = problem.solve()
+
+    uh_real = fem.Function(V)
+    uh_imag = fem.Function(V)
+    # Extract real and imaginary parts
+    #uh_real, uh_imag = uh_mixed.split()
+    uh_real.x.array[:] = uh_mixed.x.array[0::2]  # Every other starting from 0 (real parts)
+    uh_imag.x.array[:] = uh_mixed.x.array[1::2]  # Every other starting from 1 (imag parts)
+    
+    uh_real.name = "u_real"
+    uh_imag.name = "u_imag"
+
+    # Reconstruct complex solution for output
+    def get_complex_solution_at_point(point):
+        # Find closest mesh point
+        dist = np.linalg.norm(mesh.geometry.x[:, :2] - point, axis=1)
+        closest_node = np.argmin(dist)
+        
+        real_part = uh_real.x.array[closest_node]
+        imag_part = uh_imag.x.array[closest_node]
+        
+        return complex(real_part, imag_part)
 
     # Only visualize on rank 0 and only first simulation
     if visualize and rank == 0:
@@ -129,14 +186,25 @@ def run_sim(freq, transmitter_pos, receiver_pos, visualize = False):
             height=0.1,
         )
 
-        grid = pyvista.UnstructuredGrid(*vtk_mesh(mesh))
-        grid.cell_data["wavenumber"] = k.x.array.real
+        grid = pyvista.UnstructuredGrid(*vtk_mesh(V))
+        grid.cell_data["wavenumber"] = k_real.x.array.real
         export_function(mesh, grid, "wavenumber", show_mesh=True, tessellate=True)
-
-        # Visualize the solution
+        
+        # Visualize the solution using the scalar function space V
         topology, cells, geometry = vtk_mesh(V)
         grid = pyvista.UnstructuredGrid(topology, cells, geometry)
-        grid.point_data["Abs(u)"] = np.abs(uh.x.array)
+        
+        # Project DG k_real to continuous space for visualization
+        k_continuous = fem.Function(V)
+        k_continuous.interpolate(k_real)
+        grid.point_data["wavenumber"] = k_continuous.x.array.real
+        
+        export_function(mesh, grid, "wavenumber", show_mesh=True, tessellate=True)
+        
+        # Now use the scalar functions for solution visualization
+        grid.point_data["Abs(u)"] = np.sqrt(np.square(uh_real.x.array) + np.square(uh_imag.x.array))
+        grid.point_data["Re(u)"] = uh_real.x.array
+        grid.point_data["Im(u)"] = uh_imag.x.array
         
         # Add receiver position as a point
         receiver_point = np.array([receiver_pos[0], receiver_pos[1], 0.0]).reshape(1, -1)
@@ -147,20 +215,15 @@ def run_sim(freq, transmitter_pos, receiver_pos, visualize = False):
         closest_idx = np.argmin(dist_to_receiver)
         grid.point_data["receiver_pos"][closest_idx] = 1.0
         
+        # Export visualizations
         export_function(mesh, grid, "Abs(u)", show_mesh=False, tessellate=True)
-
-        grid.point_data["Re(u)"] = np.real(uh.x.array)
-        export_function(mesh, grid, "Re(u)", show_mesh=False, tessellate=True)
 
         # Print receiver position info
         print(f"Receiver position: {receiver_pos}")
         print(f"Closest mesh point: {grid.points[closest_idx]}")
         print(f"Distance to receiver: {dist_to_receiver[closest_idx]:.6f}")
-
-    # Find the signal strength at the receiver
-    dist = np.linalg.norm(mesh.geometry.x[:, :2] - receiver_pos, axis=1)
-    closest_node = np.argmin(dist)
-    signal = uh.x.array[closest_node]
+    
+    signal = get_complex_solution_at_point(receiver_pos)
     return signal
 
 # Initialize results matrix

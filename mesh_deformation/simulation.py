@@ -90,7 +90,8 @@ V = fem.functionspace(domain, ("Lagrange", 1, (domain.geometry.dim, )))
 # Or what shall we do in order to make the domain such that we can change
 def clamped_boundary(x):
     return (
-        np.isclose(x[0], 0) | np.isclose(x[0], L)
+        np.isclose(x[0], 0) | np.isclose(x[0], L)|
+        np.isclose(x[1], 0) | np.isclose(x[0], H)
     ) # The box is clamped.only in certain directions
 
 fdim = domain.topology.dim - 1
