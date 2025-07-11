@@ -68,34 +68,21 @@ k_real.x.array[cell_tags.find(2)] = n_refractive_metal * k0
 n = ufl.FacetNormal(mesh)
 
 # Split incident field into real and imaginary parts
-def hankel_incident_real_eval(x):
+def hankel_real(x):
     r = np.sqrt((x[0] - transmitter_pos[0])**2 + (x[1] - transmitter_pos[1])**2)
     r = np.where(r < 1e-12, 1e-12, r)
-    return np.real(hankel1(0, float(k0) * r))
+    return np.real(1j * 0.25 *hankel1(0, float(k0) * r))
 
-def hankel_incident_imag_eval(x):
+def hankel_imag(x):
     r = np.sqrt((x[0] - transmitter_pos[0])**2 + (x[1] - transmitter_pos[1])**2)
     r = np.where(r < 1e-12, 1e-12, r)
-    return np.imag(hankel1(0, float(k0) * r))
-
-def approx_hankel_real(x):
-    r = np.sqrt((x[0] - transmitter_pos[0])**2 + (x[1] - transmitter_pos[1])**2)
-    r = np.where(r < 1e-12, 1e-12, r)  # avoid zero division
-    phase = k0 * r - np.pi / 4
-    return np.sqrt(2 / (np.pi * k0 * r)) * np.cos(phase)
-
-def approx_hankel_imag(x):
-    r = np.sqrt((x[0] - transmitter_pos[0])**2 + (x[1] - transmitter_pos[1])**2)
-    r = np.where(r < 1e-12, 1e-12, r)
-    phase = k0 * r - np.pi / 4
-    return np.sqrt(2 / (np.pi * k0 * r)) * np.sin(phase)
-
+    return np.imag(1j * 0.25 * hankel1(0, float(k0) * r))
 
 V_scalar = dolfinx.fem.functionspace(mesh, ("Lagrange", degree))
 uinc_real = fem.Function(V_scalar)
 uinc_imag = fem.Function(V_scalar)
-uinc_real.interpolate(lambda x: approx_hankel_real(x)) # approx works better for splitting!
-uinc_imag.interpolate(lambda x: approx_hankel_imag(x))
+uinc_real.interpolate(lambda x: hankel_real(x)) # approx works better for splitting!
+uinc_imag.interpolate(lambda x: hankel_imag(x))
 
 # Boundary source terms (split complex g = g_real + i*g_imag)
 # g = ufl.dot(ufl.grad(uinc), n) - 1j * k * uinc
