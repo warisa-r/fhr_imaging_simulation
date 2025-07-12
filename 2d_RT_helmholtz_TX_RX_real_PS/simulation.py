@@ -20,6 +20,8 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from export_function import export_function
+
+import os
 import shutil
 
 # Clear FEniCS cache before running
@@ -75,38 +77,45 @@ def run_simulation(freq, transmitter_pos, receiver_pos, visualize=True):
 
     # Set refractive index for different geometry within the computational domain
     n_refractive = 1.5  # Refractive index for the refraction geometry
-    n_refractive_metal = 500  # Refractive index for the metal inlets
+    n_refractive_metal = 25  # Refractive index for the metal inlets
     k_real.x.array[cell_tags.find(1)] = n_refractive_metal * k0  # Refraction geometry
     k_real.x.array[cell_tags.find(2)] = n_refractive_metal * k0
-
-    # Define source term at boundary
-    n = ufl.FacetNormal(mesh)
-
-    # Split incident field into real and imaginary parts
-    def u_inc_green_real(x):
-        r = np.sqrt((x[0] - transmitter_pos[0])**2 + (x[1] - transmitter_pos[1])**2)
-        r = np.where(r < 1e-12, 1e-12, r)
-        return np.real(1j * 0.25 *hankel1(0, float(k0) * r))
-
-    def u_inc_green_imag(x):
-        r = np.sqrt((x[0] - transmitter_pos[0])**2 + (x[1] - transmitter_pos[1])**2)
-        r = np.where(r < 1e-12, 1e-12, r)
-        return np.imag(1j * 0.25 * hankel1(0, float(k0) * r))
 
     # Create function spaces
     element = basix.ufl.element("Lagrange", mesh.topology.cell_name(), degree)
     V = dolfinx.fem.functionspace(mesh, element)
     V_mixed = dolfinx.fem.functionspace(mesh, basix.ufl.mixed_element([element, element]))
 
-    # Create incident field functions (using same degree as solution)
-    uinc_real = fem.Function(V)
-    uinc_imag = fem.Function(V)
-    uinc_real.interpolate(lambda x: u_inc_green_real(x))
-    uinc_imag.interpolate(lambda x: u_inc_green_imag(x))
+    g_real = fem.Function(V)
+    g_imag = fem.Function(V)
 
-    # Boundary source terms (split complex g = g_real + i*g_imag)
-    g_real = (ufl.dot(ufl.grad(uinc_real), n) + k_real * uinc_imag)
-    g_imag = (ufl.dot(ufl.grad(uinc_imag), n) - k_real * uinc_real)
+    # Simulate point source using DOF location
+    tol = lam0 / 20  # Made smaller for better precision
+
+    # Fix dimension mismatch: extract only x,y coordinates and match dimensions
+    def point_source_marker(x):
+        # x is shape (3, N) - need to use x[0] and x[1] for 2D coordinates
+        dist = np.sqrt((x[0] - transmitter_pos[0])**2 + (x[1] - transmitter_pos[1])**2)
+        return dist < tol
+
+    dofs = fem.locate_dofs_geometrical(V, point_source_marker)
+    g_real.x.array[:] = 0
+    g_imag.x.array[:] = 0
+
+    # Calculate minimum mesh size correctly in DOLFINx
+    tdim = mesh.topology.dim
+    num_cells = mesh.topology.index_map(tdim).size_local
+    h = dolfinx.cpp.mesh.h(mesh._cpp_object, tdim, np.arange(num_cells, dtype=np.int32))
+    h_min = np.min(h)
+
+    if len(dofs) > 0:
+        # Scale by mesh area for proper delta function approximation
+        source_strength = 1.0 / (h_min * h_min)
+        g_real.x.array[dofs] = source_strength / len(dofs)  # Distribute among DOFs
+        print(f"Point source: {len(dofs)} DOFs, h_min = {h_min:.6f}, strength = {source_strength:.6f}")
+    else:
+        print("Warning: No DOFs found near transmitter!")
+        print(f"Tolerance: {tol:.6f}, transmitter at {transmitter_pos}")
 
     # Define trial and test functions
     u_mixed = ufl.TrialFunction(V_mixed)
@@ -118,16 +127,16 @@ def run_simulation(freq, transmitter_pos, receiver_pos, visualize=True):
 
     # Bilinear form (LHS)
     a = (
-        (ufl.inner(ufl.grad(u_real), ufl.grad(v_real)) * ufl.dx
-        - k_real**2 * ufl.inner(u_real, v_real) * ufl.dx
-        + k_real * ufl.inner(u_imag, v_real) * ufl.ds)
+        # Real equation: -∇²u_real + k²u_real + k u_imag|∂Ω = f_real
+        (-ufl.inner(ufl.grad(u_real), ufl.grad(v_real)) * ufl.dx
+        + k_real**2 * ufl.inner(u_real, v_real) * ufl.dx)
         
-        + (ufl.inner(ufl.grad(u_imag), ufl.grad(v_imag)) * ufl.dx
-        - k_real**2 * ufl.inner(u_imag, v_imag) * ufl.dx
-        - k_real * ufl.inner(u_real, v_imag) * ufl.ds) 
+        # Imaginary equation: -∇²u_imag + k²u_imag - k u_real|∂Ω = f_imag
+        + (-ufl.inner(ufl.grad(u_imag), ufl.grad(v_imag)) * ufl.dx
+        + k_real**2 * ufl.inner(u_imag, v_imag) * ufl.dx)
     )
     # Linear form (RHS)
-    L = (ufl.inner(g_real, v_real) * ufl.ds + ufl.inner(g_imag, v_imag) * ufl.ds)
+    L = (ufl.inner(g_real, v_real) * ufl.dx + ufl.inner(g_imag, v_imag) * ufl.dx)
 
     # Solve the system
     opt = {"ksp_type": "preonly", "pc_type": "lu"}

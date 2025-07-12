@@ -26,10 +26,10 @@ def generate_mesh(filename, lmbda, order, receiver_pos, verbose = False):
         gmsh.option.setNumber("Mesh.CharacteristicLengthFromPoints", 0)
         gmsh.option.setNumber("Mesh.CharacteristicLengthExtendFromBoundary", 0)
 
-        delta = 0.05 # A little edge so that the receiver doesn't stand exactly on BC
+        delta = lmbda * 6 # A little edge so that the receiver doesn't stand exactly on BC
         comp_domain_x_low = min(-0.2, receiver_pos[0])
-        comp_domain_dx = max(0.2, receiver_pos[0]) - comp_domain_x_low
-        comp_domain_y_low = min(-0.15, receiver_pos[1]) - delta
+        comp_domain_dx = max(0.2, receiver_pos[0]) - comp_domain_x_low + delta
+        comp_domain_y_low = min(-0.15, receiver_pos[1])
         comp_domain_dy = max(0.15, receiver_pos[1]) - comp_domain_y_low + delta
         rect = gmsh.model.occ.addRectangle(comp_domain_x_low, comp_domain_y_low, 0.0, comp_domain_dx, comp_domain_dy)
         
