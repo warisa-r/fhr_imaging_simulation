@@ -98,14 +98,14 @@ x = ufl.SpatialCoordinate(mesh)
 r = ufl.sqrt((x[0] - source_pos[0])**2 + (x[1] - source_pos[1])**2)
 
 # UFL does not support hankel1, so use a Function for boundary data
-def hankel_incident_eval(x):
+def u_inc_green(x):
     r = np.sqrt((x[0] - source_pos[0])**2 + (x[1] - source_pos[1])**2)
     r = np.where(r < 1e-12, 1e-12, r)
     return 1j * 0.25* hankel1(0, float(k0) * r)
 
 V = dolfinx.fem.functionspace(mesh, ("Lagrange", 1))
 uinc = fem.Function(V)
-uinc.interpolate(lambda x: hankel_incident_eval(x))
+uinc.interpolate(lambda x: u_inc_green(x))
 g = ufl.dot(ufl.grad(uinc), n) - 1j * k * uinc
 
 # Define the weak form of the problem

@@ -11,14 +11,13 @@ def add_disk(x, y, r):
     return surface
 
 def generate_mesh(filename, lmbda, order, receiver_pos, verbose = False):
-    if MPI.COMM_WORLD.rank == 0:
         import gmsh
         gmsh.initialize()
         gmsh.model.add("helmholtz_domain")
         gmsh.option.setNumber("General.Terminal", verbose)
         
         # Use direct mesh size instead of CharacteristicLengthFactor
-        mesh_size = lmbda / 10
+        mesh_size = lmbda / 4
         gmsh.option.setNumber("Mesh.CharacteristicLengthMax", mesh_size)
         gmsh.option.setNumber("Mesh.CharacteristicLengthMin", mesh_size / 4)
         
