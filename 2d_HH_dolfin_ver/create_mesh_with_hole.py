@@ -39,8 +39,8 @@ def create_mesh_with_hole():
     arc4 = gmsh.model.geo.addCircleArc(pc4, center, pc1)
     
     # Create curve loops
-    outer_loop = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4])
-    inner_loop = gmsh.model.geo.addCurveLoop([arc1, arc2, arc3, arc4])
+    outer_loop = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4]) # Rectangle
+    inner_loop = gmsh.model.geo.addCurveLoop([arc1, arc2, arc3, arc4]) # Circle
     
     # Create surface (domain minus hole)
     surface = gmsh.model.geo.addPlaneSurface([outer_loop, inner_loop])

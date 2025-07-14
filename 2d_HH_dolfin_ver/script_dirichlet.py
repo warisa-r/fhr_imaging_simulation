@@ -30,7 +30,7 @@ V = FunctionSpace(mesh, V_element)
 
 # Parameters
 k_background = 20.0
-x0 = np.array([0.5, -0.05])  # source location
+x0 = np.array([0.5, -2])  # source location
 
 # Define Hankel-based incident field (real part)
 class HankelReal(UserExpression):
@@ -118,29 +118,30 @@ plt.ylabel("y")
 plt.axis("equal")
 plt.show()
 
-# Plot real part of scattered field
+# Plot absolute value (magnitude) of total field
 plt.figure()
-p = plot(u_sol_re_proj, title="Real part of scattered field", cmap="viridis")
+p = plot(u_mag, title="Magnitude of total field", cmap="viridis")
 plt.colorbar(p)
 plt.xlabel("x")
 plt.ylabel("y")
 plt.axis("equal")
 plt.show()
 
-# Plot imaginary part of scattered field
+# Plot real part of total field
 plt.figure()
-p = plot(u_sol_im_proj, title="Imaginary part of scattered field", cmap="plasma")
+p = plot(u_sol_re_proj, title="Real part of total field", cmap="viridis")
 plt.colorbar(p)
 plt.xlabel("x")
 plt.ylabel("y")
 plt.axis("equal")
 plt.show()
 
-# Plot absolute value (magnitude) of scattered field
+# Plot imaginary part of total field
 plt.figure()
-p = plot(u_mag, title="Magnitude of scattered field", cmap="hot")
+p = plot(u_sol_im_proj, title="Imaginary part of total field", cmap="plasma")
 plt.colorbar(p)
 plt.xlabel("x")
 plt.ylabel("y")
 plt.axis("equal")
 plt.show()
+
