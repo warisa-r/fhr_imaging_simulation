@@ -8,45 +8,33 @@ from dolfinx.mesh import create_mesh, meshtags_from_entities
 import ufl
 from mpi4py import MPI
 import gmsh
-from scipy import interpolate
-from scipy.ndimage import gaussian_filter1d
 
 def create_circular_mesh_with_rough_hole(outer_radius=2.0, hole_center=(0.0, 0.0), hole_radius=0.5, 
-                                       num_points_outer=60, num_points_hole=40, hole_roughness=0.08, 
-                                       mesh_size=0.1, smoothing_method="spline", outer_roughness=0.0):
-    """
-    Create a circular mesh with a rough circular hole inside
+                                       hole_roughness=0.08, lam=1.0, mesh_density=10):
+
+    # Calculate mesh size based on wavelength
+    mesh_size = lam / mesh_density
     
-    Parameters:
-    - outer_radius: Radius of the outer circular domain
-    - hole_center: (x, y) coordinates of hole center
-    - hole_radius: Base radius of the inner hole
-    - num_points_outer: Number of points on outer circle
-    - num_points_hole: Number of points on hole circle
-    - hole_roughness: Maximum deviation from perfect circle for hole
-    - mesh_size: Characteristic mesh size
-    - smoothing_method: "spline", "gaussian", "fourier", or "bezier"
-    - outer_roughness: Roughness for outer boundary (0 = perfect circle)
-    """
+    # Calculate number of points based on mesh size and circumference
+    outer_circumference = 2 * np.pi * outer_radius
+    hole_circumference = 2 * np.pi * hole_radius
+    
+    num_points_outer = int(outer_circumference / mesh_size)
+    #num_points_hole = int(hole_circumference / mesh_size)
+    num_points_hole = num_points_outer
     
     # Initialize GMSH
     gmsh.initialize()
     gmsh.model.add("circular_domain_with_rough_hole")
     
-    # Create outer circular boundary
-    if outer_roughness > 0:
-        x_outer, y_outer = create_rough_circular_boundary(
-            (0.0, 0.0), outer_radius, num_points_outer, outer_roughness, smoothing_method
-        )
-    else:
-        # Perfect outer circle
-        theta_outer = np.linspace(0, 2*np.pi, num_points_outer, endpoint=False)
-        x_outer = outer_radius * np.cos(theta_outer)
-        y_outer = outer_radius * np.sin(theta_outer)
+    # Perfect outer circle
+    theta_outer = np.linspace(0, 2*np.pi, num_points_outer, endpoint=False)
+    x_outer = outer_radius * np.cos(theta_outer)
+    y_outer = outer_radius * np.sin(theta_outer)
     
-    # Create rough inner hole boundary
-    x_hole, y_hole = create_rough_circular_boundary(
-        hole_center, hole_radius, num_points_hole, hole_roughness, smoothing_method
+    # Create rough inner hole boundary using Fourier method
+    x_hole, y_hole = create_fourier_rough_boundary(
+        hole_center, hole_radius, num_points_hole, hole_roughness
     )
     
     # Add outer circle points
@@ -55,33 +43,26 @@ def create_circular_mesh_with_rough_hole(outer_radius=2.0, hole_center=(0.0, 0.0
         p = gmsh.model.geo.addPoint(x_outer[i], y_outer[i], 0.0, mesh_size)
         outer_points.append(p)
     
-    # Add inner hole points
+    # Add inner hole points with finer mesh
     hole_points = []
+    fine_mesh_size = mesh_size * 0.5
     for i in range(len(x_hole)):
-        p = gmsh.model.geo.addPoint(x_hole[i], y_hole[i], 0.0, mesh_size * 0.5)  # Finer mesh near hole
+        p = gmsh.model.geo.addPoint(x_hole[i], y_hole[i], 0.0, fine_mesh_size)
         hole_points.append(p)
     
-    # Create outer circular boundary
-    if smoothing_method == "spline" and len(outer_points) > 3:
-        outer_spline = gmsh.model.geo.addSpline(outer_points + [outer_points[0]])
-        outer_lines = [outer_spline]
-    else:
-        outer_lines = []
-        for i in range(len(outer_points)):
-            next_i = (i + 1) % len(outer_points)
-            line = gmsh.model.geo.addLine(outer_points[i], outer_points[next_i])
-            outer_lines.append(line)
+    # Create outer circular boundary (line segments)
+    outer_lines = []
+    for i in range(len(outer_points)):
+        next_i = (i + 1) % len(outer_points)
+        line = gmsh.model.geo.addLine(outer_points[i], outer_points[next_i])
+        outer_lines.append(line)
     
-    # Create inner hole boundary
-    if smoothing_method == "spline" and len(hole_points) > 3:
-        hole_spline = gmsh.model.geo.addSpline(hole_points + [hole_points[0]])
-        hole_lines = [hole_spline]
-    else:
-        hole_lines = []
-        for i in range(len(hole_points)):
-            next_i = (i + 1) % len(hole_points)
-            line = gmsh.model.geo.addLine(hole_points[i], hole_points[next_i])
-            hole_lines.append(line)
+    # Create inner hole boundary (line segments)
+    hole_lines = []
+    for i in range(len(hole_points)):
+        next_i = (i + 1) % len(hole_points)
+        line = gmsh.model.geo.addLine(hole_points[i], hole_points[next_i])
+        hole_lines.append(line)
     
     # Create curve loops
     outer_loop = gmsh.model.geo.addCurveLoop(outer_lines)
@@ -110,82 +91,17 @@ def create_circular_mesh_with_rough_hole(outer_radius=2.0, hole_center=(0.0, 0.0
     
     return mesh, facet_markers
 
-def create_rough_circular_boundary(center, radius, num_points, roughness, method="spline"):
-    """
-    Create a rough circular boundary
-    
-    Parameters:
-    - center: (x, y) center coordinates
-    - radius: Base radius
-    - num_points: Number of points on circle
-    - roughness: Maximum radial deviation
-    - method: Smoothing method
-    """
-    #np.random.seed(42)  # For reproducible results
-    
+def create_fourier_rough_boundary(center, radius, num_points, roughness, num_harmonics=3):
     # Base circle angles
     theta = np.linspace(0, 2*np.pi, num_points, endpoint=False)
     
-    if method == "gaussian":
-        # Generate rough radial variations
-        theta_coarse = np.linspace(0, 2*np.pi, num_points // 3, endpoint=False)
-        r_noise_coarse = roughness * (np.random.random(len(theta_coarse)) - 0.5)
-        
-        # Apply Gaussian smoothing with periodic boundary conditions
-        r_noise_coarse = np.concatenate([r_noise_coarse, r_noise_coarse, r_noise_coarse])
-        sigma = len(theta_coarse) / 6
-        r_smooth_extended = gaussian_filter1d(r_noise_coarse, sigma=sigma, mode='wrap')
-        r_smooth = r_smooth_extended[len(theta_coarse):2*len(theta_coarse)]
-        
-        # Interpolate to final resolution
-        f = interpolate.interp1d(theta_coarse, r_smooth, kind='cubic', 
-                               bounds_error=False, fill_value='extrapolate')
-        r_variation = f(theta)
-        
-    elif method == "fourier":
-        # Use Fourier series for smooth periodic variations
-        r_variation = np.zeros_like(theta)
-        num_harmonics = 8
-        
-        for n in range(1, num_harmonics + 1):
-            amplitude = roughness / n
-            phase = np.random.random() * 2 * np.pi
-            r_variation += amplitude * np.sin(n * theta + phase)
-            
-    elif method == "bezier":
-        # Use periodic Bezier-like approach
-        num_control = 8
-        theta_control = np.linspace(0, 2*np.pi, num_control, endpoint=False)
-        r_control = roughness * (np.random.random(num_control) - 0.5)
-        
-        # Make it periodic
-        theta_control = np.concatenate([theta_control, [2*np.pi]])
-        r_control = np.concatenate([r_control, [r_control[0]]])
-        
-        # Smooth the control points
-        r_control = gaussian_filter1d(r_control, sigma=1.0, mode='wrap')
-        
-        # Interpolate
-        f = interpolate.interp1d(theta_control, r_control, kind='cubic', 
-                               bounds_error=False, fill_value='extrapolate')
-        r_variation = f(theta)
-        
-    else:  # spline (default)
-        # Create control points for spline
-        num_control = max(8, num_points // 6)
-        theta_control = np.linspace(0, 2*np.pi, num_control, endpoint=False)
-        r_control = roughness * (np.random.random(num_control) - 0.5)
-        
-        # Apply smoothing to control points
-        r_control = gaussian_filter1d(np.concatenate([r_control, r_control, r_control]), 
-                                    sigma=1.0, mode='wrap')[num_control:2*num_control]
-        
-        # Create periodic spline
-        theta_control = np.concatenate([theta_control, [2*np.pi]])
-        r_control = np.concatenate([r_control, [r_control[0]]])
-        
-        tck = interpolate.splrep(theta_control, r_control, s=0, k=3, per=False)
-        r_variation = interpolate.splev(theta, tck)
+    # Use Fourier series for smooth periodic variations
+    r_variation = np.zeros_like(theta)
+    
+    for n in range(1, num_harmonics + 1):
+        amplitude = roughness / n  # Decreasing amplitude for higher harmonics
+        phase = np.random.random() * 2 * np.pi
+        r_variation += amplitude * np.sin(n * theta + phase)
     
     # Apply variations to radius
     r_rough = radius + r_variation
@@ -197,8 +113,6 @@ def create_rough_circular_boundary(center, radius, num_points, roughness, method
     return x_circle, y_circle
 
 def plot_circular_mesh(mesh, facet_markers=None):
-    """Plot circular mesh with hole"""
-    
     # Get mesh coordinates and connectivity
     x = mesh.geometry.x
     cells = mesh.topology.connectivity(2, 0).array.reshape(-1, 3)
@@ -234,7 +148,7 @@ def plot_circular_mesh(mesh, facet_markers=None):
     by_label = dict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys())
     
-    plt.title("Circular Domain with Rough Hole")
+    plt.title("Circular Domain with Fourier Rough Hole")
     plt.axis('equal')
     plt.xlabel('x')
     plt.ylabel('y')
@@ -242,9 +156,40 @@ def plot_circular_mesh(mesh, facet_markers=None):
     plt.tight_layout()
     plt.show()
 
-def save_mesh_dolfinx(mesh, facet_markers, filename_base="circular_mesh_with_rough_hole"):
-    """Save mesh and boundary markers"""
+def plot_roughness_comparison(center=(0.0, 0.0), radius=0.5, roughness=0.08):
+    harmonics_list = [3, 6, 8, 12]
+    num_points = 100
     
+    plt.figure(figsize=(15, 10))
+    
+    for i, num_harmonics in enumerate(harmonics_list):
+        plt.subplot(2, 2, i+1)
+        
+        # Perfect circle
+        theta_perfect = np.linspace(0, 2*np.pi, 200)
+        x_perfect = center[0] + radius * np.cos(theta_perfect)
+        y_perfect = center[1] + radius * np.sin(theta_perfect)
+        
+        # Rough circle
+        x_rough, y_rough = create_fourier_rough_boundary(
+            center, radius, num_points, roughness, num_harmonics
+        )
+        
+        plt.plot(x_perfect, y_perfect, 'k--', linewidth=1, alpha=0.5, label='Perfect circle')
+        plt.plot(x_rough, y_rough, 'r-', linewidth=2, label=f'{num_harmonics} harmonics')
+        plt.fill(x_rough, y_rough, alpha=0.3, color='red')
+        
+        plt.axis('equal')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title(f'Fourier Roughness: {num_harmonics} Harmonics')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.show()
+
+def save_mesh_dolfinx(mesh, facet_markers, filename_base="circular_mesh_with_rough_hole"):
     # Save mesh and facet markers together
     with dolfinx.io.XDMFFile(MPI.COMM_WORLD, f"{filename_base}.xdmf", "w") as file:
         file.write_mesh(mesh)
@@ -258,22 +203,29 @@ OUTER_CIRCLE_MARKER = 1
 ROUGH_HOLE_MARKER = 2
 
 if __name__ == "__main__":
+    # Some constant necessary
+    c = 299792458
+    freq_max = 5e9 # 5GHz
     
-    # Generate circular mesh with rough hole
-    print("Generating circular mesh with rough hole...")
+    # Generate circular mesh with Fourier rough hole
+    print("Generating circular mesh with Fourier rough hole...")
+    
+    # Parameters
+    wavelength = c / freq_max  # Physical wavelength
+    mesh_points_per_wavelength = 5  # Higher = finer mesh -> We can use quite high order of polynomials to prevent polution
+    
     mesh, facet_markers = create_circular_mesh_with_rough_hole(
-        outer_radius=2.0,         # Outer circle radius
-        hole_center=(0.0, 0.0),   # Center of hole (can be eccentric)
-        hole_radius=0.6,          # Base radius of hole
-        num_points_outer=80,      # Points on outer circle
-        num_points_hole=50,       # Points on hole
-        hole_roughness=0.12,      # Roughness amplitude for hole
-        mesh_size=0.06,           # Mesh resolution
-        smoothing_method="fourier", # Roughness method
-        outer_roughness=0.0       # 0 = perfect outer circle, >0 = rough outer
+        outer_radius=0.6,         # Outer circle radius
+        hole_center=(0.0, 0.0),   # Center of hole
+        hole_radius=0.1,          # Base radius of hole
+        hole_roughness=0.03,      # Roughness amplitude for hole
+        lam=wavelength,           # Wavelength
+        mesh_density=mesh_points_per_wavelength  # Points per wavelength
     )
     
-    print(f"Generated circular mesh with rough hole")
+    print(f"Generated circular mesh with Fourier rough hole")
+    print(f"Wavelength: {wavelength}")
+    print(f"Mesh size: {wavelength/mesh_points_per_wavelength:.4f}")
     print(f"Mesh has {mesh.topology.index_map(0).size_local} vertices")
     print(f"Mesh has {mesh.topology.index_map(2).size_local} cells")
     
@@ -281,7 +233,7 @@ if __name__ == "__main__":
     plot_circular_mesh(mesh, facet_markers)
     
     # Save mesh
-    save_mesh_dolfinx(mesh, facet_markers, "circular_domain_rough_hole")
+    save_mesh_dolfinx(mesh, facet_markers, "geometry_perturbed_mesh")
     
     # Print boundary marker information
     print("\nBoundary markers:")
