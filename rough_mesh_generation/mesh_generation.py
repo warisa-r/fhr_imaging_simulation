@@ -11,73 +11,92 @@ import gmsh
 from scipy import interpolate
 from scipy.ndimage import gaussian_filter1d
 
-def create_smooth_rough_top_mesh_dolfinx(width=2.0, height=4.0, num_points_top=50, roughness=5, mesh_size=0.1, smoothing_method="spline"):
+def create_circular_mesh_with_rough_hole(outer_radius=2.0, hole_center=(0.0, 0.0), hole_radius=0.5, 
+                                       num_points_outer=60, num_points_hole=40, hole_roughness=0.08, 
+                                       mesh_size=0.1, smoothing_method="spline", outer_roughness=0.0):
+    """
+    Create a circular mesh with a rough circular hole inside
+    
+    Parameters:
+    - outer_radius: Radius of the outer circular domain
+    - hole_center: (x, y) coordinates of hole center
+    - hole_radius: Base radius of the inner hole
+    - num_points_outer: Number of points on outer circle
+    - num_points_hole: Number of points on hole circle
+    - hole_roughness: Maximum deviation from perfect circle for hole
+    - mesh_size: Characteristic mesh size
+    - smoothing_method: "spline", "gaussian", "fourier", or "bezier"
+    - outer_roughness: Roughness for outer boundary (0 = perfect circle)
+    """
+    
     # Initialize GMSH
     gmsh.initialize()
-    gmsh.model.add("smooth_rough_rectangle")
+    gmsh.model.add("circular_domain_with_rough_hole")
     
-    # Create smooth rough top edge
-    x_top, y_top = create_smooth_rough_boundary(width, height, num_points_top, roughness, smoothing_method)
-    
-    # Add points to GMSH
-    points = []
-    
-    # Bottom left corner
-    p1 = gmsh.model.geo.addPoint(0.0, 0.0, 0.0, mesh_size)
-    points.append(p1)
-    
-    # Bottom right corner
-    p2 = gmsh.model.geo.addPoint(width, 0.0, 0.0, mesh_size)
-    points.append(p2)
-    
-    # Top edge points (smooth rough)
-    top_points = []
-    for i in range(len(x_top)):
-        p = gmsh.model.geo.addPoint(x_top[i], y_top[i], 0.0, mesh_size)
-        top_points.append(p)
-    
-    # Create lines
-    lines = []
-    
-    # Bottom edge
-    bottom_line = gmsh.model.geo.addLine(p1, p2)
-    lines.append(bottom_line)
-    
-    # Right edge
-    right_line = gmsh.model.geo.addLine(p2, top_points[-1])
-    lines.append(right_line)
-    
-    # Top edge (smooth rough) - use splines for smoother curves
-    if smoothing_method == "spline" and len(top_points) > 3:
-        # Create a single spline through all top points
-        top_spline = gmsh.model.geo.addSpline(top_points[::-1])  # Reverse for correct orientation
-        lines.append(top_spline)
-        top_lines = [top_spline]
+    # Create outer circular boundary
+    if outer_roughness > 0:
+        x_outer, y_outer = create_rough_circular_boundary(
+            (0.0, 0.0), outer_radius, num_points_outer, outer_roughness, smoothing_method
+        )
     else:
-        # Fall back to line segments
-        top_lines = []
-        for i in range(len(top_points) - 1):
-            line = gmsh.model.geo.addLine(top_points[i+1], top_points[i])
-            top_lines.append(line)
-            lines.append(line)
+        # Perfect outer circle
+        theta_outer = np.linspace(0, 2*np.pi, num_points_outer, endpoint=False)
+        x_outer = outer_radius * np.cos(theta_outer)
+        y_outer = outer_radius * np.sin(theta_outer)
     
-    # Left edge
-    left_line = gmsh.model.geo.addLine(top_points[0], p1)
-    lines.append(left_line)
+    # Create rough inner hole boundary
+    x_hole, y_hole = create_rough_circular_boundary(
+        hole_center, hole_radius, num_points_hole, hole_roughness, smoothing_method
+    )
     
-    # Create curve loop and surface
-    curve_loop = gmsh.model.geo.addCurveLoop([bottom_line, right_line] + top_lines + [left_line])
-    surface = gmsh.model.geo.addPlaneSurface([curve_loop])
+    # Add outer circle points
+    outer_points = []
+    for i in range(len(x_outer)):
+        p = gmsh.model.geo.addPoint(x_outer[i], y_outer[i], 0.0, mesh_size)
+        outer_points.append(p)
+    
+    # Add inner hole points
+    hole_points = []
+    for i in range(len(x_hole)):
+        p = gmsh.model.geo.addPoint(x_hole[i], y_hole[i], 0.0, mesh_size * 0.5)  # Finer mesh near hole
+        hole_points.append(p)
+    
+    # Create outer circular boundary
+    if smoothing_method == "spline" and len(outer_points) > 3:
+        outer_spline = gmsh.model.geo.addSpline(outer_points + [outer_points[0]])
+        outer_lines = [outer_spline]
+    else:
+        outer_lines = []
+        for i in range(len(outer_points)):
+            next_i = (i + 1) % len(outer_points)
+            line = gmsh.model.geo.addLine(outer_points[i], outer_points[next_i])
+            outer_lines.append(line)
+    
+    # Create inner hole boundary
+    if smoothing_method == "spline" and len(hole_points) > 3:
+        hole_spline = gmsh.model.geo.addSpline(hole_points + [hole_points[0]])
+        hole_lines = [hole_spline]
+    else:
+        hole_lines = []
+        for i in range(len(hole_points)):
+            next_i = (i + 1) % len(hole_points)
+            line = gmsh.model.geo.addLine(hole_points[i], hole_points[next_i])
+            hole_lines.append(line)
+    
+    # Create curve loops
+    outer_loop = gmsh.model.geo.addCurveLoop(outer_lines)
+    hole_loop = gmsh.model.geo.addCurveLoop(hole_lines)
+    
+    # Create surface (outer circle with hole)
+    surface = gmsh.model.geo.addPlaneSurface([outer_loop, hole_loop])
     
     # Synchronize
     gmsh.model.geo.synchronize()
     
     # Create physical groups for boundary markers
-    gmsh.model.addPhysicalGroup(1, [bottom_line], tag=1, name="Bottom")
-    gmsh.model.addPhysicalGroup(1, [right_line], tag=2, name="Right")
-    gmsh.model.addPhysicalGroup(1, top_lines, tag=3, name="Top_Reflective")
-    gmsh.model.addPhysicalGroup(1, [left_line], tag=4, name="Left")
-    gmsh.model.addPhysicalGroup(2, [surface], tag=5, name="Domain")
+    gmsh.model.addPhysicalGroup(1, outer_lines, tag=1, name="Outer_Circle")
+    gmsh.model.addPhysicalGroup(1, hole_lines, tag=2, name="Rough_Hole")
+    gmsh.model.addPhysicalGroup(2, [surface], tag=3, name="Domain")
     
     # Generate mesh
     gmsh.model.mesh.generate(2)
@@ -91,150 +110,131 @@ def create_smooth_rough_top_mesh_dolfinx(width=2.0, height=4.0, num_points_top=5
     
     return mesh, facet_markers
 
-def create_smooth_rough_boundary(width, height, num_points, roughness, method="spline"):
-    np.random.seed(42)
+def create_rough_circular_boundary(center, radius, num_points, roughness, method="spline"):
+    """
+    Create a rough circular boundary
+    
+    Parameters:
+    - center: (x, y) center coordinates
+    - radius: Base radius
+    - num_points: Number of points on circle
+    - roughness: Maximum radial deviation
+    - method: Smoothing method
+    """
+    #np.random.seed(42)  # For reproducible results
+    
+    # Base circle angles
+    theta = np.linspace(0, 2*np.pi, num_points, endpoint=False)
     
     if method == "gaussian":
-        x_coarse = np.linspace(0, width, num_points // 3)
-        y_noise_coarse = roughness * (np.random.random(len(x_coarse)) - 0.5)
+        # Generate rough radial variations
+        theta_coarse = np.linspace(0, 2*np.pi, num_points // 3, endpoint=False)
+        r_noise_coarse = roughness * (np.random.random(len(theta_coarse)) - 0.5)
         
-        # Apply Gaussian smoothing
-        sigma = len(x_coarse) / 4  # Smoothing parameter
-        y_smooth = gaussian_filter1d(y_noise_coarse, sigma=sigma, mode='reflect')
+        # Apply Gaussian smoothing with periodic boundary conditions
+        r_noise_coarse = np.concatenate([r_noise_coarse, r_noise_coarse, r_noise_coarse])
+        sigma = len(theta_coarse) / 6
+        r_smooth_extended = gaussian_filter1d(r_noise_coarse, sigma=sigma, mode='wrap')
+        r_smooth = r_smooth_extended[len(theta_coarse):2*len(theta_coarse)]
         
         # Interpolate to final resolution
-        f = interpolate.interp1d(x_coarse, y_smooth, kind='cubic')
-        x_top = np.linspace(0, width, num_points)
-        y_top = height + f(x_top)
+        f = interpolate.interp1d(theta_coarse, r_smooth, kind='cubic', 
+                               bounds_error=False, fill_value='extrapolate')
+        r_variation = f(theta)
         
     elif method == "fourier":
-        x_top = np.linspace(0, width, num_points)
-        y_top = np.full_like(x_top, height)
+        # Use Fourier series for smooth periodic variations
+        r_variation = np.zeros_like(theta)
+        num_harmonics = 8
         
-        # Add smooth Fourier components
-        num_harmonics = 30
         for n in range(1, num_harmonics + 1):
-            amplitude = roughness / n  # Decreasing amplitude
+            amplitude = roughness / n
             phase = np.random.random() * 2 * np.pi
-            frequency = n * np.pi / width
-            y_top += amplitude * np.sin(frequency * x_top + phase)
+            r_variation += amplitude * np.sin(n * theta + phase)
             
     elif method == "bezier":
-        num_control = 7  # Number of control points
-        x_control = np.linspace(0, width, num_control)
-        y_control = height + roughness * (np.random.random(num_control) - 0.5)
+        # Use periodic Bezier-like approach
+        num_control = 8
+        theta_control = np.linspace(0, 2*np.pi, num_control, endpoint=False)
+        r_control = roughness * (np.random.random(num_control) - 0.5)
         
-        # Ensure endpoints are at correct height
-        y_control[0] = height
-        y_control[-1] = height
+        # Make it periodic
+        theta_control = np.concatenate([theta_control, [2*np.pi]])
+        r_control = np.concatenate([r_control, [r_control[0]]])
         
-        # Create Bezier curve
-        t = np.linspace(0, 1, num_points)
-        x_top = np.zeros(num_points)
-        y_top = np.zeros(num_points)
+        # Smooth the control points
+        r_control = gaussian_filter1d(r_control, sigma=1.0, mode='wrap')
         
-        n = len(x_control) - 1
-        for i in range(n + 1):
-            bernstein = math.comb(n, i) * (1 - t) ** (n - i) * t ** i
-            x_top += bernstein * x_control[i]
-            y_top += bernstein * y_control[i]
-            
+        # Interpolate
+        f = interpolate.interp1d(theta_control, r_control, kind='cubic', 
+                               bounds_error=False, fill_value='extrapolate')
+        r_variation = f(theta)
+        
     else:  # spline (default)
-        # Method 4: Spline interpolation
-        num_control = max(5, num_points // 8)
-        x_control = np.linspace(0, width, num_control)
-        y_control = height + roughness * (np.random.random(num_control) - 0.5)
+        # Create control points for spline
+        num_control = max(8, num_points // 6)
+        theta_control = np.linspace(0, 2*np.pi, num_control, endpoint=False)
+        r_control = roughness * (np.random.random(num_control) - 0.5)
         
-        # Ensure endpoints are at correct height
-        y_control[0] = height
-        y_control[-1] = height
+        # Apply smoothing to control points
+        r_control = gaussian_filter1d(np.concatenate([r_control, r_control, r_control]), 
+                                    sigma=1.0, mode='wrap')[num_control:2*num_control]
         
-        # Apply some smoothing to control points
-        if len(y_control) > 3:
-            y_control = gaussian_filter1d(y_control, sigma=1.0)
-            y_control[0] = height  # Restore endpoints
-            y_control[-1] = height
+        # Create periodic spline
+        theta_control = np.concatenate([theta_control, [2*np.pi]])
+        r_control = np.concatenate([r_control, [r_control[0]]])
         
-        # Create spline
-        tck = interpolate.splrep(x_control, y_control, s=0, k=min(3, len(x_control)-1))
-        x_top = np.linspace(0, width, num_points)
-        y_top = interpolate.splev(x_top, tck)
+        tck = interpolate.splrep(theta_control, r_control, s=0, k=3, per=False)
+        r_variation = interpolate.splev(theta, tck)
     
-    # Ensure endpoints are exactly at corners
-    y_top[0] = height
-    y_top[-1] = height
+    # Apply variations to radius
+    r_rough = radius + r_variation
     
-    return x_top, y_top
+    # Convert to Cartesian coordinates
+    x_circle = center[0] + r_rough * np.cos(theta)
+    y_circle = center[1] + r_rough * np.sin(theta)
+    
+    return x_circle, y_circle
 
-def plot_boundary_comparison():
-    width, height = 2.0, 4.0
-    num_points = 50
-    roughness = 0.2
-    
-    methods = ["spline", "gaussian", "fourier", "bezier"]
-    
-    plt.figure(figsize=(15, 10))
-    
-    for i, method in enumerate(methods):
-        plt.subplot(2, 2, i+1)
-        x_top, y_top = create_smooth_rough_boundary(width, height, num_points, roughness, method)
-        
-        plt.plot(x_top, y_top, 'r-', linewidth=2, label=f'{method.capitalize()} method')
-        plt.axhline(y=height, color='k', linestyle='--', alpha=0.5, label='Original height')
-        plt.fill_between([0, width], [0, 0], [height, height], alpha=0.2, color='lightblue')
-        plt.fill_between(x_top, [height]*len(x_top), y_top, alpha=0.3, color='red')
-        
-        plt.xlim(0, width)
-        plt.ylim(0, height + roughness + 0.1)
-        plt.xlabel('x')
-        plt.ylabel('y')
-        plt.title(f'{method.capitalize()} Smoothing')
-        plt.legend()
-        plt.grid(True, alpha=0.3)
-    
-    plt.tight_layout()
-    plt.show()
-
-def plot_mesh_dolfinx(mesh, facet_markers=None):
-    """Plot DOLFINx mesh with matplotlib"""
+def plot_circular_mesh(mesh, facet_markers=None):
+    """Plot circular mesh with hole"""
     
     # Get mesh coordinates and connectivity
     x = mesh.geometry.x
     cells = mesh.topology.connectivity(2, 0).array.reshape(-1, 3)
     
-    plt.figure(figsize=(10, 12))
+    plt.figure(figsize=(12, 12))
     
     # Plot mesh
     for cell in cells:
         triangle = x[cell]
-        triangle = np.vstack([triangle, triangle[0]])  # Close the triangle
+        triangle = np.vstack([triangle, triangle[0]])
         plt.plot(triangle[:, 0], triangle[:, 1], 'k-', linewidth=0.3, alpha=0.7)
     
     # Plot boundary markers if provided
     if facet_markers is not None:
-        # Get boundary facets
-        mesh.topology.create_connectivity(1, 0)  # facet to vertex connectivity
+        mesh.topology.create_connectivity(1, 0)
         
-        colors = {1: 'blue', 2: 'green', 3: 'red', 4: 'orange'}
-        labels = {1: 'Bottom', 2: 'Right', 3: 'Top (Reflective)', 4: 'Left'}
+        colors = {1: 'blue', 2: 'red'}
+        labels = {1: 'Outer Circle', 2: 'Rough Hole'}
         
-        for marker in [1, 2, 3, 4]:
-            facets = facet_markers.indices[facet_markers.values == marker]
-            
-            for facet in facets:
-                # Get vertices of this facet
-                vertices = mesh.topology.connectivity(1, 0).links(facet)
-                facet_coords = x[vertices]
+        for marker in [1, 2]:
+            if marker in facet_markers.values:
+                facets = facet_markers.indices[facet_markers.values == marker]
                 
-                plt.plot(facet_coords[:, 0], facet_coords[:, 1], 
-                        color=colors[marker], linewidth=2, label=labels[marker])
+                for facet in facets:
+                    vertices = mesh.topology.connectivity(1, 0).links(facet)
+                    facet_coords = x[vertices]
+                    
+                    plt.plot(facet_coords[:, 0], facet_coords[:, 1], 
+                            color=colors[marker], linewidth=3, label=labels[marker])
     
     # Remove duplicate labels
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys())
     
-    plt.title("Rough Top Edge Mesh (DOLFINx)")
+    plt.title("Circular Domain with Rough Hole")
     plt.axis('equal')
     plt.xlabel('x')
     plt.ylabel('y')
@@ -242,43 +242,48 @@ def plot_mesh_dolfinx(mesh, facet_markers=None):
     plt.tight_layout()
     plt.show()
 
-def save_mesh_dolfinx(mesh, facet_markers, filename_base="rough_mesh_dolfinx"):
-    # Save mesh
+def save_mesh_dolfinx(mesh, facet_markers, filename_base="circular_mesh_with_rough_hole"):
+    """Save mesh and boundary markers"""
+    
+    # Save mesh and facet markers together
     with dolfinx.io.XDMFFile(MPI.COMM_WORLD, f"{filename_base}.xdmf", "w") as file:
         file.write_mesh(mesh)
-    
-    # Save facet markers - fix the argument order
-    with dolfinx.io.XDMFFile(MPI.COMM_WORLD, f"{filename_base}_boundaries.xdmf", "w") as file:
+        mesh.topology.create_connectivity(1, 2)
         file.write_meshtags(facet_markers, mesh.geometry, "Grid")
     
-    print(f"Mesh saved as {filename_base}.xdmf")
-    print(f"Boundaries saved as {filename_base}_boundaries.xdmf")
+    print(f"Mesh and boundaries saved as {filename_base}.xdmf")
 
-# Update the main execution
+# Boundary markers
+OUTER_CIRCLE_MARKER = 1
+ROUGH_HOLE_MARKER = 2
+
 if __name__ == "__main__":
-    print("Generating smooth rough top edge mesh with DOLFINx...")
     
-    # First, show comparison of different smoothing methods
-    print("Comparing smoothing methods...")
-    plot_boundary_comparison()
-    
-    # Generate mesh with spline smoothing (recommended)
-    print("Generating mesh with spline smoothing...")
-    mesh, facet_markers = create_smooth_rough_top_mesh_dolfinx(
-        width=2.0, 
-        height=4.0, 
-        num_points_top=40,
-        roughness=0.15,
-        mesh_size=0.05,
-        smoothing_method="spline"  # Try "gaussian", "fourier", or "bezier"
+    # Generate circular mesh with rough hole
+    print("Generating circular mesh with rough hole...")
+    mesh, facet_markers = create_circular_mesh_with_rough_hole(
+        outer_radius=2.0,         # Outer circle radius
+        hole_center=(0.0, 0.0),   # Center of hole (can be eccentric)
+        hole_radius=0.6,          # Base radius of hole
+        num_points_outer=80,      # Points on outer circle
+        num_points_hole=50,       # Points on hole
+        hole_roughness=0.12,      # Roughness amplitude for hole
+        mesh_size=0.06,           # Mesh resolution
+        smoothing_method="fourier", # Roughness method
+        outer_roughness=0.0       # 0 = perfect outer circle, >0 = rough outer
     )
     
-    print(f"Generated smooth rough mesh")
+    print(f"Generated circular mesh with rough hole")
     print(f"Mesh has {mesh.topology.index_map(0).size_local} vertices")
     print(f"Mesh has {mesh.topology.index_map(2).size_local} cells")
     
     # Plot mesh
-    plot_mesh_dolfinx(mesh, facet_markers)
+    plot_circular_mesh(mesh, facet_markers)
     
     # Save mesh
-    save_mesh_dolfinx(mesh, facet_markers, "smooth_rough_top_mesh_dolfinx")
+    save_mesh_dolfinx(mesh, facet_markers, "circular_domain_rough_hole")
+    
+    # Print boundary marker information
+    print("\nBoundary markers:")
+    print(f"Outer circular boundary: {OUTER_CIRCLE_MARKER}")
+    print(f"Rough hole boundary: {ROUGH_HOLE_MARKER}")
