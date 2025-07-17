@@ -11,7 +11,7 @@ import gmsh
 
 # Try to convert mesh to XML format
 print("Converting mesh to XML format...")
-result = subprocess.run(["dolfin-convert", "mesh_test.msh", "mesh_test.xml"], 
+result = subprocess.run(["dolfin-convert", "mesh_domain_expansion_test/mesh_test_0.6.msh", "mesh_test.xml"], 
                         capture_output=True, text=True)
 mesh = Mesh("mesh_test.xml")
 boundary_markers = MeshFunction("size_t", mesh, "mesh_test_facet_region.xml")
