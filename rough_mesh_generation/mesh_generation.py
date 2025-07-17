@@ -45,7 +45,7 @@ def create_circular_mesh_with_rough_hole(outer_radius=2.0, hole_center=(0.0, 0.0
     
     # Add inner hole points with finer mesh
     hole_points = []
-    fine_mesh_size = mesh_size * 0.5
+    fine_mesh_size = mesh_size # scale by factor of 0.5 if you really need it to be finer...
     for i in range(len(x_hole)):
         p = gmsh.model.geo.addPoint(x_hole[i], y_hole[i], 0.0, fine_mesh_size)
         hole_points.append(p)
@@ -82,14 +82,7 @@ def create_circular_mesh_with_rough_hole(outer_radius=2.0, hole_center=(0.0, 0.0
     # Generate mesh
     gmsh.model.mesh.generate(2)
     
-    # Convert to DOLFINx mesh
-    mesh, cell_markers, facet_markers = dolfinx.io.gmshio.model_to_mesh(
-        gmsh.model, MPI.COMM_WORLD, 0, gdim=2
-    )
-    
-    gmsh.finalize()
-    
-    return mesh, facet_markers
+    return gmsh.model
 
 def create_fourier_rough_boundary(center, radius, num_points, roughness, num_harmonics=3):
     # Base circle angles
@@ -198,6 +191,10 @@ def save_mesh_dolfinx(mesh, facet_markers, filename_base="circular_mesh_with_rou
     
     print(f"Mesh and boundaries saved as {filename_base}.xdmf")
 
+def save_mesh_msh(gmsh_model, filename_base="circular_mesh_with_rough_hole"):
+    gmsh.write(f"{filename_base}.msh")
+    print(f"Mesh saved as {filename_base}.msh")
+
 # Boundary markers
 OUTER_CIRCLE_MARKER = 1
 ROUGH_HOLE_MARKER = 2
@@ -214,13 +211,21 @@ if __name__ == "__main__":
     wavelength = c / freq_max  # Physical wavelength
     mesh_points_per_wavelength = 5  # Higher = finer mesh -> We can use quite high order of polynomials to prevent polution
     
-    mesh, facet_markers = create_circular_mesh_with_rough_hole(
+    gmsh_model = create_circular_mesh_with_rough_hole(
         outer_radius=0.6,         # Outer circle radius
         hole_center=(0.0, 0.0),   # Center of hole
-        hole_radius=0.1,          # Base radius of hole
-        hole_roughness=0.03,      # Roughness amplitude for hole
+        hole_radius=0.2,          # Base radius of hole
+        hole_roughness=0.0,      # Roughness amplitude for hole
         lam=wavelength,           # Wavelength
         mesh_density=mesh_points_per_wavelength  # Points per wavelength
+    )
+    
+    # Save mesh in .msh format
+    save_mesh_msh(gmsh_model, "mesh_test")
+    
+    # Convert to DOLFINx mesh for plotting
+    mesh, cell_markers, facet_markers = dolfinx.io.gmshio.model_to_mesh(
+        gmsh_model, MPI.COMM_WORLD, 0, gdim=2
     )
     
     print(f"Generated circular mesh with Fourier rough hole")
@@ -232,8 +237,10 @@ if __name__ == "__main__":
     # Plot mesh
     plot_circular_mesh(mesh, facet_markers)
     
-    # Save mesh
-    save_mesh_dolfinx(mesh, facet_markers, "geometry_perturbed_mesh")
+    # Also save in XDMF format
+    save_mesh_dolfinx(mesh, facet_markers, "mesh_test")
+    
+    gmsh.finalize()
     
     # Print boundary marker information
     print("\nBoundary markers:")
