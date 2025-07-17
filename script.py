@@ -3,28 +3,16 @@ import numpy as np
 from scipy.special import hankel1
 import subprocess
 import os
+import gmsh
 
 ### In this file, we solve instead the scatter field ###
 
-# Install GMSH if not available
-try:
-    import gmsh
-except ImportError:
-    print("Installing GMSH...")
-    subprocess.run(["apt", "update"], check=True)
-    subprocess.run(["apt", "install", "-y", "gmsh", "python3-gmsh"], check=True)
-    import gmsh
-
-# Create mesh with hole using GMSH
-print("Creating mesh with hole...")
-subprocess.run(["python3", "create_mesh_with_hole.py"], check=True)
-
-# Try to convert mesh to XML format
-print("Converting mesh to XML format...")
-result = subprocess.run(["dolfin-convert", "mesh_with_hole.msh", "mesh_with_hole.xml"], 
+# Load mesh
+print("Converting mesh from MSH to XML format...")
+result = subprocess.run(["dolfin-convert", "mesh_test.msh", "mesh_test.xml"], 
                         capture_output=True, text=True)
-mesh = Mesh("mesh_with_hole.xml")
-boundary_markers = MeshFunction("size_t", mesh, "mesh_with_hole_facet_region.xml")
+mesh = Mesh("mesh_test.xml")
+boundary_markers = MeshFunction("size_t", mesh, "mesh_test_facet_region.xml")
 
 # Define function space
 V_element = FiniteElement("Lagrange", mesh.ufl_cell(), 5)
