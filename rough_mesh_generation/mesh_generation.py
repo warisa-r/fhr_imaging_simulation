@@ -182,20 +182,6 @@ def plot_roughness_comparison(center=(0.0, 0.0), radius=0.5, roughness=0.08):
     plt.tight_layout()
     plt.show()
 
-def save_mesh_dolfin_legacy(mesh, facet_markers, filename_base="circular_mesh_with_rough_hole"):
-    # Save mesh in XDMF format (compatible with legacy DOLFIN)
-    with dolfinx.io.XDMFFile(MPI.COMM_WORLD, f"{filename_base}.xdmf", "w") as file:
-        file.write_mesh(mesh)
-    
-    # Save facet markers (boundaries) in separate XDMF file
-    mesh.topology.create_connectivity(1, 2)
-    with dolfinx.io.XDMFFile(MPI.COMM_WORLD, f"{filename_base}_boundaries.xdmf", "w") as file:
-        file.write_meshtags(facet_markers, mesh.geometry, "Grid")
-    
-    print(f"Mesh saved as {filename_base}.xdmf")
-    print(f"Boundaries saved as {filename_base}_boundaries.xdmf")
-    print(f"Compatible with DOLFIN legacy")
-
 def save_mesh_dolfinx(mesh, facet_markers, filename_base="circular_mesh_with_rough_hole"):
     # Save mesh and facet markers together
     with dolfinx.io.XDMFFile(MPI.COMM_WORLD, f"{filename_base}.xdmf", "w") as file:
@@ -206,9 +192,10 @@ def save_mesh_dolfinx(mesh, facet_markers, filename_base="circular_mesh_with_rou
     print(f"Mesh and boundaries saved as {filename_base}.xdmf")
 
 def save_mesh_msh(gmsh_model, filename_base="circular_mesh_with_rough_hole"):
+    # Set GMSH to save in version 2.2 format so that its compatible with legacy fenics
+    gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
     gmsh.write(f"{filename_base}.msh")
-    print(f"Mesh saved as {filename_base}.msh")
-
+    print(f"Mesh saved as {filename_base}.msh (version 2.2)")
 # Boundary markers
 OUTER_CIRCLE_MARKER = 1
 ROUGH_HOLE_MARKER = 2
@@ -253,7 +240,6 @@ if __name__ == "__main__":
     
     # Also save in XDMF format
     save_mesh_dolfinx(mesh, facet_markers, "mesh_test")
-    save_mesh_dolfin_legacy(mesh, facet_markers, "mesh_test")  # Legacy DOLFIN
     
     gmsh.finalize()
     
