@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd" []>
+<Xdmf Version="3.0" xmlns:xi="https://www.w3.org/2001/XInclude">
+  <Domain>
+    <Grid Name="Facet tags" GridType="Uniform">
+      <xi:include xpointer="xpointer(Grid)" />
+      <Topology TopologyType="PolyLine" NumberOfElements="628" NodesPerElement="2">
+        <DataItem Dimensions="628 2" NumberType="Int" Format="HDF">mesh_test_boundaries.h5:/MeshTags/Facet tags/topology</DataItem>
+      </Topology>
+      <Attribute Name="Facet tags" AttributeType="Scalar" Center="Cell">
+        <DataItem Dimensions="628 1" Format="HDF">mesh_test_boundaries.h5:/MeshTags/Facet tags/Values</DataItem>
+      </Attribute>
+    </Grid>
+  </Domain>
+</Xdmf>
