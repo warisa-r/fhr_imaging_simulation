@@ -8,7 +8,9 @@ import gmsh
 ### In this file, we solve instead the scatter field ###
 
 # Load mesh
-print("Converting mesh from MSH to XML format...")
+
+# Try to convert mesh to XML format
+print("Converting mesh to XML format...")
 result = subprocess.run(["dolfin-convert", "mesh_test.msh", "mesh_test.xml"], 
                         capture_output=True, text=True)
 mesh = Mesh("mesh_test.xml")
