@@ -20,7 +20,7 @@ def create_circular_mesh_with_rough_hole(outer_radius=2.0, hole_center=(0.0, 0.0
     hole_circumference = 2 * np.pi * hole_radius
     
     num_points_outer = int(outer_circumference / mesh_size)
-    #num_points_hole = int(hole_circumference / mesh_size)
+    #num_points_hole = int(hole_circumference / mesh_size) # makes opt better but more expensive
     num_points_hole = num_points_outer
     
     # Initialize GMSH

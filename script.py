@@ -21,8 +21,8 @@ V_element = FiniteElement("Lagrange", mesh.ufl_cell(), 5)
 V = FunctionSpace(mesh, V_element)
 
 # Parameters
-k_background = 20.0
-x0 = np.array([0.5, -2])  # source location
+k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
+x0 = np.array([0.3, -0.3])  # source location
 
 # Define Hankel-based incident field (real part)
 class HankelReal(UserExpression):
