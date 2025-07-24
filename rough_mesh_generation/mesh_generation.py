@@ -213,7 +213,7 @@ if __name__ == "__main__":
     mesh_points_per_wavelength = 5  # Higher = finer mesh -> We can use quite high order of polynomials to prevent polution
     
     gmsh_model = create_circular_mesh_with_rough_hole(
-        outer_radius=0.5,         # Outer circle radius
+        outer_radius=0.8,         # Outer circle radius
         hole_center=(0.0, 0.0),   # Center of hole
         hole_radius=0.2,          # Base radius of hole
         hole_roughness=0.0,      # Roughness amplitude for hole
@@ -222,7 +222,7 @@ if __name__ == "__main__":
     )
     
     # Save mesh in .msh format
-    save_mesh_msh(gmsh_model, "mesh_test_0.4")
+    save_mesh_msh(gmsh_model, "mesh_test_0.8")
     
     # Convert to DOLFINx mesh for plotting
     mesh, cell_markers, facet_markers = dolfinx.io.gmshio.model_to_mesh(
