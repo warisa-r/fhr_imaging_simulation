@@ -8,9 +8,15 @@ import matplotlib.pyplot as plt
 
 ### In this file, we solve instead the scatter field ###
 
+# Set PETSc options for solver
+parameters["linear_algebra_backend"] = "PETSc"
+PETScOptions.set("ksp_type", "gmres")
+PETScOptions.set("pc_type", "lu")
+PETScOptions.set("pc_factor_mat_solver_type", "mumps")
+
 # Parameters
 k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
-x0 = np.array([0.3, -0.3])  # source location
+x0 = np.array([0.0, -1.0])  # source location
 
 # Define Hankel-based incident field (real part)
 class HankelReal(UserExpression):
