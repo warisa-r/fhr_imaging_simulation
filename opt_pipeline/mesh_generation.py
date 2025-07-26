@@ -69,17 +69,8 @@ def generate_rough_top_mesh(width=4.0, height=2.0, roughness_amplitude=0.02,
     
     # Generate rough top boundary points - Gaussian-localized roughness
     top_points = []
-    center_x = width / 2  # Center of roughness
-    roughness_width = 0.3 * width  # Width of rough region
-
-    for i, x in enumerate(x_coords):
-        # Gaussian envelope for localized roughness
-        distance_from_center = abs(x - center_x)
-        gaussian_envelope = np.exp(-(distance_from_center / (roughness_width / 3))**2)
-        
-        # Apply roughness with Gaussian localization
-        y_rough = height + roughness_amplitude * gaussian_envelope * np.sin(2 * np.pi * roughness_frequency * (x - center_x) / roughness_width)
-        
+    for x in x_coords:
+        y_rough = height + roughness_amplitude * np.sin(2 * np.pi * roughness_frequency * x / width)
         p = gmsh.model.geo.addPoint(x, y_rough, 0, mesh_size)
         top_points.append(p)
     
@@ -160,8 +151,8 @@ if __name__ == "__main__":
     rough_mesh = generate_rough_top_mesh(
         width=1.0, 
         height=1.5, 
-        roughness_amplitude=0.05, 
-        roughness_frequency=1, 
+        roughness_amplitude=0.005, 
+        roughness_frequency=3, 
         mesh_size=mesh_size, 
         output_name="rough_top_mesh"
     )

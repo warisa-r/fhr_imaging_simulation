@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 from mesh_generation import side_wall_marker, bottom_wall_marker, obstacle_marker
 
 k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
-x0 = np.array([0.0, 0.0])  # source location
-incident_wave_amp = 10
+x0 = np.array([0.5, 0.8])  # source location
+incident_wave_amp = 100
 
 # Define Incident-based incident field (real part)
 class IncidentReal(UserExpression):
@@ -133,7 +133,7 @@ def mesh_deformation(h, mesh_local, markers_local):
     bcs0 = [
         DirichletBC(V, Constant(2.0), markers_local, side_wall_marker),
         DirichletBC(V, Constant(1.0), markers_local, bottom_wall_marker),
-        DirichletBC(V, Constant(3.0), markers_local, obstacle_marker),
+        DirichletBC(V, Constant(50.0), markers_local, obstacle_marker),
     ]
     mu = Function(V, name="mu")
     LinearVariationalSolver(LinearVariationalProblem(a, L0, mu, bcs0)).solve()
@@ -222,7 +222,7 @@ def forward_solve(h_control):
     return u_tot_mag, V # return V as target_function_space to use in the interpolating function
 
 ######### Mesh deformation test #######
-
+"""
 np.random.seed(42)  # For reproducibility
 h_random = 2 * (2 * np.random.random(len(h_V.vector()[:])) - 1)  # Random values between -0.02 and 0.02
 print(h_random)
@@ -236,8 +236,15 @@ plot(mesh_copy, color="green", linewidth=1.0)
 plt.title("Random deformation")
 plt.axis("equal")
 #plt.show()
-
+"""
 ######################################
+
+# Initial guess
+h = Function(S_b, name="Design")
+h_vec = h.vector().get_local()
+n = len(h_vec)
+h_vec[:] = 0.0
+h.vector()[:] = h_vec
 
 u_tot_mag_initial, V = forward_solve(h)
 reference_u_mag_func = interpolate_reference_data_to_mesh(reference_data, V)
@@ -255,9 +262,9 @@ Jhat = ReducedFunctional(J, Control(h))
 
 ## Start optimizing ##
 h_opt = minimize(Jhat,
-#                bounds=[-4.0, 4.0],
+                bounds=[-4.0, 4.0],
                 tol=1e-6, 
-                options={"gtol": 1e-6, "maxiter": 2, "disp": True})
+                options={"gtol": 1e-6, "maxiter":50, "disp": True})
 
 # Plot initial mesh
 plt.subplot(1, 2, 1)
