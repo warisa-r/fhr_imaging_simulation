@@ -9,10 +9,11 @@ import os
 import gmsh
 import matplotlib.pyplot as plt
 
-from mesh_generation import domain_boundary_marker, obstacle_marker
+from mesh_generation import side_wall_marker, bottom_wall_marker, obstacle_marker
 
 k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
 x0 = np.array([0.0, 0.0])  # source location
+incident_wave_amp = 100
 
 # Define Hankel-based incident field (real part)
 class HankelReal(UserExpression):
@@ -21,7 +22,7 @@ class HankelReal(UserExpression):
         if r < 1e-12:
             values[0] = 0.0
         else:
-            values[0] = np.real(hankel1(0, k_background * r))
+            values[0] = np.real(incident_wave_amp * hankel1(0, k_background * r))
     def value_shape(self):
         return ()
 
@@ -32,7 +33,7 @@ class HankelImag(UserExpression):
         if r < 1e-12:
             values[0] = 0.0
         else:
-            values[0] = np.imag(hankel1(0, k_background * r))
+            values[0] = np.imag(incident_wave_amp * hankel1(0, k_background * r))
     def value_shape(self):
         return ()
 
@@ -87,13 +88,18 @@ h_V = transfer_from_boundary(h, mesh)
 h_V.rename("Volume extension of h", "")
 
 def mesh_deformation(h, mesh_local, markers_local):
+    #TODO: If we want it to work with this shape we need to modify the BC -> echo data inverse problem paper as
+    # example of modifying the formulation to fit the shape u want to optimize.
+    # The drag minimization restrict all the BC very strictly
+
     V = FunctionSpace(mesh_local, "CG", 1)
     u, v = TrialFunction(V), TestFunction(V)
     a  = inner(grad(u), grad(v)) * dx
     L0 = Constant(0.0) * v * dx
     bcs0 = [
-        DirichletBC(V, Constant(0.1), markers_local, domain_boundary_marker),
-        DirichletBC(V, Constant(1.0), markers_local, obstacle_marker),
+        DirichletBC(V, Constant(10.0), markers_local, side_wall_marker),
+        DirichletBC(V, Constant(1.0), markers_local, bottom_wall_marker),
+        DirichletBC(V, Constant(20.0), markers_local, obstacle_marker),
     ]
     mu = Function(V, name="mu")
     LinearVariationalSolver(LinearVariationalProblem(a, L0, mu, bcs0)).solve()
@@ -112,7 +118,10 @@ def mesh_deformation(h, mesh_local, markers_local):
     a_el = inner(σ(u_vec), grad(v_vec)) * dx
     L_el = inner(h, v_vec) * dObs
 
-    bc_el = [ DirichletBC(S, Constant((0.0, 0.0)), markers_local, domain_boundary_marker) ]
+    #TODO: Only set bottom wall to be (0.0, 0.0), side walls should be only s_x = 0
+    bc_el = [ DirichletBC(S, Constant((0.0, 0.0)), markers_local, bottom_wall_marker),
+              DirichletBC(S.sub(0), Constant(0.0), markers_local, side_wall_marker)
+     ]
     s = Function(S, name="deformation")
     LinearVariationalSolver(LinearVariationalProblem(a_el, L_el, s, bc_el)).solve()
 
@@ -133,9 +142,11 @@ def forward_solve(h_control):
     u_inc_re = project(HankelReal(degree=2), V)
     u_inc_im = project(HankelImag(degree=2), V)
 
-    ds_outer = Measure("ds", domain=mesh_copy,
-                       subdomain_data=markers_copy,
-                       subdomain_id=domain_boundary_marker)
+    ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=bottom_wall_marker)
+    ds_sides = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=side_wall_marker)
+    ds_obstacle = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=obstacle_marker)
+
+    ds_outer = ds_bottom + ds_sides
 
     W = FunctionSpace(mesh_copy, MixedElement([V.ufl_element(),
                                                V.ufl_element()]))
@@ -148,7 +159,7 @@ def forward_solve(h_control):
 
     L = Constant(0.0)*(v_re + v_im)*dx
 
-    # Dirichlet BCs on the obstacle (all built on mesh_copy & markers_copy!)
+    # Dirichlet BCs on the obstacle u_s = - u_in on the reflective surface
     uinc_re_neg = Function(V); uinc_re_neg.vector()[:] = -u_inc_re.vector()[:]
     uinc_im_neg = Function(V); uinc_im_neg.vector()[:] = -u_inc_im.vector()[:]
 
@@ -230,9 +241,23 @@ print(f"Initial cost: {float(J):.6e}")
 
 # Create ReducedFunctional
 Jhat = ReducedFunctional(J, Control(h))
-s_opt = minimize(Jhat,
+
+## Start optimizing ##
+
+bound_value = 4.0
+
+# Create bounds as arrays, not Functions
+n_dofs = h.vector().size()
+lb_array = np.full(n_dofs, -bound_value)
+ub_array = np.full(n_dofs, bound_value)
+
+print(f"Setting design variable bounds: [{-bound_value}, {bound_value}]")
+print(f"Number of design variables: {n_dofs}")
+
+# Run optimization with bounds as tuples of arrays
+h_opt = minimize(Jhat,
                 tol=1e-6, 
-                options={"gtol": 1e-6, "maxiter": 50, "disp": True})
+                options={"gtol": 1e-6, "maxiter": 2, "disp": True})
 
 plt.figure(figsize=(12, 5))
 
@@ -245,31 +270,31 @@ plt.axis("equal")
 
 # Apply optimal design and plot
 plt.subplot(1, 2, 2)
-print(f"Applying optimal design with max displacement: {np.max(np.abs(s_opt.vector().get_local())):.6e}")
+print(f"Applying optimal design with max displacement: {np.max(np.abs(h_opt.vector().get_local())):.6e}")
 
 # Apply optimal design to the mesh (you must do this yourself!)
 mesh_copy = Mesh(mesh)  # Copy again to preserve original
 boundary_markers_copy = MeshFunction("size_t", mesh_copy, f"rectangle_mesh_facet_region.xml")
 
 # Transfer optimal boundary control to volume
-s_opt_volume = transfer_from_boundary(s_opt, mesh_copy)
+h_opt_volume = transfer_from_boundary(h_opt, mesh_copy)
 
 # Recompute the mesh deformation
-s_final = mesh_deformation(s_opt_volume, mesh_copy, boundary_markers_copy)
+s_final = mesh_deformation(h_opt_volume, mesh_copy, boundary_markers_copy)
 ALE.move(mesh_copy, s_final)  # Move the mesh using the final deformation
 
 # Now plot it
 plot(mesh_copy, color="r", linewidth=0.5)
 
 # Check if optimization actually changed anything
-if np.max(np.abs(s_opt.vector().get_local())) < 1e-10:
+if np.max(np.abs(h_opt.vector().get_local())) < 1e-10:
     print("Warning: Optimal design shows no significant change!")
     print("This might indicate:")
     print("  - Optimization converged to initial guess")
     print("  - Cost function gradient is zero")
     print("  - Bounds are too restrictive")
 else:
-    print(f"✓ Optimization found non-trivial design with max displacement: {np.max(np.abs(s_opt.vector().get_local())):.6e}")
+    print(f"✓ Optimization found non-trivial design with max displacement: {np.max(np.abs(h_opt.vector().get_local())):.6e}")
 
 plt.tight_layout()
 plt.savefig("meshes_comparison.png", dpi=300, bbox_inches="tight")
@@ -278,12 +303,12 @@ plt.show()
 # Print optimization summary
 print("\n=== Optimization Summary ===")
 print(f"Initial design: all zeros")
-print(f"Optimal design range: [{np.min(s_opt.vector().get_local()):.6e}, {np.max(s_opt.vector().get_local()):.6e}]")
-print(f"Max displacement: {np.max(np.abs(s_opt.vector().get_local())):.6e}")
+print(f"Optimal design range: [{np.min(h_opt.vector().get_local()):.6e}, {np.max(h_opt.vector().get_local()):.6e}]")
+print(f"Max displacement: {np.max(np.abs(h_opt.vector().get_local())):.6e}")
 
 # Evaluate costs
 initial_cost = float(Jhat(h))
-optimal_cost = float(Jhat(s_opt))
+optimal_cost = float(Jhat(h_opt))
 print(f"Initial cost: {initial_cost:.6e}")
 print(f"Optimal cost: {optimal_cost:.6e}")
 print(f"Cost reduction: {initial_cost - optimal_cost:.6e}")

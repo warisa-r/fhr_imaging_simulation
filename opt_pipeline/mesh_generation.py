@@ -2,8 +2,9 @@ import gmsh
 import numpy as np
 import os
 
-obstacle_marker = 2
-domain_boundary_marker = 1
+obstacle_marker = 3        # Top boundary (obstacle)
+bottom_wall_marker = 1     # Bottom wall only
+side_wall_marker = 2       # Left and right walls
 
 def generate_rectangle_mesh(width=5.0, height=2.0, mesh_size=0.1, output_name="rectangle_mesh"):
     # Initialize gmsh
@@ -20,10 +21,10 @@ def generate_rectangle_mesh(width=5.0, height=2.0, mesh_size=0.1, output_name="r
     p4 = gmsh.model.geo.addPoint(0, height, 0, mesh_size)   # Top-left
     
     # Create lines
-    bottom = gmsh.model.geo.addLine(p1, p2)
-    right = gmsh.model.geo.addLine(p2, p3)
-    top = gmsh.model.geo.addLine(p3, p4)
-    left = gmsh.model.geo.addLine(p4, p1)
+    bottom = gmsh.model.geo.addLine(p1, p2)  # Bottom wall
+    right = gmsh.model.geo.addLine(p2, p3)   # Right wall
+    top = gmsh.model.geo.addLine(p3, p4)     # Top wall (obstacle)
+    left = gmsh.model.geo.addLine(p4, p1)    # Left wall
     
     # Create curve loop and surface
     curve_loop = gmsh.model.geo.addCurveLoop([bottom, right, top, left])
@@ -32,10 +33,11 @@ def generate_rectangle_mesh(width=5.0, height=2.0, mesh_size=0.1, output_name="r
     # Synchronize
     gmsh.model.geo.synchronize()
     
-    # Add physical groups for boundary markers
-    gmsh.model.addPhysicalGroup(1, [top], obstacle_marker, "top_boundary")      # Top boundary: marker 1
-    gmsh.model.addPhysicalGroup(1, [bottom, right, left], domain_boundary_marker, "other_boundaries")  # Others: marker 2
-    gmsh.model.addPhysicalGroup(2, [surface], 3, "domain")        # Domain
+    # Add physical groups with separate markers
+    gmsh.model.addPhysicalGroup(1, [top], obstacle_marker, "top_boundary")           # Top: marker 3
+    gmsh.model.addPhysicalGroup(1, [bottom], bottom_wall_marker, "bottom_wall")      # Bottom: marker 1
+    gmsh.model.addPhysicalGroup(1, [right, left], side_wall_marker, "side_walls")    # Sides: marker 2
+    gmsh.model.addPhysicalGroup(2, [surface], 4, "domain")                          # Domain: marker 4
     
     # Generate mesh
     gmsh.model.mesh.generate(2)
@@ -65,19 +67,27 @@ def generate_rough_top_mesh(width=4.0, height=2.0, roughness_amplitude=0.02,
     n_points_top = max(20, int(width / mesh_size * 2))  # Ensure enough points for smooth curve
     x_coords = np.linspace(0, width, n_points_top)
     
-    # Generate rough top boundary points
+    # Generate rough top boundary points - Gaussian-localized roughness
     top_points = []
+    center_x = width / 2  # Center of roughness
+    roughness_width = 0.3 * width  # Width of rough region
+
     for i, x in enumerate(x_coords):
-        # Smooth sinusoidal roughness
-        y_rough = height + roughness_amplitude * np.sin(2 * np.pi * roughness_frequency * x / width)
+        # Gaussian envelope for localized roughness
+        distance_from_center = abs(x - center_x)
+        gaussian_envelope = np.exp(-(distance_from_center / (roughness_width / 3))**2)
+        
+        # Apply roughness with Gaussian localization
+        y_rough = height + roughness_amplitude * gaussian_envelope * np.sin(2 * np.pi * roughness_frequency * (x - center_x) / roughness_width)
+        
         p = gmsh.model.geo.addPoint(x, y_rough, 0, mesh_size)
         top_points.append(p)
     
     # Create lines for boundaries (following counterclockwise orientation)
-    bottom = gmsh.model.geo.addLine(p1, p2)                    # Bottom: left to right
-    right = gmsh.model.geo.addLine(p2, top_points[-1])         # Right: bottom to top
+    bottom = gmsh.model.geo.addLine(p1, p2)                    # Bottom wall
+    right = gmsh.model.geo.addLine(p2, top_points[-1])         # Right wall
     top_rough = gmsh.model.geo.addSpline(top_points[::-1])     # Top: right to left (reversed)
-    left = gmsh.model.geo.addLine(top_points[0], p1)           # Left: top to bottom
+    left = gmsh.model.geo.addLine(top_points[0], p1)           # Left wall
     
     # Create curve loop and surface (counterclockwise orientation)
     curve_loop = gmsh.model.geo.addCurveLoop([bottom, right, top_rough, left])
@@ -86,17 +96,20 @@ def generate_rough_top_mesh(width=4.0, height=2.0, roughness_amplitude=0.02,
     # Synchronize
     gmsh.model.geo.synchronize()
     
-    # Add physical groups for boundary markers
-    gmsh.model.addPhysicalGroup(1, [top_rough], obstacle_marker, "rough_top_boundary")  # Rough top: marker 2
-    gmsh.model.addPhysicalGroup(1, [bottom, right, left], domain_boundary_marker, "other_boundaries")  # Others: marker 1
-    gmsh.model.addPhysicalGroup(2, [surface], 3, "domain")                # Domain
-    
+    # Add physical groups with separate markers
+    gmsh.model.addPhysicalGroup(1, [top_rough], obstacle_marker, "rough_top_boundary")  # Top: marker 3
+    gmsh.model.addPhysicalGroup(1, [bottom], bottom_wall_marker, "bottom_wall")         # Bottom: marker 1
+    gmsh.model.addPhysicalGroup(1, [right, left], side_wall_marker, "side_walls")       # Sides: marker 2
+    gmsh.model.addPhysicalGroup(2, [surface], 4, "domain")                             # Domain: marker 4
+
     # Generate mesh
     gmsh.model.mesh.generate(2)
     gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
     
     # Write mesh files
     gmsh.write(f"{output_name}.msh")
+    # Clean up
+    gmsh.finalize()
 
     return f"{output_name}.msh"
 
@@ -152,3 +165,14 @@ if __name__ == "__main__":
         mesh_size=mesh_size, 
         output_name="rough_top_mesh"
     )
+    
+    # Convert both to XML
+    print("Converting meshes to XML...")
+    convert_to_xml(rect_mesh)
+    convert_to_xml(rough_mesh)
+    
+    print("\nBoundary markers:")
+    print(f"  Bottom wall: {bottom_wall_marker}")
+    print(f"  Side walls: {side_wall_marker}")
+    print(f"  Top boundary (obstacle): {obstacle_marker}")
+    print(f"  Domain: 4")

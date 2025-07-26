@@ -1,7 +1,7 @@
 {
   "k_background": 104.79225109758409,
-  "num_vertices": 12516,
-  "num_cells": 24608,
+  "num_vertices": 12537,
+  "num_cells": 24649,
   "function_space_degree": 5,
   "description": "Forward simulation results for inverse problem"
 }

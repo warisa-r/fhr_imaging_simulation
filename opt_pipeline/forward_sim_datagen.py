@@ -7,11 +7,12 @@ import json
 import gmsh
 import matplotlib.pyplot as plt
 
-from mesh_generation import domain_boundary_marker, obstacle_marker
+from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
 
 k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
 x0 = np.array([0.5, -1.0])  # source location
 
+incident_wave_amp = 100.0
 # Define Hankel-based incident field (real part)
 class HankelReal(UserExpression):
     def eval(self, values, x):
@@ -19,7 +20,7 @@ class HankelReal(UserExpression):
         if r < 1e-12:
             values[0] = 0.0
         else:
-            values[0] = np.real(hankel1(0, k_background * r))
+            values[0] = np.real(incident_wave_amp * hankel1(0, k_background * r))
     def value_shape(self):
         return ()
 
@@ -30,7 +31,7 @@ class HankelImag(UserExpression):
         if r < 1e-12:
             values[0] = 0.0
         else:
-            values[0] = np.imag(hankel1(0, k_background * r))
+            values[0] = np.imag(incident_wave_amp * hankel1(0, k_background * r))
     def value_shape(self):
         return ()
 
@@ -55,9 +56,11 @@ u_inc_im = project(HankelImag(degree=2), V)
 # Define the outward unit normal vector
 n = FacetNormal(mesh)
 
-# Define boundary measures
-ds_outer = Measure("ds", domain=mesh, subdomain_data=boundary_markers, subdomain_id=domain_boundary_marker)
+ds_bottom = Measure("ds", domain=mesh, subdomain_data=boundary_markers, subdomain_id=bottom_wall_marker)
+ds_sides = Measure("ds", domain=mesh, subdomain_data=boundary_markers, subdomain_id=side_wall_marker)
 ds_obstacle = Measure("ds", domain=mesh, subdomain_data=boundary_markers, subdomain_id=obstacle_marker)
+
+ds_outer = ds_bottom + ds_sides
 
 # Define mixed function space
 W = FunctionSpace(mesh, V_element * V_element)
