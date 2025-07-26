@@ -10,28 +10,28 @@ import matplotlib.pyplot as plt
 from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
 
 k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
-x0 = np.array([0.5, -1.0])  # source location
+x0 = np.array([0.0, 0.0])  # source location
 
-incident_wave_amp = 100.0
-# Define Hankel-based incident field (real part)
-class HankelReal(UserExpression):
+incident_wave_amp = 10.0
+# Define Incident-based incident field (real part)
+class IncidentReal(UserExpression):
     def eval(self, values, x):
         r = np.linalg.norm(x - x0)
         if r < 1e-12:
             values[0] = 0.0
         else:
-            values[0] = np.real(incident_wave_amp * hankel1(0, k_background * r))
+            values[0] = np.real(- 0.25* 1j * incident_wave_amp * hankel1(0, k_background * r))
     def value_shape(self):
         return ()
 
-# Define Hankel-based incident field (imaginary part)
-class HankelImag(UserExpression):
+# Define Incident-based incident field (imaginary part)
+class IncidentImag(UserExpression):
     def eval(self, values, x):
         r = np.linalg.norm(x - x0)
         if r < 1e-12:
             values[0] = 0.0
         else:
-            values[0] = np.imag(incident_wave_amp * hankel1(0, k_background * r))
+            values[0] = np.imag(- 0.25* 1j * incident_wave_amp * hankel1(0, k_background * r))
     def value_shape(self):
         return ()
 
@@ -50,8 +50,8 @@ V_element = FiniteElement("Lagrange", mesh.ufl_cell(), 5)
 V = FunctionSpace(mesh, V_element)
 
 # Instantiate expressions
-u_inc_re = project(HankelReal(degree=2), V)
-u_inc_im = project(HankelImag(degree=2), V)
+u_inc_re = project(IncidentReal(degree=2), V)
+u_inc_im = project(IncidentImag(degree=2), V)
 
 # Define the outward unit normal vector
 n = FacetNormal(mesh)
@@ -103,20 +103,33 @@ u_tot_im.vector()[:] = u_inc_im.vector()[:] + u_sol_im_proj.vector()[:]
 u_tot_mag = Function(V)
 u_tot_mag.vector()[:] = np.sqrt(u_tot_re.vector().get_local()**2 + u_tot_im.vector().get_local()**2)
 
-simulation_data = {
-    'coordinates': mesh.coordinates(),
-    'cells': mesh.cells(),
-    'u_total_real': u_tot_re.vector().get_local(),
-    'u_total_imag': u_tot_im.vector().get_local(),
-    'u_total_magnitude': u_tot_mag.vector().get_local(),
-    'u_scattered_real': u_sol_re_proj.vector().get_local(),
-    'u_scattered_imag': u_sol_im_proj.vector().get_local(),
-    'u_incident_real': u_inc_re.vector().get_local(),
-    'u_incident_imag': u_inc_im.vector().get_local(),
-    'k_background': k_background,
-}
+import pandas as pd
 
-np.savez_compressed(f"forward_sim_data.npz", **simulation_data)
+coords = V.tabulate_dof_coordinates().reshape((-1, mesh.geometry().dim()))
+values = u_tot_mag.vector().get_local()
+assert coords.shape[0] == values.shape[0]
+simulation_df = pd.DataFrame({
+    "x": coords[:,0],
+    "y": coords[:,1],
+    "u_total_magnitude": values
+})
+
+### Check saved data integrity
+
+#print(simulation_df.head())
+#plt.figure(figsize=(6, 5))
+#plt.scatter(simulation_df['x'], simulation_df['y'], c=simulation_df['u_total_magnitude'], cmap='viridis', s=10)
+#plt.colorbar(label='|u_total|')
+#plt.xlabel('x')
+#plt.ylabel('y')
+#plt.title('Total Field Magnitude |u_total|')
+#plt.axis('equal')
+#plt.tight_layout()
+#plt.show()
+##############################
+
+# Save the data 
+simulation_df.to_csv("forward_sim_data.csv", index=False)
 
 metadata = {
     'k_background': float(k_background),

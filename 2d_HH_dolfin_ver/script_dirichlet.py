@@ -32,31 +32,31 @@ V = FunctionSpace(mesh, V_element)
 k_background = 20.0
 x0 = np.array([0.5, -2])  # source location
 
-# Define Hankel-based incident field (real part)
-class HankelReal(UserExpression):
+# Define Incident-based incident field (real part)
+class IncidentReal(UserExpression):
     def eval(self, values, x):
         r = np.linalg.norm(x - x0)
         if r < 1e-12:
             values[0] = 0.0
         else:
-            values[0] = np.real(hankel1(0, k_background * r))
+            values[0] = np.real(-0.25 * 1j *hankel1(0, k_background * r))
     def value_shape(self):
         return ()
 
-# Define Hankel-based incident field (imaginary part)
-class HankelImag(UserExpression):
+# Define Incident-based incident field (imaginary part)
+class IncidentImag(UserExpression):
     def eval(self, values, x):
         r = np.linalg.norm(x - x0)
         if r < 1e-12:
             values[0] = 0.0
         else:
-            values[0] = np.imag(hankel1(0, k_background * r))
+            values[0] = np.imag(-0.25 * 1j *hankel1(0, k_background * r))
     def value_shape(self):
         return ()
 
 # Instantiate expressions
-u_inc_re = project(HankelReal(degree=2), V)
-u_inc_im = project(HankelImag(degree=2), V)
+u_inc_re = project(IncidentReal(degree=2), V)
+u_inc_im = project(IncidentImag(degree=2), V)
 
 # Define the outward unit normal vector
 n = FacetNormal(mesh)

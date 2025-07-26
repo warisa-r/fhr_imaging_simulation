@@ -13,51 +13,88 @@ from mesh_generation import side_wall_marker, bottom_wall_marker, obstacle_marke
 
 k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
 x0 = np.array([0.0, 0.0])  # source location
-incident_wave_amp = 100
+incident_wave_amp = 10
 
-# Define Hankel-based incident field (real part)
-class HankelReal(UserExpression):
+# Define Incident-based incident field (real part)
+class IncidentReal(UserExpression):
     def eval(self, values, x):
         r = np.linalg.norm(x - x0)
         if r < 1e-12:
             values[0] = 0.0
         else:
-            values[0] = np.real(incident_wave_amp * hankel1(0, k_background * r))
+            values[0] = np.real(- 0.25* 1j * incident_wave_amp * hankel1(0, k_background * r))
     def value_shape(self):
         return ()
 
-# Define Hankel-based incident field (imaginary part)
-class HankelImag(UserExpression):
+# Define Incident-based incident field (imaginary part)
+class IncidentImag(UserExpression):
     def eval(self, values, x):
         r = np.linalg.norm(x - x0)
         if r < 1e-12:
             values[0] = 0.0
         else:
-            values[0] = np.imag(incident_wave_amp * hankel1(0, k_background * r))
+            values[0] = np.imag(- 0.25* 1j * incident_wave_amp * hankel1(0, k_background * r))
     def value_shape(self):
         return ()
 
 def load_forward_simulation_data():
+    import pandas as pd
+    try:
+        # Load the simple CSV data
+        df = pd.read_csv("forward_sim_data.csv")
+        
+        print(f"Loaded reference data from CSV:")
+        print(f"  Data points: {len(df)}")
+        print(f"  Columns: {list(df.columns)}")
+        print(f"  Coordinate range: x=[{df.x.min():.3f}, {df.x.max():.3f}], y=[{df.y.min():.3f}, {df.y.max():.3f}]")
+        print(f"  Field range: u_mag=[{df.u_total_magnitude.min():.6e}, {df.u_total_magnitude.max():.6e}]")
+        
+        # Return dictionary matching your simple format
+        reference_data = {
+            'coordinates': df[['x', 'y']].values,
+            'u_total_magnitude': df['u_total_magnitude'].values
+        }
+        
+        return reference_data
+        
+    except FileNotFoundError:
+        print("Error: forward_sim_data.csv not found")
+        print("Please run forward_sim_datagen.py first")
+        return None
+    except Exception as e:
+        print(f"Error loading CSV data: {e}")
+        return None
+
+def interpolate_reference_data_to_mesh(reference_data, target_function_space):
+    from scipy.spatial import cKDTree
     
-    # Load NumPy data
-    data = np.load(f"forward_sim_data.npz")
+    # Get reference coordinates and field values
+    ref_coords = reference_data['coordinates']
+    ref_field = reference_data['u_total_magnitude']
     
-    # Load metadata
-    with open(f"forward_sim_metadata.json", 'r') as f:
-        metadata = json.load(f)
+    print(f"Interpolation info:")
+    print(f"  Reference data points: {len(ref_coords)}")
+    print(f"  Reference field range: [{np.min(ref_field):.6e}, {np.max(ref_field):.6e}]")
     
-    return {
-        'coordinates': data['coordinates'],
-        'cells': data['cells'],
-        'u_total_real': data['u_total_real'],
-        'u_total_imag': data['u_total_imag'],
-        'u_total_magnitude': data['u_total_magnitude'],
-        'u_scattered_real': data['u_scattered_real'],
-        'u_scattered_imag': data['u_scattered_imag'],
-        'u_incident_real': data['u_incident_real'],
-        'u_incident_imag': data['u_incident_imag'],
-        'metadata': metadata
-    }
+    # Get current mesh DOF coordinates
+    current_coords = target_function_space.tabulate_dof_coordinates()
+    print(f"  Target mesh DOF points: {len(current_coords)}")
+    print(f"  Target coordinate range: x=[{current_coords[:, 0].min():.3f}, {current_coords[:, 0].max():.3f}], y=[{current_coords[:, 1].min():.3f}, {current_coords[:, 1].max():.3f}]")
+    
+    # Build KDTree for fast nearest neighbor search
+    tree = cKDTree(ref_coords)
+    
+    # Find nearest neighbors for each current coordinate
+    distances, indices = tree.query(current_coords, k=1)
+    
+    # Create interpolated values by taking nearest neighbor values
+    interpolated_values = ref_field[indices]
+    
+    # Create function and assign interpolated values
+    reference_func = Function(target_function_space)
+    reference_func.vector()[:] = interpolated_values
+    
+    return reference_func
 
 # Try to convert the mesh 
 print(f"Converting rectangle_mesh to XML format...")
@@ -88,18 +125,15 @@ h_V = transfer_from_boundary(h, mesh)
 h_V.rename("Volume extension of h", "")
 
 def mesh_deformation(h, mesh_local, markers_local):
-    #TODO: If we want it to work with this shape we need to modify the BC -> echo data inverse problem paper as
-    # example of modifying the formulation to fit the shape u want to optimize.
-    # The drag minimization restrict all the BC very strictly
 
     V = FunctionSpace(mesh_local, "CG", 1)
     u, v = TrialFunction(V), TestFunction(V)
     a  = inner(grad(u), grad(v)) * dx
     L0 = Constant(0.0) * v * dx
     bcs0 = [
-        DirichletBC(V, Constant(10.0), markers_local, side_wall_marker),
+        DirichletBC(V, Constant(2.0), markers_local, side_wall_marker),
         DirichletBC(V, Constant(1.0), markers_local, bottom_wall_marker),
-        DirichletBC(V, Constant(20.0), markers_local, obstacle_marker),
+        DirichletBC(V, Constant(3.0), markers_local, obstacle_marker),
     ]
     mu = Function(V, name="mu")
     LinearVariationalSolver(LinearVariationalProblem(a, L0, mu, bcs0)).solve()
@@ -118,9 +152,8 @@ def mesh_deformation(h, mesh_local, markers_local):
     a_el = inner(σ(u_vec), grad(v_vec)) * dx
     L_el = inner(h, v_vec) * dObs
 
-    #TODO: Only set bottom wall to be (0.0, 0.0), side walls should be only s_x = 0
     bc_el = [ DirichletBC(S, Constant((0.0, 0.0)), markers_local, bottom_wall_marker),
-              DirichletBC(S.sub(0), Constant(0.0), markers_local, side_wall_marker)
+              DirichletBC(S, Constant((0.0, 0.0)), markers_local, side_wall_marker)
      ]
     s = Function(S, name="deformation")
     LinearVariationalSolver(LinearVariationalProblem(a_el, L_el, s, bc_el)).solve()
@@ -139,8 +172,8 @@ def forward_solve(h_control):
 
     # 3) Now build your forward Helmholtz solve entirely on mesh_copy
     V = FunctionSpace(mesh_copy, "CG", 5)
-    u_inc_re = project(HankelReal(degree=2), V)
-    u_inc_im = project(HankelImag(degree=2), V)
+    u_inc_re = project(IncidentReal(degree=2), V)
+    u_inc_im = project(IncidentImag(degree=2), V)
 
     ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=bottom_wall_marker)
     ds_sides = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=side_wall_marker)
@@ -188,32 +221,6 @@ def forward_solve(h_control):
     
     return u_tot_mag, V # return V as target_function_space to use in the interpolating function
 
-def interpolate_reference_data_to_mesh(reference_data, target_function_space):
-    from scipy.spatial import cKDTree
-    
-    # Get reference coordinates and field values
-    ref_coords = reference_data['coordinates']
-    ref_field = reference_data['u_total_magnitude']
-    
-    # Get current mesh coordinates
-    current_coords = target_function_space.tabulate_dof_coordinates()
-    
-    # Build KDTree for fast nearest neighbor search
-    tree = cKDTree(ref_coords)
-    
-    # Find nearest neighbors for each current coordinate
-    distances, indices = tree.query(current_coords, k=1)
-    
-    # Create interpolated values by taking nearest neighbor values
-    interpolated_values = ref_field[indices]
-    
-    # Create function and assign interpolated values
-    reference_func = Function(target_function_space)
-    reference_func.vector()[:] = interpolated_values
-    
-    return reference_func
-
-
 ######### Mesh deformation test #######
 
 np.random.seed(42)  # For reproducibility
@@ -235,31 +242,22 @@ plt.axis("equal")
 u_tot_mag_initial, V = forward_solve(h)
 reference_u_mag_func = interpolate_reference_data_to_mesh(reference_data, V)
 
-# Create the functional directly
-J = assemble((u_tot_mag_initial - reference_u_mag_func)**2 * dx)
-print(f"Initial cost: {float(J):.6e}")
+# Assemble data fitting term
+boundary_markers_V = MeshFunction("size_t", V.mesh(), f"rectangle_mesh_facet_region.xml")
+ds_obstacle = Measure("ds", domain=V.mesh(), subdomain_data=boundary_markers_V, subdomain_id=obstacle_marker)
+J = assemble((u_tot_mag_initial - reference_u_mag_func)**2 * ds_obstacle)
 
+dx = Measure("dx", domain=V.mesh())
+#domain_area = assemble(1.0 * dx)
+#J = assemble((u_tot_mag_initial - reference_u_mag_func)**2 * dx) / domain_area
 # Create ReducedFunctional
 Jhat = ReducedFunctional(J, Control(h))
 
 ## Start optimizing ##
-
-bound_value = 4.0
-
-# Create bounds as arrays, not Functions
-n_dofs = h.vector().size()
-lb_array = np.full(n_dofs, -bound_value)
-ub_array = np.full(n_dofs, bound_value)
-
-print(f"Setting design variable bounds: [{-bound_value}, {bound_value}]")
-print(f"Number of design variables: {n_dofs}")
-
-# Run optimization with bounds as tuples of arrays
 h_opt = minimize(Jhat,
+#                bounds=[-4.0, 4.0],
                 tol=1e-6, 
                 options={"gtol": 1e-6, "maxiter": 2, "disp": True})
-
-plt.figure(figsize=(12, 5))
 
 # Plot initial mesh
 plt.subplot(1, 2, 1)
@@ -305,12 +303,3 @@ print("\n=== Optimization Summary ===")
 print(f"Initial design: all zeros")
 print(f"Optimal design range: [{np.min(h_opt.vector().get_local()):.6e}, {np.max(h_opt.vector().get_local()):.6e}]")
 print(f"Max displacement: {np.max(np.abs(h_opt.vector().get_local())):.6e}")
-
-# Evaluate costs
-initial_cost = float(Jhat(h))
-optimal_cost = float(Jhat(h_opt))
-print(f"Initial cost: {initial_cost:.6e}")
-print(f"Optimal cost: {optimal_cost:.6e}")
-print(f"Cost reduction: {initial_cost - optimal_cost:.6e}")
-if initial_cost > 0:
-    print(f"Relative improvement: {(initial_cost - optimal_cost)/initial_cost*100:.2f}%")

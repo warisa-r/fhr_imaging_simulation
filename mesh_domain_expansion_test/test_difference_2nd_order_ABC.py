@@ -6,8 +6,8 @@
     V = FunctionSpace(mesh, V_element)
 
     # Instantiate expressions
-    u_inc_re = project(HankelReal(degree=2), V)
-    u_inc_im = project(HankelImag(degree=2), V)
+    u_inc_re = project(IncidentReal(degree=2), V)
+    u_inc_im = project(IncidentImag(degree=2), V)
 
     # Define the outward unit normal vector
     n = FacetNormal(mesh)
