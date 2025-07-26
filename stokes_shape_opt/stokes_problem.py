@@ -189,7 +189,6 @@ def mesh_deformation(h):
 # We compute the mesh deformation with the volume extension of the control
 # variable :math:`h` and move the domain.
 
-
 s = mesh_deformation(h_V)
 ALE.move(mesh, s)
 
