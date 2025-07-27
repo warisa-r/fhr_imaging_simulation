@@ -151,8 +151,8 @@ if __name__ == "__main__":
     rough_mesh = generate_rough_top_mesh(
         width=1.0, 
         height=1.5, 
-        roughness_amplitude=0.005, 
-        roughness_frequency=3, 
+        roughness_amplitude=0.01, 
+        roughness_frequency=5, 
         mesh_size=mesh_size, 
         output_name="rough_top_mesh"
     )

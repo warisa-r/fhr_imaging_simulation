@@ -65,35 +65,32 @@ def load_forward_simulation_data():
         print(f"Error loading CSV data: {e}")
         return None
 
-def interpolate_reference_data_to_mesh(reference_data, target_function_space):
+def interpolate_reference_data_to_mesh(reference_data, target_function_space, max_distance=0.1):
     from scipy.spatial import cKDTree
-    
+
     # Get reference coordinates and field values
     ref_coords = reference_data['coordinates']
     ref_field = reference_data['u_total_magnitude']
-    
-    print(f"Interpolation info:")
-    print(f"  Reference data points: {len(ref_coords)}")
-    print(f"  Reference field range: [{np.min(ref_field):.6e}, {np.max(ref_field):.6e}]")
-    
+
     # Get current mesh DOF coordinates
     current_coords = target_function_space.tabulate_dof_coordinates()
-    print(f"  Target mesh DOF points: {len(current_coords)}")
-    print(f"  Target coordinate range: x=[{current_coords[:, 0].min():.3f}, {current_coords[:, 0].max():.3f}], y=[{current_coords[:, 1].min():.3f}, {current_coords[:, 1].max():.3f}]")
-    
+
     # Build KDTree for fast nearest neighbor search
     tree = cKDTree(ref_coords)
-    
+
     # Find nearest neighbors for each current coordinate
     distances, indices = tree.query(current_coords, k=1)
-    
+
     # Create interpolated values by taking nearest neighbor values
     interpolated_values = ref_field[indices]
-    
+
+    # Assign zero where distance > max_distance
+    interpolated_values[distances > max_distance] = 0.0
+
     # Create function and assign interpolated values
     reference_func = Function(target_function_space)
     reference_func.vector()[:] = interpolated_values
-    
+
     return reference_func
 
 # Try to convert the mesh 
@@ -240,12 +237,29 @@ plt.axis("equal")
 ######################################
 
 # Initial guess
-h = Function(S_b, name="Design")
-h_vec = h.vector().get_local()
-n = len(h_vec)
-h_vec[:] = 0.0
-h.vector()[:] = h_vec
+import os
+from dolfin import HDF5File, MPI
 
+h = Function(S_b, name="Design")
+checkpoint_file = "h_checkpoint.h5"
+iteration = 0
+
+if os.path.exists(checkpoint_file):
+    with HDF5File(MPI.comm_world, checkpoint_file, "r") as h5f:
+        h5f.read(h, "/h_opt")
+        # Try to read iteration number attribute
+        try:
+            iteration = h5f.attributes("/h_opt")["iteration"]
+        except Exception:
+            iteration = 0
+    print(f"Loaded checkpoint from h_checkpoint.h5 (iteration {iteration})")
+else:
+    h_vec = h.vector().get_local()
+    h_vec[:] = 0.0
+    h.vector()[:] = h_vec
+    print("No checkpoint found, starting from zero initial guess")
+
+num_iterations = 2
 u_tot_mag_initial, V = forward_solve(h)
 reference_u_mag_func = interpolate_reference_data_to_mesh(reference_data, V)
 
@@ -262,9 +276,17 @@ Jhat = ReducedFunctional(J, Control(h))
 
 ## Start optimizing ##
 h_opt = minimize(Jhat,
-                bounds=[-4.0, 4.0],
+#                bounds=[-7.0, 7.0],
                 tol=1e-6, 
-                options={"gtol": 1e-6, "maxiter":50, "disp": True})
+                options={"gtol": 1e-6, "maxiter": num_iterations, "disp": True})
+
+# Save the current checkpoint
+iteration += num_iterations
+
+with HDF5File(MPI.comm_world, checkpoint_file, "w") as h5f:
+    h5f.write(h_opt, "/h_opt")
+    h5f.attributes("/h_opt")["iteration"] = iteration
+print(f"Checkpoint saved to h_checkpoint.h5 (iteration {iteration})")
 
 # Plot initial mesh
 plt.subplot(1, 2, 1)
@@ -302,7 +324,7 @@ else:
     print(f"✓ Optimization found non-trivial design with max displacement: {np.max(np.abs(h_opt.vector().get_local())):.6e}")
 
 plt.tight_layout()
-plt.savefig("meshes_comparison.png", dpi=300, bbox_inches="tight")
+plt.savefig(f"meshes_comparison_{iterations}.png", dpi=300, bbox_inches="tight")
 plt.show()
 
 # Print optimization summary
