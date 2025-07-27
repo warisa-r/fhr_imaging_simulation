@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
 
-k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
+k_background = 2* np.pi * 10e9 / 299792458 # 2pi f / c
 x0 = np.array([0.5, 0.8])  # source location
 
 incident_wave_amp = 100.0
@@ -20,7 +20,7 @@ class IncidentReal(UserExpression):
         if r < 1e-12:
             values[0] = 0.0
         else:
-            values[0] = np.real(- 0.25* 1j * incident_wave_amp * hankel1(0, k_background * r))
+            values[0] = np.real(incident_wave_amp * np.exp(1j * k_background * x[1]))
     def value_shape(self):
         return ()
 
@@ -31,7 +31,7 @@ class IncidentImag(UserExpression):
         if r < 1e-12:
             values[0] = 0.0
         else:
-            values[0] = np.imag(- 0.25* 1j * incident_wave_amp * hankel1(0, k_background * r))
+            values[0] = np.imag(incident_wave_amp * np.exp(1j * k_background * x[1]))
     def value_shape(self):
         return ()
 

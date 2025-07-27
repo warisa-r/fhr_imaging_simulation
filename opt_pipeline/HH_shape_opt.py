@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 from mesh_generation import side_wall_marker, bottom_wall_marker, obstacle_marker
 
-k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
+k_background = 2* np.pi * 10e9 / 299792458 # 2pi f / c
 x0 = np.array([0.5, 0.8])  # source location
 incident_wave_amp = 100
 
@@ -22,7 +22,7 @@ class IncidentReal(UserExpression):
         if r < 1e-12:
             values[0] = 0.0
         else:
-            values[0] = np.real(- 0.25* 1j * incident_wave_amp * hankel1(0, k_background * r))
+            values[0] = np.real(incident_wave_amp * np.exp(1j * k_background * x[1]))
     def value_shape(self):
         return ()
 
@@ -33,7 +33,7 @@ class IncidentImag(UserExpression):
         if r < 1e-12:
             values[0] = 0.0
         else:
-            values[0] = np.imag(- 0.25* 1j * incident_wave_amp * hankel1(0, k_background * r))
+            values[0] = np.imag(incident_wave_amp * np.exp(1j * k_background * x[1]))
     def value_shape(self):
         return ()
 
@@ -205,6 +205,9 @@ def forward_solve(h_control):
     u_sol_re, u_sol_im = w.split()
     u_sol_re_proj = project(u_sol_re, V)
     u_sol_im_proj = project(u_sol_im, V)
+
+    u_sol_mag = Function(V)
+    u_sol_mag.vector()[:] = np.sqrt(u_sol_re_proj.vector().get_local()**2 + u_sol_im_proj.vector().get_local()**2)
     
     # Create total field
     u_tot_re = Function(V)
@@ -239,34 +242,22 @@ plt.axis("equal")
 # Initial guess
 import os
 from dolfin import HDF5File, MPI
-
-h = Function(S_b, name="Design")
 checkpoint_file = "h_checkpoint.h5"
 iteration = 0
 
-if os.path.exists(checkpoint_file):
-    with HDF5File(MPI.comm_world, checkpoint_file, "r") as h5f:
-        h5f.read(h, "/h_opt")
-        # Try to read iteration number attribute
-        try:
-            iteration = h5f.attributes("/h_opt")["iteration"]
-        except Exception:
-            iteration = 0
-    print(f"Loaded checkpoint from h_checkpoint.h5 (iteration {iteration})")
-else:
-    h_vec = h.vector().get_local()
-    h_vec[:] = 0.0
-    h.vector()[:] = h_vec
-    print("No checkpoint found, starting from zero initial guess")
+h_vec = h.vector().get_local()
+h_vec[:] = 0.0
+h.vector()[:] = h_vec
+print("No checkpoint found, starting from zero initial guess")
 
-num_iterations = 2
+num_iterations = 10
 u_tot_mag_initial, V = forward_solve(h)
 reference_u_mag_func = interpolate_reference_data_to_mesh(reference_data, V)
 
 # Assemble data fitting term
 boundary_markers_V = MeshFunction("size_t", V.mesh(), f"rectangle_mesh_facet_region.xml")
 ds_obstacle = Measure("ds", domain=V.mesh(), subdomain_data=boundary_markers_V, subdomain_id=obstacle_marker)
-J = assemble((u_tot_mag_initial - reference_u_mag_func)**2 * ds_obstacle)
+J = assemble((u_tot_mag_initial - reference_u_mag_func)**2 * dx)
 
 dx = Measure("dx", domain=V.mesh())
 #domain_area = assemble(1.0 * dx)
@@ -287,45 +278,6 @@ with HDF5File(MPI.comm_world, checkpoint_file, "w") as h5f:
     h5f.write(h_opt, "/h_opt")
     h5f.attributes("/h_opt")["iteration"] = iteration
 print(f"Checkpoint saved to h_checkpoint.h5 (iteration {iteration})")
-
-# Plot initial mesh
-plt.subplot(1, 2, 1)
-Jhat(h)  # Reset to initial design - this evaluates the functional with h=0
-plot(mesh, color="b", linewidth=0.5)  # Use original mesh directly
-plt.title("Initial Mesh")
-plt.axis("equal")
-
-# Apply optimal design and plot
-plt.subplot(1, 2, 2)
-print(f"Applying optimal design with max displacement: {np.max(np.abs(h_opt.vector().get_local())):.6e}")
-
-# Apply optimal design to the mesh (you must do this yourself!)
-mesh_copy = Mesh(mesh)  # Copy again to preserve original
-boundary_markers_copy = MeshFunction("size_t", mesh_copy, f"rectangle_mesh_facet_region.xml")
-
-# Transfer optimal boundary control to volume
-h_opt_volume = transfer_from_boundary(h_opt, mesh_copy)
-
-# Recompute the mesh deformation
-s_final = mesh_deformation(h_opt_volume, mesh_copy, boundary_markers_copy)
-ALE.move(mesh_copy, s_final)  # Move the mesh using the final deformation
-
-# Now plot it
-plot(mesh_copy, color="r", linewidth=0.5)
-
-# Check if optimization actually changed anything
-if np.max(np.abs(h_opt.vector().get_local())) < 1e-10:
-    print("Warning: Optimal design shows no significant change!")
-    print("This might indicate:")
-    print("  - Optimization converged to initial guess")
-    print("  - Cost function gradient is zero")
-    print("  - Bounds are too restrictive")
-else:
-    print(f"✓ Optimization found non-trivial design with max displacement: {np.max(np.abs(h_opt.vector().get_local())):.6e}")
-
-plt.tight_layout()
-plt.savefig(f"meshes_comparison_{iterations}.png", dpi=300, bbox_inches="tight")
-plt.show()
 
 # Print optimization summary
 print("\n=== Optimization Summary ===")
