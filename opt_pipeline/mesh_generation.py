@@ -152,7 +152,7 @@ if __name__ == "__main__":
         width=1.0, 
         height=1.5, 
         roughness_amplitude=0.005, 
-        roughness_frequency=3, 
+        roughness_frequency=5, 
         mesh_size=mesh_size, 
         output_name="rough_top_mesh"
     )

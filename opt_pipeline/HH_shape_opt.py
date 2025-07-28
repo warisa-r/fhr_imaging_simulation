@@ -275,7 +275,7 @@ Jhat = ReducedFunctional(J, Control(h))
 h_opt = minimize(Jhat,
 #                bounds=[-7.0, 7.0],
                 tol=1e-6, 
-                options={"gtol": 1e-6, "maxiter": num_iterations, "disp": True})
+                options={"gtol": 1e-7, "maxiter": num_iterations, "disp": True})
 
 # Save the current checkpoint
 iteration += num_iterations
