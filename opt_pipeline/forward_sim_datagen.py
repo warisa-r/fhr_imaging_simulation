@@ -9,10 +9,10 @@ import matplotlib.pyplot as plt
 
 from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
 
-k_background = 2* np.pi * 10e9 / 299792458 # 2pi f / c
+k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
 x0 = np.array([0.5, 0.8])  # source location
 
-incident_wave_amp = 100.0
+incident_wave_amp = 1
 # Define Incident-based incident field (real part)
 class IncidentReal(UserExpression):
     def eval(self, values, x):

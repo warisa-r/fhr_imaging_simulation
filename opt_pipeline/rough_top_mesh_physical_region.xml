@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dolfin xmlns:dolfin="http://fenicsproject.org">
-  <mesh_function type="uint" dim="2" size="24574">
+  <mesh_function type="uint" dim="2" size="24524">
     <entity index="0" value="4"/>
     <entity index="1" value="4"/>
     <entity index="2" value="4"/>
@@ -24525,55 +24525,5 @@
     <entity index="24521" value="4"/>
     <entity index="24522" value="4"/>
     <entity index="24523" value="4"/>
-    <entity index="24524" value="4"/>
-    <entity index="24525" value="4"/>
-    <entity index="24526" value="4"/>
-    <entity index="24527" value="4"/>
-    <entity index="24528" value="4"/>
-    <entity index="24529" value="4"/>
-    <entity index="24530" value="4"/>
-    <entity index="24531" value="4"/>
-    <entity index="24532" value="4"/>
-    <entity index="24533" value="4"/>
-    <entity index="24534" value="4"/>
-    <entity index="24535" value="4"/>
-    <entity index="24536" value="4"/>
-    <entity index="24537" value="4"/>
-    <entity index="24538" value="4"/>
-    <entity index="24539" value="4"/>
-    <entity index="24540" value="4"/>
-    <entity index="24541" value="4"/>
-    <entity index="24542" value="4"/>
-    <entity index="24543" value="4"/>
-    <entity index="24544" value="4"/>
-    <entity index="24545" value="4"/>
-    <entity index="24546" value="4"/>
-    <entity index="24547" value="4"/>
-    <entity index="24548" value="4"/>
-    <entity index="24549" value="4"/>
-    <entity index="24550" value="4"/>
-    <entity index="24551" value="4"/>
-    <entity index="24552" value="4"/>
-    <entity index="24553" value="4"/>
-    <entity index="24554" value="4"/>
-    <entity index="24555" value="4"/>
-    <entity index="24556" value="4"/>
-    <entity index="24557" value="4"/>
-    <entity index="24558" value="4"/>
-    <entity index="24559" value="4"/>
-    <entity index="24560" value="4"/>
-    <entity index="24561" value="4"/>
-    <entity index="24562" value="4"/>
-    <entity index="24563" value="4"/>
-    <entity index="24564" value="4"/>
-    <entity index="24565" value="4"/>
-    <entity index="24566" value="4"/>
-    <entity index="24567" value="4"/>
-    <entity index="24568" value="4"/>
-    <entity index="24569" value="4"/>
-    <entity index="24570" value="4"/>
-    <entity index="24571" value="4"/>
-    <entity index="24572" value="4"/>
-    <entity index="24573" value="4"/>
   </mesh_function>
 </dolfin>

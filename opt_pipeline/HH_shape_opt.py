@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 
 from mesh_generation import side_wall_marker, bottom_wall_marker, obstacle_marker
 
-k_background = 2* np.pi * 10e9 / 299792458 # 2pi f / c
+k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
 x0 = np.array([0.5, 0.8])  # source location
-incident_wave_amp = 100
+incident_wave_amp = 1
 
 # Define Incident-based incident field (real part)
 class IncidentReal(UserExpression):
@@ -130,7 +130,7 @@ def mesh_deformation(h, mesh_local, markers_local):
     bcs0 = [
         DirichletBC(V, Constant(2.0), markers_local, side_wall_marker),
         DirichletBC(V, Constant(1.0), markers_local, bottom_wall_marker),
-        DirichletBC(V, Constant(50.0), markers_local, obstacle_marker),
+        DirichletBC(V, Constant(100.0), markers_local, obstacle_marker),
     ]
     mu = Function(V, name="mu")
     LinearVariationalSolver(LinearVariationalProblem(a, L0, mu, bcs0)).solve()
@@ -250,20 +250,26 @@ h_vec[:] = 0.0
 h.vector()[:] = h_vec
 print("No checkpoint found, starting from zero initial guess")
 
-num_iterations = 10
+num_iterations = 20
 u_tot_mag_initial, V = forward_solve(h)
 reference_u_mag_func = interpolate_reference_data_to_mesh(reference_data, V)
 
 # Assemble data fitting term
-boundary_markers_V = MeshFunction("size_t", V.mesh(), f"rectangle_mesh_facet_region.xml")
-ds_obstacle = Measure("ds", domain=V.mesh(), subdomain_data=boundary_markers_V, subdomain_id=obstacle_marker)
-J = assemble((u_tot_mag_initial - reference_u_mag_func)**2 * dx)
+# Sum squared error over all mesh points (DOFs)
+domain_area = assemble(Constant(1.0) * dx(domain=V.mesh())) # In correct calculation
+J_data = assemble((u_tot_mag_initial - reference_u_mag_func)**2 * dx)
 
-dx = Measure("dx", domain=V.mesh())
-#domain_area = assemble(1.0 * dx)
-#J = assemble((u_tot_mag_initial - reference_u_mag_func)**2 * dx) / domain_area
-# Create ReducedFunctional
+area_penalty_weight = 5e1
+h_V = transfer_from_boundary(h, V.mesh())
+alpha = 1e-2
+J_reg = assemble(alpha * inner(h_V, h_V) * dx)
+J_area_penalty = area_penalty_weight * (domain_area - 1.5)**2
+print(f"Final domain area after optimization: {J_area_penalty:.6f}")
+# Combine
+J = J_data + J_area_penalty + J_reg
+
 Jhat = ReducedFunctional(J, Control(h))
+
 
 ## Start optimizing ##
 h_opt = minimize(Jhat,
