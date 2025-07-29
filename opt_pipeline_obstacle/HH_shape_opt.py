@@ -28,7 +28,7 @@ class IncidentImag(UserExpression):
     def value_shape(self):
         return ()
 
-def load_forward_simulation_data_bottomwall():
+def load_forward_simulation_data_bottomwall(func_space):
     import pandas as pd
     try:
         # Load the CSV data with only 'u' values along the bottom wall
@@ -38,14 +38,37 @@ def load_forward_simulation_data_bottomwall():
         print(f"  Columns: {list(df.columns)}")
         print(f"  u range: [{df.u.min():.6e}, {df.u.max():.6e}]")
         # Return as a NumPy array
-        return df['u'].values
+        u_ref_bottom =  df['u'].values
+
+        u_ref_func = Function(func_space)
+        u_ref_func.vector()[:] = 0.0  # Initialize to zero
+        
+        bottom_vertex_indices = set()
+        for facet in SubsetIterator(boundary_markers, bottom_wall_marker):
+            for v in vertices(facet):
+                bottom_vertex_indices.add(v.index())
+
+        dof_coords = u_ref_func.function_space().tabulate_dof_coordinates().reshape((-1, mesh.geometry().dim()))
+        vertex_coords = mesh.coordinates()
+        tol = 1e-10
+        bottom_dof_indices = []
+        for vi in bottom_vertex_indices:
+            v_coord = vertex_coords[vi]
+            matches = np.where(np.linalg.norm(dof_coords - v_coord, axis=1) < tol)[0]
+            bottom_dof_indices.extend(matches)
+        bottom_dof_indices = np.unique(bottom_dof_indices)
+
+        # Assign loaded values to the correct DOFs
+        u_ref_func.vector()[bottom_dof_indices] = u_ref_bottom
+        return u_ref_func
+        
     except FileNotFoundError:
         print("Error: forward_sim_data_bottom.csv not found")
         print("Please run forward_sim_datagen.py first")
         return None
     except Exception as e:
         print(f"Error loading CSV data: {e}")
-        return None
+        return None    
 
 # Try to convert the mesh 
 print(f"Converting square_with_hole to XML format...")
@@ -79,7 +102,7 @@ def mesh_deformation(h, mesh_local, markers_local):
     bcs0 = [
         DirichletBC(V, Constant(1.0), markers_local, side_wall_marker),
         DirichletBC(V, Constant(1.0), markers_local, bottom_wall_marker),
-        DirichletBC(V, Constant(100.0), markers_local, obstacle_marker),
+        DirichletBC(V, Constant(50.0), markers_local, obstacle_marker),
     ]
     mu = Function(V, name="mu")
     LinearVariationalSolver(LinearVariationalProblem(a, L0, mu, bcs0)).solve()
@@ -194,37 +217,14 @@ checkpoint_file = "h_checkpoint.h5"
 iteration = 0
 
 h_vec = h.vector().get_local()
-h_vec[:] = 0.0
+h_vec[:] = 1.0
 h.vector()[:] = h_vec
 print("No checkpoint found, starting from zero initial guess")
 
 num_iterations = 20
 u_tot_mag_initial, ds_bottom = forward_solve(h)
 
-u_ref_bottom = load_forward_simulation_data_bottomwall()
-u_ref_func = Function(u_tot_mag_initial.function_space())
-
-u_ref_func.vector()[:] = 0.0  # Initialize to zero
-
-# Find bottom wall DOF indices (same way as in your data generation)
-bottom_vertex_indices = set()
-for facet in SubsetIterator(boundary_markers, bottom_wall_marker):
-    for v in vertices(facet):
-        bottom_vertex_indices.add(v.index())
-
-dof_coords = u_ref_func.function_space().tabulate_dof_coordinates().reshape((-1, mesh.geometry().dim()))
-vertex_coords = mesh.coordinates()
-tol = 1e-10
-bottom_dof_indices = []
-for vi in bottom_vertex_indices:
-    v_coord = vertex_coords[vi]
-    matches = np.where(np.linalg.norm(dof_coords - v_coord, axis=1) < tol)[0]
-    bottom_dof_indices.extend(matches)
-bottom_dof_indices = np.unique(bottom_dof_indices)
-
-# Assign loaded values to the correct DOFs
-u_ref_func.vector()[bottom_dof_indices] = u_ref_bottom
-
+u_ref_func = load_forward_simulation_data_bottomwall(u_tot_mag_initial.function_space())
 
 J_data = assemble((u_tot_mag_initial - u_ref_func)**2 * ds_bottom)
 

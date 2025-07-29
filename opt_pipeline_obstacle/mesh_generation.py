@@ -174,7 +174,7 @@ if __name__ == "__main__":
         output_name="square_with_eccentric_hole",
         n_circle=40,
         n_points_bottom=100,
-        eccentricity_x=1.2,
+        eccentricity_x=2.0,
         eccentricity_y=0.8
     )
 
