@@ -61,7 +61,7 @@ def load_forward_simulation_data_bottomwall(func_space):
         # Assign loaded values to the correct DOFs
         u_ref_func.vector()[bottom_dof_indices] = u_ref_bottom
         return u_ref_func
-        
+
     except FileNotFoundError:
         print("Error: forward_sim_data_bottom.csv not found")
         print("Please run forward_sim_datagen.py first")
@@ -174,21 +174,13 @@ def forward_solve(h_control):
     
     # Extract solutions
     u_sol_re, u_sol_im = w.split()
-    u_sol_re_proj = project(u_sol_re, V)
-    u_sol_im_proj = project(u_sol_im, V)
 
-    u_sol_mag = Function(V)
-    u_sol_mag.vector()[:] = np.sqrt(u_sol_re_proj.vector().get_local()**2 + u_sol_im_proj.vector().get_local()**2)
-    
-    # Create total field
-    u_tot_re = Function(V)
-    u_tot_im = Function(V)
-    u_tot_re.vector()[:] = u_inc_re.vector()[:] + u_sol_re_proj.vector()[:]
-    u_tot_im.vector()[:] = u_inc_im.vector()[:] + u_sol_im_proj.vector()[:]
-    
-    # Calculate magnitude
-    u_tot_mag = Function(V)
-    u_tot_mag.vector()[:] = np.sqrt(u_tot_re.vector().get_local()**2 + u_tot_im.vector().get_local()**2)
+    # Total field expressions
+    u_tot_re = u_inc_re + u_sol_re
+    u_tot_im = u_inc_im + u_sol_im
+
+    # Magnitude as UFL expression -> autodiffbar hopefully 
+    u_tot_mag = sqrt(u_tot_re**2 + u_tot_im**2)
     
     return u_tot_mag, ds_bottom
 
@@ -224,14 +216,10 @@ print("No checkpoint found, starting from zero initial guess")
 num_iterations = 20
 u_tot_mag_initial, ds_bottom = forward_solve(h)
 
-u_ref_func = load_forward_simulation_data_bottomwall(u_tot_mag_initial.function_space())
-
-J_data = assemble((u_tot_mag_initial - u_ref_func)**2 * ds_bottom)
-
-# Combine
-J = J_data
-
+#u_ref_func = load_forward_simulation_data_bottomwall(u_tot_mag_initial.function_space())
+J = assemble((u_tot_mag_initial)**2 * ds_bottom)
 Jhat = ReducedFunctional(J, Control(h))
+
 
 ## Start optimizing ##
 h_opt = minimize(Jhat,
