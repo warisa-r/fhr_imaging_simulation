@@ -259,8 +259,8 @@ reference_u_mag_func = interpolate_reference_data_to_mesh(reference_data, V)
 
 # Assemble data fitting term
 # Sum squared error over all mesh points (DOFs)
-domain_area = assemble(Constant(1.0) * dx(domain=V.mesh())) # In correct calculation
-J_data = assemble((u_tot_mag_initial - reference_u_mag_func)**2 * dx)
+domain_area = assemble(Constant(1.0) * dx(domain=V.mesh()))
+J_data = assemble((u_tot_mag_initial - reference_u_mag_func)**2 * ds_1)
 
 area_penalty_weight = 5e1
 h_V = transfer_from_boundary(h, V.mesh())
