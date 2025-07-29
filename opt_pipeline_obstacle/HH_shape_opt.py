@@ -3,6 +3,8 @@ import json
 from dolfin import *
 from dolfin_adjoint import * 
 import numpy as np
+import pandas as pd
+
 from scipy.special import hankel1
 import subprocess
 import os
@@ -28,38 +30,52 @@ class IncidentImag(UserExpression):
     def value_shape(self):
         return ()
 
+class ReferenceData(UserExpression):
+    def __init__(self, points, values, **kwargs):
+        super().__init__(**kwargs)
+        self.points = points
+        self.values = values
+
+    def eval(self, values_out, x):
+        # Find closest point
+        distances = np.linalg.norm(self.points - x, axis=1)
+        idx = np.argmin(distances)
+        #TODO: Assign zero
+        values_out[0] = self.values[idx]
+    
+    def value_shape(self):
+        return ()
+
 def load_forward_simulation_data_bottomwall(func_space):
-    import pandas as pd
+    
     try:
-        # Load the CSV data with only 'u' values along the bottom wall
+        # Load the CSV data with x, y, u values along the bottom wall
         df = pd.read_csv("forward_sim_data_bottom.csv")
         print(f"Loaded bottom wall reference data from CSV:")
         print(f"  Data points: {len(df)}")
         print(f"  Columns: {list(df.columns)}")
         print(f"  u range: [{df.u.min():.6e}, {df.u.max():.6e}]")
-        # Return as a NumPy array
-        u_ref_bottom =  df['u'].values
 
         u_ref_func = Function(func_space)
         u_ref_func.vector()[:] = 0.0  # Initialize to zero
-        
-        bottom_vertex_indices = set()
-        for facet in SubsetIterator(boundary_markers, bottom_wall_marker):
-            for v in vertices(facet):
-                bottom_vertex_indices.add(v.index())
 
-        dof_coords = u_ref_func.function_space().tabulate_dof_coordinates().reshape((-1, mesh.geometry().dim()))
-        vertex_coords = mesh.coordinates()
+        dof_coords = func_space.tabulate_dof_coordinates().reshape((-1, func_space.mesh().geometry().dim()))
         tol = 1e-10
-        bottom_dof_indices = []
-        for vi in bottom_vertex_indices:
-            v_coord = vertex_coords[vi]
-            matches = np.where(np.linalg.norm(dof_coords - v_coord, axis=1) < tol)[0]
-            bottom_dof_indices.extend(matches)
-        bottom_dof_indices = np.unique(bottom_dof_indices)
 
-        # Assign loaded values to the correct DOFs
-        u_ref_func.vector()[bottom_dof_indices] = u_ref_bottom
+        # For each reference point, find the matching DOF by coordinate
+        for i, row in df.iterrows():
+            x_ref, y_ref, u_val = row["x"], row["y"], row["u"]
+            matches = np.where(
+                (np.abs(dof_coords[:, 0] - x_ref) < tol) &
+                (np.abs(dof_coords[:, 1] - y_ref) < tol)
+            )[0]
+            if len(matches) == 1:
+                u_ref_func.vector()[matches[0]] = u_val
+            elif len(matches) == 0:
+                print(f"Warning: No DOF found for reference point ({x_ref}, {y_ref})")
+            else:
+                print(f"Warning: Multiple DOFs found for reference point ({x_ref}, {y_ref})")
+
         return u_ref_func
 
     except FileNotFoundError:
@@ -68,18 +84,18 @@ def load_forward_simulation_data_bottomwall(func_space):
         return None
     except Exception as e:
         print(f"Error loading CSV data: {e}")
-        return None    
+        return None
 
 # Try to convert the mesh 
-print(f"Converting square_with_hole to XML format...")
+print(f"Converting square_with_rect_obstacle to XML format...")
 result = subprocess.run([
     "dolfin-convert", 
-    f"square_with_hole.msh", 
-    f"square_with_hole.xml"
+    f"square_with_rect_obstacle.msh", 
+    f"square_with_rect_obstacle.xml"
 ], capture_output=True, text=True)
 
-mesh = Mesh(f"square_with_hole.xml")
-boundary_markers = MeshFunction("size_t", mesh, f"square_with_hole_facet_region.xml")
+mesh = Mesh(f"square_with_rect_obstacle.xml")
+boundary_markers = MeshFunction("size_t", mesh, f"square_with_rect_obstacle_facet_region.xml")
 
 # Create boundary mesh and design variables
 b_mesh = BoundaryMesh(mesh, "exterior")
@@ -102,7 +118,7 @@ def mesh_deformation(h, mesh_local, markers_local):
     bcs0 = [
         DirichletBC(V, Constant(1.0), markers_local, side_wall_marker),
         DirichletBC(V, Constant(1.0), markers_local, bottom_wall_marker),
-        DirichletBC(V, Constant(50.0), markers_local, obstacle_marker),
+        DirichletBC(V, Constant(100.0), markers_local, obstacle_marker),
     ]
     mu = Function(V, name="mu")
     LinearVariationalSolver(LinearVariationalProblem(a, L0, mu, bcs0)).solve()
@@ -132,7 +148,7 @@ def mesh_deformation(h, mesh_local, markers_local):
 def forward_solve(h_control):
     # Copy the “master” mesh and its facet markers
     mesh_copy = Mesh(mesh)
-    markers_copy = MeshFunction("size_t", mesh_copy, f"square_with_hole_facet_region.xml")
+    markers_copy = MeshFunction("size_t", mesh_copy, f"square_with_rect_obstacle_facet_region.xml")
 
     # Transfer h → volume and deform the copy since we want to preserve always the original
     h_vol = transfer_from_boundary(h_control, mesh_copy)
@@ -182,24 +198,8 @@ def forward_solve(h_control):
     # Magnitude as UFL expression -> autodiffbar hopefully 
     u_tot_mag = sqrt(u_tot_re**2 + u_tot_im**2)
     
-    return u_tot_mag, ds_bottom
+    return u_tot_mag, ds_bottom, V
 
-######### Mesh deformation test #######
-"""
-np.random.seed(42)  # For reproducibility
-h_random = 2 * (2 * np.random.random(len(h_V.vector()[:])) - 1)  # Random values between -0.02 and 0.02
-print(h_random)
-
-h_V.vector()[:] = h_random
-mesh_copy = Mesh(mesh)
-boundary_markers_copy = MeshFunction("size_t", mesh_copy, f"square_with_hole_facet_region.xml")
-s = mesh_deformation(h_V, mesh_copy, boundary_markers_copy)
-ALE.move(mesh_copy, s)
-plot(mesh_copy, color="green", linewidth=1.0)
-plt.title("Random deformation")
-plt.axis("equal")
-#plt.show()
-"""
 ######################################
 
 # Initial guess
@@ -209,15 +209,21 @@ checkpoint_file = "h_checkpoint.h5"
 iteration = 0
 
 h_vec = h.vector().get_local()
-h_vec[:] = 1.0
+h_vec[:] = 0.0
 h.vector()[:] = h_vec
 print("No checkpoint found, starting from zero initial guess")
 
-num_iterations = 20
-u_tot_mag_initial, ds_bottom = forward_solve(h)
+num_iterations = 100
+u_tot_mag_initial, ds_bottom, V = forward_solve(h)
 
-#u_ref_func = load_forward_simulation_data_bottomwall(u_tot_mag_initial.function_space())
-J = assemble((u_tot_mag_initial)**2 * ds_bottom)
+# Load reference data
+df = pd.read_csv("forward_sim_data_bottom.csv")
+points = df[["x", "y"]].values
+values = df["u"].values
+ref_expr = ReferenceData(points, values, degree=1)
+u_ref_func = interpolate(ref_expr, V)
+
+J = assemble((u_tot_mag_initial - u_ref_func)**2 * ds_bottom)
 Jhat = ReducedFunctional(J, Control(h))
 
 

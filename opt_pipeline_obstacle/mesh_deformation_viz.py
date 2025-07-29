@@ -7,8 +7,8 @@ import numpy as np
 from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
 
 # Load mesh and boundary markers
-mesh = Mesh("rectangle_mesh.xml")
-boundary_markers = MeshFunction("size_t", mesh, "rectangle_mesh_facet_region.xml")
+mesh = Mesh("square_with_rect_obstacle.xml")
+boundary_markers = MeshFunction("size_t", mesh, "square_with_rect_obstacle_facet_region.xml")
 
 # Create boundary mesh and function space
 b_mesh = BoundaryMesh(mesh, "exterior")
@@ -73,7 +73,7 @@ def mesh_deformation(h, mesh_local, markers_local):
 
 # Make a copy of the mesh for deformation
 mesh_copy = Mesh(mesh)
-boundary_markers_copy = MeshFunction("size_t", mesh_copy, "rectangle_mesh_facet_region.xml")
+boundary_markers_copy = MeshFunction("size_t", mesh_copy, "square_with_rect_obstacle_facet_region.xml")
 
 # Deform the mesh
 s_final = mesh_deformation(h_V, mesh_copy, boundary_markers_copy)
@@ -86,39 +86,3 @@ plt.title(f"Deformed mesh (iteration {iteration})")
 plt.axis("equal")
 plt.tight_layout()
 plt.show()
-
-# Extract and plot the top surface (obstacle_marker) as a line
-top_coords = []
-for facet in facets(mesh_copy):
-    if boundary_markers_copy[facet.index()] == obstacle_marker:
-        for vertex in vertices(facet):
-            top_coords.append(vertex.point().array())
-
-top_coords = np.array(top_coords)
-# Remove duplicates and sort by x
-if len(top_coords) > 0:
-    top_coords = np.unique(top_coords, axis=0)
-    top_coords = top_coords[np.argsort(top_coords[:, 0])]
-
-    plt.figure()
-    
-    plt.plot(top_coords[:, 0], top_coords[:, 1], 'b-', linewidth=2, label="Reconstructed rough surface")
-
-    height = 1.5
-    roughness_amplitude = 0.005  
-    roughness_frequency = 5   
-    width = np.max(top_coords[:, 0]) - np.min(top_coords[:, 0])
-    x_rough = top_coords[:, 0]
-    y_rough = height + roughness_amplitude * (np.sin(2 * np.pi * roughness_frequency * (x_rough - np.min(x_rough)) / width)-1)
-    plt.plot(x_rough, y_rough, 'r--', linewidth=2, label="True rough surface with alpha = 2.5e-3")
-
-    plt.title("Top surface line (obstacle_marker) alpha = 5e-3")
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.grid()
-    plt.tight_layout()
-    #plt.savefig(f"rough_surface_sin{roughness_amplitude}_4e1.png")
-    plt.show()
-    
-else:
-    print("No top surface nodes found with obstacle_marker.")

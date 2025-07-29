@@ -29,12 +29,12 @@ class IncidentImag(UserExpression):
 print(f"Converting mesh to XML format...")
 result = subprocess.run([
     "dolfin-convert", 
-    f"square_with_eccentric_hole.msh", 
-    f"square_with_eccentric_hole.xml"
+    f"square_with_perturbed_rect_obstacle.msh", 
+    f"square_with_perturbed_rect_obstacle.xml"
 ], capture_output=True, text=True)
 
-mesh = Mesh(f"square_with_eccentric_hole.xml")
-boundary_markers = MeshFunction("size_t", mesh, f"square_with_eccentric_hole_facet_region.xml")
+mesh = Mesh(f"square_with_perturbed_rect_obstacle.xml")
+boundary_markers = MeshFunction("size_t", mesh, f"square_with_perturbed_rect_obstacle_facet_region.xml")
 
 # Define function space
 V_element = FiniteElement("CG", mesh.ufl_cell(), 5)
@@ -94,6 +94,8 @@ u_tot_im.vector()[:] = u_inc_im.vector()[:] + u_sol_im_proj.vector()[:]
 u_tot_mag = Function(V)
 u_tot_mag.vector()[:] = np.sqrt(u_tot_re.vector().get_local()**2 + u_tot_im.vector().get_local()**2)
 
+### Save the data ###
+
 import pandas as pd
 
 # Extract u values (total field magnitude) along the bottom wall
@@ -113,10 +115,19 @@ for vi in bottom_vertex_indices:
 bottom_dof_indices = np.unique(bottom_dof_indices)
 
 u_vals_bottom = u_tot_mag.vector().get_local()[bottom_dof_indices]
+x_vals = []
+y_vals = []
+for idx in bottom_dof_indices:
+    x_vals.append(dof_coords[idx, 0])
+    y_vals.append(dof_coords[idx, 1])
 
-# Save only u values along bottom wall to CSV
-import pandas as pd
-pd.DataFrame({"u": u_vals_bottom}).to_csv("forward_sim_data_bottom.csv", index=False)
+df = pd.DataFrame({
+    "x": x_vals,
+    "y": y_vals,
+    "u": u_vals_bottom
+})
+
+df.to_csv("forward_sim_data_bottom.csv", index=False)
 
 ### Check saved data integrity
 
