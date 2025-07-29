@@ -27,7 +27,7 @@ def plot_mesh(filename, ax, title=""):
 
 def generate_square_with_hole_mesh(
     width=1.0, height=1.0, hole_radius=0.2, mesh_size=0.05, output_name="square_with_hole",
-    n_circle=40, n_points_bottom=10
+    n_circle=40, n_points_bottom=100
 ):
     import gmsh
 
@@ -41,23 +41,14 @@ def generate_square_with_hole_mesh(
     p3 = gmsh.model.geo.addPoint(width, height, 0, mesh_size)# Top-right
     p4 = gmsh.model.geo.addPoint(0, height, 0, mesh_size)    # Top-left
 
-    # Bottom wall points (for consistent discretization)
-    bottom_points = [p1]
-    for i in range(1, n_points_bottom-1):
-        x = width * i / (n_points_bottom-1)
-        bottom_points.append(gmsh.model.geo.addPoint(x, 0, 0, mesh_size))
-    bottom_points.append(p2)
-
-    # Bottom wall lines
-    bottom_lines = []
-    for i in range(n_points_bottom-1):
-        bottom_lines.append(gmsh.model.geo.addLine(bottom_points[i], bottom_points[i+1]))
-    l1 = bottom_lines[0]  # For marker
-
-    # Other outer square lines
+    # Outer square lines
+    l1 = gmsh.model.geo.addLine(p1, p2)  # Bottom
     l2 = gmsh.model.geo.addLine(p2, p3)  # Right
     l3 = gmsh.model.geo.addLine(p3, p4)  # Top
     l4 = gmsh.model.geo.addLine(p4, p1)  # Left
+
+    # Use TransfiniteCurve for bottom wall discretization
+    gmsh.model.geo.mesh.setTransfiniteCurve(l1, n_points_bottom)
 
     # Circle (hole) center
     cx, cy = width/2, height/2
@@ -74,7 +65,7 @@ def generate_square_with_hole_mesh(
         hole_lines.append(gmsh.model.geo.addLine(hole_points[i], hole_points[(i+1)%n_circle]))
 
     # Curve loops
-    outer_loop = gmsh.model.geo.addCurveLoop(bottom_lines + [l2, l3, l4])
+    outer_loop = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4])
     hole_loop = gmsh.model.geo.addCurveLoop(hole_lines)
 
     # Plane surface with hole
@@ -83,7 +74,7 @@ def generate_square_with_hole_mesh(
     gmsh.model.geo.synchronize()
 
     # Physical groups
-    gmsh.model.addPhysicalGroup(1, bottom_lines, bottom_wall_marker, "bottom_wall")
+    gmsh.model.addPhysicalGroup(1, [l1], bottom_wall_marker, "bottom_wall")
     gmsh.model.addPhysicalGroup(1, [l2, l3, l4], side_wall_marker, "outer_walls")
     gmsh.model.addPhysicalGroup(1, hole_lines, obstacle_marker, "hole_boundary")
     gmsh.model.addPhysicalGroup(2, [surface], domain_marker, "domain")
@@ -98,7 +89,7 @@ def generate_square_with_hole_mesh(
 def generate_square_with_eccentric_hole_mesh(
     width=1.0, height=1.0, hole_radius=0.2, mesh_size=0.05,
     output_name="square_with_eccentric_hole",
-    n_circle=40, n_points_bottom=10,
+    n_circle=40, n_points_bottom=100,
     eccentricity_x=1.2, eccentricity_y=0.8
 ):
     import gmsh
@@ -107,29 +98,20 @@ def generate_square_with_eccentric_hole_mesh(
     gmsh.clear()
     gmsh.model.add("square_with_eccentric_hole")
 
-    # Outer square points (identical to original)
+    # Outer square points
     p1 = gmsh.model.geo.addPoint(0, 0, 0, mesh_size)         # Bottom-left
     p2 = gmsh.model.geo.addPoint(width, 0, 0, mesh_size)     # Bottom-right
     p3 = gmsh.model.geo.addPoint(width, height, 0, mesh_size)# Top-right
     p4 = gmsh.model.geo.addPoint(0, height, 0, mesh_size)    # Top-left
 
-    # Bottom wall points (for consistent discretization)
-    bottom_points = [p1]
-    for i in range(1, n_points_bottom-1):
-        x = width * i / (n_points_bottom-1)
-        bottom_points.append(gmsh.model.geo.addPoint(x, 0, 0, mesh_size))
-    bottom_points.append(p2)
-
-    # Bottom wall lines
-    bottom_lines = []
-    for i in range(n_points_bottom-1):
-        bottom_lines.append(gmsh.model.geo.addLine(bottom_points[i], bottom_points[i+1]))
-    l1 = bottom_lines[0]  # For marker
-
-    # Other outer square lines
+    # Outer square lines
+    l1 = gmsh.model.geo.addLine(p1, p2)  # Bottom
     l2 = gmsh.model.geo.addLine(p2, p3)  # Right
     l3 = gmsh.model.geo.addLine(p3, p4)  # Top
     l4 = gmsh.model.geo.addLine(p4, p1)  # Left
+
+    # Use TransfiniteCurve for bottom wall discretization
+    gmsh.model.geo.mesh.setTransfiniteCurve(l1, n_points_bottom)
 
     # Eccentric (elliptical) hole
     cx, cy = width/2, height/2
@@ -144,7 +126,7 @@ def generate_square_with_eccentric_hole_mesh(
         hole_lines.append(gmsh.model.geo.addLine(hole_points[i], hole_points[(i+1)%n_circle]))
 
     # Curve loops
-    outer_loop = gmsh.model.geo.addCurveLoop(bottom_lines + [l2, l3, l4])
+    outer_loop = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4])
     hole_loop = gmsh.model.geo.addCurveLoop(hole_lines)
 
     # Plane surface with eccentric hole
@@ -153,7 +135,7 @@ def generate_square_with_eccentric_hole_mesh(
     gmsh.model.geo.synchronize()
 
     # Physical groups (same as original)
-    gmsh.model.addPhysicalGroup(1, bottom_lines, bottom_wall_marker, "bottom_wall")
+    gmsh.model.addPhysicalGroup(1, [l1], bottom_wall_marker, "bottom_wall")
     gmsh.model.addPhysicalGroup(1, [l2, l3, l4], side_wall_marker, "outer_walls")
     gmsh.model.addPhysicalGroup(1, hole_lines, obstacle_marker, "hole_boundary")
     gmsh.model.addPhysicalGroup(2, [surface], domain_marker, "domain")
@@ -181,7 +163,7 @@ if __name__ == "__main__":
         hole_radius=0.2,
         mesh_size=mesh_size,
         output_name="square_with_hole",
-        n_circle=40, n_points_bottom=10
+        n_circle=40, n_points_bottom=90
     )
 
     mesh_file = generate_square_with_eccentric_hole_mesh(
@@ -191,7 +173,7 @@ if __name__ == "__main__":
         mesh_size=mesh_size,
         output_name="square_with_eccentric_hole",
         n_circle=40,
-        n_points_bottom=10,
+        n_points_bottom=90,
         eccentricity_x=1.2,
         eccentricity_y=0.8
     )

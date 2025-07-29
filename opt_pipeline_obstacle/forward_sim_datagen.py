@@ -29,12 +29,12 @@ class IncidentImag(UserExpression):
 print(f"Converting mesh to XML format...")
 result = subprocess.run([
     "dolfin-convert", 
-    f"square_with_hole.msh", 
-    f"square_with_hole.xml"
+    f"square_with_eccentric_hole.msh", 
+    f"square_with_eccentric_hole.xml"
 ], capture_output=True, text=True)
 
-mesh = Mesh(f"square_with_hole.xml")
-boundary_markers = MeshFunction("size_t", mesh, f"square_with_hole_facet_region.xml")
+mesh = Mesh(f"square_with_eccentric_hole.xml")
+boundary_markers = MeshFunction("size_t", mesh, f"square_with_eccentric_hole_facet_region.xml")
 
 # Define function space
 V_element = FiniteElement("CG", mesh.ufl_cell(), 5)
@@ -96,14 +96,27 @@ u_tot_mag.vector()[:] = np.sqrt(u_tot_re.vector().get_local()**2 + u_tot_im.vect
 
 import pandas as pd
 
-coords = V.tabulate_dof_coordinates().reshape((-1, mesh.geometry().dim()))
-values = u_tot_mag.vector().get_local()
-assert coords.shape[0] == values.shape[0]
-simulation_df = pd.DataFrame({
-    "x": coords[:,0],
-    "y": coords[:,1],
-    "u_total_magnitude": values
-})
+# Extract u values (total field magnitude) along the bottom wall
+bottom_vertex_indices = set()
+for facet in SubsetIterator(boundary_markers, bottom_wall_marker):
+    for v in vertices(facet):
+        bottom_vertex_indices.add(v.index())
+
+dof_coords = V.tabulate_dof_coordinates().reshape((-1, mesh.geometry().dim()))
+vertex_coords = mesh.coordinates()
+tol = 1e-10
+bottom_dof_indices = []
+for vi in bottom_vertex_indices:
+    v_coord = vertex_coords[vi]
+    matches = np.where(np.linalg.norm(dof_coords - v_coord, axis=1) < tol)[0]
+    bottom_dof_indices.extend(matches)
+bottom_dof_indices = np.unique(bottom_dof_indices)
+
+u_vals_bottom = u_tot_mag.vector().get_local()[bottom_dof_indices]
+
+# Save only u values along bottom wall to CSV
+import pandas as pd
+pd.DataFrame({"u": u_vals_bottom}).to_csv("forward_sim_data_bottom.csv", index=False)
 
 ### Check saved data integrity
 
@@ -118,22 +131,6 @@ simulation_df = pd.DataFrame({
 #plt.tight_layout()
 #plt.show()
 ##############################
-
-# Save the data 
-"""
-simulation_df.to_csv("forward_sim_data.csv", index=False)
-
-metadata = {
-    'k_background': float(k_background),
-    'num_vertices': mesh.num_vertices(),
-    'num_cells': mesh.num_cells(),
-    'function_space_degree': 5,
-    'description': 'Forward simulation results for inverse problem'
-}
-
-with open(f"forward_sim_metadata.json", 'w') as f:
-    json.dump(metadata, f, indent=2)
-"""
 
 # Plot magnitude of total field
 plt.figure()
