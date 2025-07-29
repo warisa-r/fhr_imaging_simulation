@@ -163,7 +163,7 @@ if __name__ == "__main__":
         hole_radius=0.2,
         mesh_size=mesh_size,
         output_name="square_with_hole",
-        n_circle=40, n_points_bottom=90
+        n_circle=40, n_points_bottom=100
     )
 
     mesh_file = generate_square_with_eccentric_hole_mesh(
@@ -173,7 +173,7 @@ if __name__ == "__main__":
         mesh_size=mesh_size,
         output_name="square_with_eccentric_hole",
         n_circle=40,
-        n_points_bottom=90,
+        n_points_bottom=100,
         eccentricity_x=1.2,
         eccentricity_y=0.8
     )
