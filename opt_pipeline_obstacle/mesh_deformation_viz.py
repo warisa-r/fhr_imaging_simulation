@@ -7,8 +7,8 @@ import numpy as np
 from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
 
 # Load mesh and boundary markers
-mesh = Mesh("square_with_rect_obstacle.xml")
-boundary_markers = MeshFunction("size_t", mesh, "square_with_rect_obstacle_facet_region.xml")
+mesh = Mesh("meshes/square_with_rect_obstacle.xml")
+boundary_markers = MeshFunction("size_t", mesh, "meshes/square_with_rect_obstacle_facet_region.xml")
 
 # Create boundary mesh and function space
 b_mesh = BoundaryMesh(mesh, "exterior")
@@ -16,7 +16,7 @@ S_b = VectorFunctionSpace(b_mesh, "CG", 1)
 h = Function(S_b, name="Design")
 
 # Load h from checkpoint
-checkpoint_file = "h_checkpoint.h5"
+checkpoint_file = "outputs/h_checkpoint.h5"
 iteration = 0
 if os.path.exists(checkpoint_file):
     with HDF5File(MPI.comm_world, checkpoint_file, "r") as h5f:
@@ -71,18 +71,34 @@ def mesh_deformation(h, mesh_local, markers_local):
 
     return s
 
+# Load the perturbed mesh
+mesh_perturbed = Mesh("meshes/square_with_perturbed_rect_obstacle.xml")
+
 # Make a copy of the mesh for deformation
 mesh_copy = Mesh(mesh)
-boundary_markers_copy = MeshFunction("size_t", mesh_copy, "square_with_rect_obstacle_facet_region.xml")
+boundary_markers_copy = MeshFunction("size_t", mesh_copy, "meshes/square_with_rect_obstacle_facet_region.xml")
 
 # Deform the mesh
 s_final = mesh_deformation(h_V, mesh_copy, boundary_markers_copy)
 ALE.move(mesh_copy, s_final)
 
-# Plot the deformed mesh
-plt.figure(figsize=(8, 6))
-plot(mesh_copy, color="r", linewidth=0.5)
-plt.title(f"Deformed mesh (iteration {iteration})")
+# Plot
+plt.figure(figsize=(18, 6))
+plt.subplot(1, 3, 1)
+plot(mesh, color="b", linewidth=0.5)
+plt.title("Original mesh")
 plt.axis("equal")
+
+plt.subplot(1, 3, 2)
+plot(mesh_perturbed, color="r", linewidth=0.5)
+plt.title("Mesh perturbed at the bottom with cos wave (A = 0.01)")
+plt.axis("equal")
+
+plt.subplot(1, 3, 3)
+plot(mesh_copy, color="r", linewidth=0.5)
+plt.title(f"Deformed mesh (iteration {iteration} (mu = 100))")
+plt.axis("equal")
+
 plt.tight_layout()
+plt.savefig("outputs/rect_ob_cos_mu100.png")
 plt.show()

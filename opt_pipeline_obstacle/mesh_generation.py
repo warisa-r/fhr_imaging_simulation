@@ -256,7 +256,7 @@ def generate_square_with_perturbed_rect_obstacle_mesh(
     for i in range(n_points_rect_bottom):
         t = i / (n_points_rect_bottom - 1)
         x = rx1 + t * (rx2 - rx1)
-        y = ry1 + perturb_amplitude * np.sin(perturb_frequency * np.pi * t)
+        y = ry1 + perturb_amplitude * np.cos(perturb_frequency * np.pi * t)
         rect_bottom_points.append(gmsh.model.geo.addPoint(x, y, 0, mesh_size))
 
     # Other rectangle points (no perturbation)
@@ -347,7 +347,7 @@ if __name__ == "__main__":
         rect_w=0.4,
         rect_h=0.2,
         mesh_size=mesh_size,
-        output_name="square_with_rect_obstacle",
+        output_name="meshes/square_with_rect_obstacle",
         n_points_bottom=100,
         n_points_rect_bottom = 100
     )
@@ -359,20 +359,20 @@ if __name__ == "__main__":
         rect_w=0.4,
         rect_h=0.2,
         mesh_size=mesh_size,
-        output_name="square_with_perturbed_rect_obstacle",
+        output_name="meshes/square_with_perturbed_rect_obstacle",
         n_points_bottom=100,
         n_points_rect_bottom=100,
-        perturb_amplitude=0.03,
+        perturb_amplitude=0.01,
         perturb_frequency=3
     )
 
     plt.figure(figsize=(12, 6))
     ax1 = plt.subplot(1, 2, 1)
-    plot_mesh("square_with_rect_obstacle.msh", ax1, "Square with Rectangle Obstacle")
+    plot_mesh("meshes/square_with_rect_obstacle.msh", ax1, "Square with Rectangle Obstacle")
 
     ax2 = plt.subplot(1, 2, 2)
-    plot_mesh("square_with_perturbed_rect_obstacle.msh", ax2, "Square with Perturbed Rect Obstacle")
+    plot_mesh("meshes/square_with_perturbed_rect_obstacle.msh", ax2, "Square with Perturbed Rect Obstacle")
     
     plt.tight_layout()
-    plt.savefig("square_with_perturbed_rect_obstacle.png")
+    plt.savefig("meshes/square_with_perturbed_rect_obstacle.png")
     plt.show()
