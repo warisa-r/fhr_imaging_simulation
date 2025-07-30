@@ -16,7 +16,7 @@ S_b = VectorFunctionSpace(b_mesh, "CG", 1)
 h = Function(S_b, name="Design")
 
 # Load h from checkpoint
-checkpoint_file = "outputs/h_checkpoint.h5"
+checkpoint_file = "h_checkpoint.h5"
 iteration = 0
 if os.path.exists(checkpoint_file):
     with HDF5File(MPI.comm_world, checkpoint_file, "r") as h5f:
@@ -96,9 +96,9 @@ plt.axis("equal")
 
 plt.subplot(1, 3, 3)
 plot(mesh_copy, color="r", linewidth=0.5)
-plt.title(f"Deformed mesh (iteration {iteration} (mu = 100))")
+plt.title(f"Deformed mesh (iteration {iteration} (mu = 200))")
 plt.axis("equal")
 
 plt.tight_layout()
-plt.savefig("outputs/rect_ob_cos_mu100.png")
+plt.savefig("outputs/rect_ob_cos_mu200.png")
 plt.show()

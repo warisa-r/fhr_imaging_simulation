@@ -87,15 +87,15 @@ def load_forward_simulation_data_bottomwall(func_space):
         return None
 
 # Try to convert the mesh 
-print(f"Converting square_with_rect_obstacle to XML format...")
+print(f"Converting square_with_hole to XML format...")
 result = subprocess.run([
     "dolfin-convert", 
-    f"square_with_rect_obstacle.msh", 
-    f"square_with_rect_obstacle.xml"
+    f"meshes/square_with_hole.msh", 
+    f"meshes/square_with_hole.xml"
 ], capture_output=True, text=True)
 
-mesh = Mesh(f"square_with_rect_obstacle.xml")
-boundary_markers = MeshFunction("size_t", mesh, f"square_with_rect_obstacle_facet_region.xml")
+mesh = Mesh(f"meshes/square_with_hole.xml")
+boundary_markers = MeshFunction("size_t", mesh, f"meshes/square_with_hole_facet_region.xml")
 
 # Create boundary mesh and design variables
 b_mesh = BoundaryMesh(mesh, "exterior")
@@ -148,7 +148,7 @@ def mesh_deformation(h, mesh_local, markers_local):
 def forward_solve(h_control):
     # Copy the “master” mesh and its facet markers
     mesh_copy = Mesh(mesh)
-    markers_copy = MeshFunction("size_t", mesh_copy, f"square_with_rect_obstacle_facet_region.xml")
+    markers_copy = MeshFunction("size_t", mesh_copy, f"meshes/square_with_hole_facet_region.xml")
 
     # Transfer h → volume and deform the copy since we want to preserve always the original
     h_vol = transfer_from_boundary(h_control, mesh_copy)

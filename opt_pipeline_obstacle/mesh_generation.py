@@ -297,6 +297,76 @@ def generate_square_with_perturbed_rect_obstacle_mesh(
     gmsh.finalize()
     return f"{output_name}.msh"
 
+def generate_square_with_flattened_circle_mesh(
+    width=1.0, height=1.0, hole_radius=0.2, mesh_size=0.05,
+    output_name="square_with_flattened_circle",
+    n_circle=100, n_points_bottom=100,
+    flatten_y=None  # If None, flatten at the lowest point of the circle
+):
+    import gmsh
+
+    gmsh.initialize()
+    gmsh.clear()
+    gmsh.model.add("square_with_flattened_circle")
+
+    # Outer square points
+    p1 = gmsh.model.geo.addPoint(0, 0, 0, mesh_size)
+    p2 = gmsh.model.geo.addPoint(width, 0, 0, mesh_size)
+    p3 = gmsh.model.geo.addPoint(width, height, 0, mesh_size)
+    p4 = gmsh.model.geo.addPoint(0, height, 0, mesh_size)
+
+    # Outer square lines
+    l1 = gmsh.model.geo.addLine(p1, p2)  # Bottom
+    l2 = gmsh.model.geo.addLine(p2, p3)  # Right
+    l3 = gmsh.model.geo.addLine(p3, p4)  # Top
+    l4 = gmsh.model.geo.addLine(p4, p1)  # Left
+
+    # Use TransfiniteCurve for bottom wall discretization
+    gmsh.model.geo.mesh.setTransfiniteCurve(l1, n_points_bottom)
+
+    # Circle (hole) center
+    cx, cy = width/2, height/2
+
+    # Determine flatten_y if not provided (default: lowest point of circle)
+    if flatten_y is None:
+        flatten_y = cy - hole_radius
+
+    # Circle boundary (flattened bottom)
+    hole_points = []
+    for i in range(n_circle):
+        angle = 2 * np.pi * i / n_circle
+        x = cx + hole_radius * np.cos(angle)
+        y = cy + hole_radius * np.sin(angle)
+        # Flatten if below flatten_y
+        if y < flatten_y:
+            y = flatten_y
+        hole_points.append(gmsh.model.geo.addPoint(x, y, 0, mesh_size))
+    hole_lines = []
+    for i in range(n_circle):
+        hole_lines.append(gmsh.model.geo.addLine(hole_points[i], hole_points[(i+1)%n_circle]))
+
+    # Curve loops
+    outer_loop = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4])
+    hole_loop = gmsh.model.geo.addCurveLoop(hole_lines)
+
+    # Plane surface with flattened circle
+    surface = gmsh.model.geo.addPlaneSurface([outer_loop, hole_loop])
+
+    gmsh.model.geo.synchronize()
+
+    # Physical groups
+    gmsh.model.addPhysicalGroup(1, [l1], bottom_wall_marker, "bottom_wall")
+    gmsh.model.addPhysicalGroup(1, [l2, l3, l4], side_wall_marker, "outer_walls")
+    gmsh.model.addPhysicalGroup(1, hole_lines, obstacle_marker, "flattened_circle_boundary")
+    gmsh.model.addPhysicalGroup(2, [surface], domain_marker, "domain")
+
+    # Generate mesh
+    gmsh.model.mesh.generate(2)
+    gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
+    gmsh.write(f"{output_name}.msh")
+    gmsh.finalize()
+    return f"{output_name}.msh"
+
 if __name__ == "__main__":
     print("Generating square with hole mesh...")
 
@@ -339,7 +409,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.savefig("compare_initial_mesh.png")
     plt.show()
-    """
+    
 
     mesh_file = generate_square_with_rect_obstacle_mesh(
         width=1.0,
@@ -365,14 +435,21 @@ if __name__ == "__main__":
         perturb_amplitude=0.01,
         perturb_frequency=3
     )
+    """
 
-    plt.figure(figsize=(12, 6))
-    ax1 = plt.subplot(1, 2, 1)
-    plot_mesh("meshes/square_with_rect_obstacle.msh", ax1, "Square with Rectangle Obstacle")
+    mesh_file = generate_square_with_flattened_circle_mesh(
+    width=1.0,
+    height=1.0,
+    hole_radius=0.2,
+    mesh_size=mesh_size,
+    output_name="meshes/square_with_flattened_circle",
+    n_circle=100,
+    n_points_bottom=100,
+    flatten_y=0.35
+    )
 
-    ax2 = plt.subplot(1, 2, 2)
-    plot_mesh("meshes/square_with_perturbed_rect_obstacle.msh", ax2, "Square with Perturbed Rect Obstacle")
-    
+    plt.figure(figsize=(6, 6))
+    ax = plt.gca()
+    plot_mesh("meshes/square_with_flattened_circle.msh", ax, "Square with Flattened Circle Obstacle")
     plt.tight_layout()
-    plt.savefig("meshes/square_with_perturbed_rect_obstacle.png")
     plt.show()
