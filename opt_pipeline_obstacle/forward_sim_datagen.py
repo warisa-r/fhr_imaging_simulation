@@ -96,52 +96,33 @@ u_tot_mag.vector()[:] = np.sqrt(u_tot_re.vector().get_local()**2 + u_tot_im.vect
 
 ### Save the data ###
 
+# We have to project the data as a constant on every grid point in order to make it a
+# correct approximation of the value of u
 import pandas as pd
 
-# Extract u values (total field magnitude) along the bottom wall
-bottom_vertex_indices = set()
-for facet in SubsetIterator(boundary_markers, bottom_wall_marker):
-    for v in vertices(facet):
-        bottom_vertex_indices.add(v.index())
+V_DG0 = FunctionSpace(mesh, "DG", 0)
+u_tot_mag_dg0 = project(u_tot_mag, V_DG0)
 
-dof_coords = V.tabulate_dof_coordinates().reshape((-1, mesh.geometry().dim()))
-vertex_coords = mesh.coordinates()
-tol = 1e-10
-bottom_dof_indices = []
-for vi in bottom_vertex_indices:
-    v_coord = vertex_coords[vi]
-    matches = np.where(np.linalg.norm(dof_coords - v_coord, axis=1) < tol)[0]
-    bottom_dof_indices.extend(matches)
-bottom_dof_indices = np.unique(bottom_dof_indices)
-
-u_vals_bottom = u_tot_mag.vector().get_local()[bottom_dof_indices]
+u_vals_bottom = []
 x_vals = []
 y_vals = []
-for idx in bottom_dof_indices:
-    x_vals.append(dof_coords[idx, 0])
-    y_vals.append(dof_coords[idx, 1])
+
+for facet in SubsetIterator(boundary_markers, bottom_wall_marker):
+    cell = Cell(mesh, facet.entities(2)[0])  # cell adjacent to facet
+    dof_idx = V_DG0.dofmap().cell_dofs(cell.index())[0]
+    u_val = u_tot_mag_dg0.vector()[dof_idx]
+
+    midpoint = facet.midpoint()
+    x_vals.append(midpoint.x())
+    y_vals.append(midpoint.y())
+    u_vals_bottom.append(u_val)
 
 df = pd.DataFrame({
     "x": x_vals,
     "y": y_vals,
     "u": u_vals_bottom
 })
-
 df.to_csv("forward_sim_data_bottom.csv", index=False)
-
-### Check saved data integrity
-
-#print(simulation_df.head())
-#plt.figure(figsize=(6, 5))
-#plt.scatter(simulation_df['x'], simulation_df['y'], c=simulation_df['u_total_magnitude'], cmap='viridis', s=10)
-#plt.colorbar(label='|u_total|')
-#plt.xlabel('x')
-#plt.ylabel('y')
-#plt.title('Total Field Magnitude |u_total|')
-#plt.axis('equal')
-#plt.tight_layout()
-#plt.show()
-##############################
 
 # Plot magnitude of total field
 plt.figure()

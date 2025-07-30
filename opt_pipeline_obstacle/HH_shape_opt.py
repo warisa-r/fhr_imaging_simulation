@@ -46,45 +46,37 @@ class ReferenceData(UserExpression):
     def value_shape(self):
         return ()
 
-def load_forward_simulation_data_bottomwall(func_space):
-    
-    try:
-        # Load the CSV data with x, y, u values along the bottom wall
-        df = pd.read_csv("forward_sim_data_bottom.csv")
-        print(f"Loaded bottom wall reference data from CSV:")
-        print(f"  Data points: {len(df)}")
-        print(f"  Columns: {list(df.columns)}")
-        print(f"  u range: [{df.u.min():.6e}, {df.u.max():.6e}]")
+def load_forward_simulation_data_bottomwall(V_DG0):
+    df = pd.read_csv("forward_sim_data_bottom.csv")
+    points = df[["x", "y"]].values
+    values = df["u"].values
 
-        u_ref_func = Function(func_space)
-        u_ref_func.vector()[:] = 0.0  # Initialize to zero
+    # Set up the assignment
+    u_ref_dg0 = Function(V_DG0)
+    tree = mesh.bounding_box_tree()
+    dofmap = V_DG0.dofmap()
+    u_vec = u_ref_dg0.vector().get_local()
 
-        dof_coords = func_space.tabulate_dof_coordinates().reshape((-1, func_space.mesh().geometry().dim()))
-        tol = 1e-10
+    # For tracking which cells we've already assigned (to avoid duplicates)
+    assigned = np.zeros(mesh.num_cells(), dtype=bool)
 
-        # For each reference point, find the matching DOF by coordinate
-        for i, row in df.iterrows():
-            x_ref, y_ref, u_val = row["x"], row["y"], row["u"]
-            matches = np.where(
-                (np.abs(dof_coords[:, 0] - x_ref) < tol) &
-                (np.abs(dof_coords[:, 1] - y_ref) < tol)
-            )[0]
-            if len(matches) == 1:
-                u_ref_func.vector()[matches[0]] = u_val
-            elif len(matches) == 0:
-                print(f"Warning: No DOF found for reference point ({x_ref}, {y_ref})")
-            else:
-                print(f"Warning: Multiple DOFs found for reference point ({x_ref}, {y_ref})")
+    for (x, y), val in zip(points, values):
+        point = Point(x, y)
+        cell_id = tree.compute_first_entity_collision(point)
+        if cell_id < mesh.num_cells() and not assigned[cell_id]:
+            dof_idx = dofmap.cell_dofs(cell_id)[0]
+            u_vec[dof_idx] = val
+            assigned[cell_id] = True
+        elif cell_id < mesh.num_cells() and assigned[cell_id]:
+            print(f"Warning: cell {cell_id} already assigned, skipping duplicate point.")
+        else:
+            print(f"Warning: No cell found containing point ({x}, {y})")
 
-        return u_ref_func
+    # Push the updated values into the Function
+    u_ref_dg0.vector().set_local(u_vec)
+    u_ref_dg0.vector().apply("insert")
 
-    except FileNotFoundError:
-        print("Error: forward_sim_data_bottom.csv not found")
-        print("Please run forward_sim_datagen.py first")
-        return None
-    except Exception as e:
-        print(f"Error loading CSV data: {e}")
-        return None
+    return u_ref_dg0
 
 # Try to convert the mesh 
 print(f"Converting square_with_hole to XML format...")
@@ -198,10 +190,12 @@ def forward_solve(h_control):
     # Magnitude as UFL expression -> autodiffbar hopefully 
     u_tot_mag = sqrt(u_tot_re**2 + u_tot_im**2)
 
-    ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=bottom_wall_marker, 
-    metadata={"quadrature_degree": 0})
+    V_DG0 = FunctionSpace(mesh_copy, "DG", 0)
+    u_tot_mag_dg0 = project(u_tot_mag, V_DG0)
     
-    return u_tot_mag, ds_bottom, V
+    ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=bottom_wall_marker, 
+                metadata={"quadrature_degree": 0})
+    return u_tot_mag_dg0, ds_bottom, V_DG0
 
 ######################################
 
@@ -217,16 +211,13 @@ h.vector()[:] = h_vec
 print("No checkpoint found, starting from zero initial guess")
 
 num_iterations = 100
-u_tot_mag_initial, ds_bottom, V = forward_solve(h)
+# Solve the forward problem
+u_tot_mag_dg0, ds_bottom, V_DG0 = forward_solve(h)
 
 # Load reference data
-df = pd.read_csv("forward_sim_data_bottom.csv")
-points = df[["x", "y"]].values
-values = df["u"].values
-ref_expr = ReferenceData(points, values, degree=1)
-u_ref_func = interpolate(ref_expr, V)
+u_ref_dg0 = load_forward_simulation_data_bottomwall(V_DG0)
 
-J = assemble((inner(u_tot_mag_initial - u_ref_func, u_tot_mag_initial - u_ref_func)* ds_bottom))
+J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
 Jhat = ReducedFunctional(J, Control(h))
 
 
