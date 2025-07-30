@@ -118,7 +118,7 @@ def mesh_deformation(h, mesh_local, markers_local):
     bcs0 = [
         DirichletBC(V, Constant(1.0), markers_local, side_wall_marker),
         DirichletBC(V, Constant(1.0), markers_local, bottom_wall_marker),
-        DirichletBC(V, Constant(200.0), markers_local, obstacle_marker),
+        DirichletBC(V, Constant(100.0), markers_local, obstacle_marker),
     ]
     mu = Function(V, name="mu")
     LinearVariationalSolver(LinearVariationalProblem(a, L0, mu, bcs0)).solve()
@@ -197,6 +197,9 @@ def forward_solve(h_control):
 
     # Magnitude as UFL expression -> autodiffbar hopefully 
     u_tot_mag = sqrt(u_tot_re**2 + u_tot_im**2)
+
+    ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=bottom_wall_marker, 
+    metadata={"quadrature_degree": 0})
     
     return u_tot_mag, ds_bottom, V
 
@@ -223,7 +226,7 @@ values = df["u"].values
 ref_expr = ReferenceData(points, values, degree=1)
 u_ref_func = interpolate(ref_expr, V)
 
-J = assemble((u_tot_mag_initial - u_ref_func)**2 * ds_bottom)
+J = assemble((inner(u_tot_mag_initial - u_ref_func, u_tot_mag_initial - u_ref_func)* ds_bottom))
 Jhat = ReducedFunctional(J, Control(h))
 
 

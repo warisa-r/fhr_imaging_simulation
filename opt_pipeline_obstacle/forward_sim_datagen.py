@@ -29,12 +29,12 @@ class IncidentImag(UserExpression):
 print(f"Converting mesh to XML format...")
 result = subprocess.run([
     "dolfin-convert", 
-    f"meshes/square_with_flattened_circle.msh", 
-    f"meshes/square_with_flattened_circle.xml"
+    f"meshes/square_with_hole.msh", 
+    f"meshes/square_with_hole.xml"
 ], capture_output=True, text=True)
 
-mesh = Mesh(f"meshes/square_with_flattened_circle.xml")
-boundary_markers = MeshFunction("size_t", mesh, f"meshes/square_with_flattened_circle_facet_region.xml")
+mesh = Mesh(f"meshes/square_with_hole.xml")
+boundary_markers = MeshFunction("size_t", mesh, f"meshes/square_with_hole_facet_region.xml")
 
 # Define function space
 V_element = FiniteElement("CG", mesh.ufl_cell(), 5)
@@ -127,7 +127,7 @@ df = pd.DataFrame({
     "u": u_vals_bottom
 })
 
-#df.to_csv("forward_sim_data_bottom.csv", index=False)
+df.to_csv("forward_sim_data_bottom.csv", index=False)
 
 ### Check saved data integrity
 
