@@ -62,7 +62,11 @@ def generate_square_with_hole_mesh(
         hole_points.append(gmsh.model.geo.addPoint(x, y, 0, mesh_size))
     hole_lines = []
     for i in range(n_circle):
-        hole_lines.append(gmsh.model.geo.addLine(hole_points[i], hole_points[(i+1)%n_circle]))
+        p_start = hole_points[i]
+        p_end = hole_points[(i + 1) % n_circle]
+        line = gmsh.model.geo.addLine(p_start, p_end)
+        gmsh.model.geo.mesh.setTransfiniteCurve(line, 2)  # 2 = 1 segment
+        hole_lines.append(line)
 
     # Curve loops
     outer_loop = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4])
@@ -445,15 +449,6 @@ if __name__ == "__main__":
     mesh_size = wavelength / 5
 
     """
-    mesh_file = generate_square_with_hole_mesh(
-        width=1.0,
-        height=1.0,
-        hole_radius=0.2,
-        mesh_size=mesh_size,
-        output_name="square_with_hole",
-        n_circle=40, n_points_bottom=100
-    )
-
     mesh_file = generate_square_with_eccentric_hole_mesh(
         width=1.0,
         height=1.0,
@@ -513,7 +508,6 @@ if __name__ == "__main__":
     n_points_bottom=100,
     flatten_y=0.35
     )
-    """
 
     mesh_file = generate_square_with_sin_perturbed_circle_mesh(
     width=1.0,
@@ -524,5 +518,19 @@ if __name__ == "__main__":
     n_circle=100,
     n_points_bottom=100,
     perturb_amplitude=0.01,
-    perturb_frequency=3
-)
+    perturb_frequency=3)
+
+    """
+
+    mesh_file = generate_square_with_hole_mesh(
+        width=1.0,
+        height=1.0,
+        hole_radius=0.2,
+        mesh_size=mesh_size,
+        output_name="square_with_hole",
+        n_circle=200, n_points_bottom=100
+    )
+
+    fig, ax = plt.subplots(figsize=(6, 6))
+    plot_mesh("square_with_hole.msh", ax, title="Square with Circular Hole")
+    plt.show()
