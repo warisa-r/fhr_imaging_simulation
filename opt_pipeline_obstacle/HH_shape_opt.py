@@ -30,22 +30,6 @@ class IncidentImag(UserExpression):
     def value_shape(self):
         return ()
 
-class ReferenceData(UserExpression):
-    def __init__(self, points, values, **kwargs):
-        super().__init__(**kwargs)
-        self.points = points
-        self.values = values
-
-    def eval(self, values_out, x):
-        # Find closest point
-        distances = np.linalg.norm(self.points - x, axis=1)
-        idx = np.argmin(distances)
-        #TODO: Assign zero
-        values_out[0] = self.values[idx]
-    
-    def value_shape(self):
-        return ()
-
 def load_forward_simulation_data_bottomwall(V_DG0):
     df = pd.read_csv("forward_sim_data_bottom.csv")
     points = df[["x", "y"]].values
@@ -79,15 +63,15 @@ def load_forward_simulation_data_bottomwall(V_DG0):
     return u_ref_dg0
 
 # Try to convert the mesh 
-print(f"Converting square_with_hole to XML format...")
+print(f"Converting square_with_rect_obstacle to XML format...")
 result = subprocess.run([
     "dolfin-convert", 
-    f"meshes/square_with_hole.msh", 
-    f"meshes/square_with_hole.xml"
+    f"meshes/square_with_rect_obstacle.msh", 
+    f"meshes/square_with_rect_obstacle.xml"
 ], capture_output=True, text=True)
 
-mesh = Mesh(f"meshes/square_with_hole.xml")
-boundary_markers = MeshFunction("size_t", mesh, f"meshes/square_with_hole_facet_region.xml")
+mesh = Mesh(f"meshes/square_with_rect_obstacle.xml")
+boundary_markers = MeshFunction("size_t", mesh, f"meshes/square_with_rect_obstacle_facet_region.xml")
 
 # Create boundary mesh and design variables
 b_mesh = BoundaryMesh(mesh, "exterior")
@@ -110,7 +94,7 @@ def mesh_deformation(h, mesh_local, markers_local):
     bcs0 = [
         DirichletBC(V, Constant(1.0), markers_local, side_wall_marker),
         DirichletBC(V, Constant(1.0), markers_local, bottom_wall_marker),
-        DirichletBC(V, Constant(100.0), markers_local, obstacle_marker),
+        DirichletBC(V, Constant(25), markers_local, obstacle_marker),
     ]
     mu = Function(V, name="mu")
     LinearVariationalSolver(LinearVariationalProblem(a, L0, mu, bcs0)).solve()
@@ -140,7 +124,7 @@ def mesh_deformation(h, mesh_local, markers_local):
 def forward_solve(h_control):
     # Copy the “master” mesh and its facet markers
     mesh_copy = Mesh(mesh)
-    markers_copy = MeshFunction("size_t", mesh_copy, f"meshes/square_with_hole_facet_region.xml")
+    markers_copy = MeshFunction("size_t", mesh_copy, f"meshes/square_with_rect_obstacle_facet_region.xml")
 
     # Transfer h → volume and deform the copy since we want to preserve always the original
     h_vol = transfer_from_boundary(h_control, mesh_copy)
@@ -222,10 +206,12 @@ Jhat = ReducedFunctional(J, Control(h))
 
 
 ## Start optimizing ##
-h_opt = minimize(Jhat,
-#                bounds=[-7.0, 7.0],
-                tol=1e-6, 
-                options={"gtol": 1e-7, "maxiter": num_iterations, "disp": True})
+h_opt = minimize(
+    Jhat,
+    tol=1e-6,
+    method="L-BFGS-B",
+    options={"gtol": 1e-7, "maxiter": num_iterations, "disp": True}
+)
 
 # Save the current checkpoint
 iteration += num_iterations

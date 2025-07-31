@@ -7,8 +7,8 @@ import numpy as np
 from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
 
 # Load mesh and boundary markers
-mesh = Mesh("meshes/square_with_hole.xml")
-boundary_markers = MeshFunction("size_t", mesh, "meshes/square_with_hole_facet_region.xml")
+mesh = Mesh("meshes/square_with_rect_obstacle.xml")
+boundary_markers = MeshFunction("size_t", mesh, "meshes/square_with_rect_obstacle_facet_region.xml")
 
 # Create boundary mesh and function space
 b_mesh = BoundaryMesh(mesh, "exterior")
@@ -16,7 +16,7 @@ S_b = VectorFunctionSpace(b_mesh, "CG", 1)
 h = Function(S_b, name="Design")
 
 # Load h from checkpoint
-checkpoint_file = "h_checkpoint.h5"
+checkpoint_file = "outputs/rec_obs_perturbed mu = 17.5.h5"
 iteration = 0
 if os.path.exists(checkpoint_file):
     with HDF5File(MPI.comm_world, checkpoint_file, "r") as h5f:
@@ -72,11 +72,11 @@ def mesh_deformation(h, mesh_local, markers_local):
     return s
 
 # Load the perturbed mesh
-mesh_perturbed = Mesh("meshes/square_with_sin_perturbed_circle.xml")
+mesh_perturbed = Mesh("meshes/square_with_perturbed_rect_obstacle.xml")
 
 # Make a copy of the mesh for deformation
 mesh_copy = Mesh(mesh)
-boundary_markers_copy = MeshFunction("size_t", mesh_copy, "meshes/square_with_hole_facet_region.xml")
+boundary_markers_copy = MeshFunction("size_t", mesh_copy, "meshes/square_with_rect_obstacle_facet_region.xml")
 
 # Deform the mesh
 s_final = mesh_deformation(h_V, mesh_copy, boundary_markers_copy)
@@ -91,14 +91,14 @@ plt.axis("equal")
 
 plt.subplot(1, 3, 2)
 plot(mesh_perturbed, color="r", linewidth=0.5)
-plt.title("Flattened top of the circle")
+plt.title("Sin curve on bottom surface")
 plt.axis("equal")
 
 plt.subplot(1, 3, 3)
 plot(mesh_copy, color="r", linewidth=0.5)
-plt.title(f"Deformed mesh (iteration {iteration} (mu = 100))")
+plt.title(f"Deformed mesh (iteration 69 (mu = 17.5))")
 plt.axis("equal")
 
 plt.tight_layout()
-plt.savefig("outputs/circular_ob_flattened_mu100.png")
+plt.savefig("outputs/rec_obs_perturbed mu = 17.5.png")
 plt.show()
