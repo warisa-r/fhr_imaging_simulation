@@ -29,12 +29,12 @@ class IncidentImag(UserExpression):
 print(f"Converting mesh to XML format...")
 result = subprocess.run([
     "dolfin-convert", 
-    f"meshes/square_with_perturbed_rect_obstacle.msh", 
-    f"meshes/square_with_perturbed_rect_obstacle.xml"
+    f"meshes/square_with_gaussian_perturbed_rect.msh", 
+    f"meshes/square_with_gaussian_perturbed_rect.xml"
 ], capture_output=True, text=True)
 
-mesh = Mesh(f"meshes/square_with_perturbed_rect_obstacle.xml")
-boundary_markers = MeshFunction("size_t", mesh, f"meshes/square_with_perturbed_rect_obstacle_facet_region.xml")
+mesh = Mesh(f"meshes/square_with_gaussian_perturbed_rect.xml")
+boundary_markers = MeshFunction("size_t", mesh, f"meshes/square_with_gaussian_perturbed_rect_facet_region.xml")
 
 # Define function space
 V_element = FiniteElement("CG", mesh.ufl_cell(), 5)

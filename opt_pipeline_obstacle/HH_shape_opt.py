@@ -194,7 +194,7 @@ h_vec[:] = 0.0
 h.vector()[:] = h_vec
 print("No checkpoint found, starting from zero initial guess")
 
-num_iterations = 100
+num_iterations = 500
 # Solve the forward problem
 u_tot_mag_dg0, ds_bottom, V_DG0 = forward_solve(h)
 
