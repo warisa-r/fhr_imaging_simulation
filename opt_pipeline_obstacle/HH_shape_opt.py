@@ -63,15 +63,15 @@ def load_forward_simulation_data_bottomwall(V_DG0):
     return u_ref_dg0
 
 # Try to convert the mesh 
-print(f"Converting square_with_rect_obstacle to XML format...")
+print(f"Converting square_with_gaussian_perturbed_rect to XML format...")
 result = subprocess.run([
     "dolfin-convert", 
-    f"meshes/square_with_rect_obstacle.msh", 
-    f"meshes/square_with_rect_obstacle.xml"
+    f"meshes/square_with_gaussian_perturbed_rect.msh", 
+    f"meshes/square_with_gaussian_perturbed_rect.xml"
 ], capture_output=True, text=True)
 
-mesh = Mesh(f"meshes/square_with_rect_obstacle.xml")
-boundary_markers = MeshFunction("size_t", mesh, f"meshes/square_with_rect_obstacle_facet_region.xml")
+mesh = Mesh(f"meshes/square_with_gaussian_perturbed_rect.xml")
+boundary_markers = MeshFunction("size_t", mesh, f"meshes/square_with_gaussian_perturbed_rect_facet_region.xml")
 
 # Create boundary mesh and design variables
 b_mesh = BoundaryMesh(mesh, "exterior")
@@ -94,7 +94,7 @@ def mesh_deformation(h, mesh_local, markers_local):
     bcs0 = [
         DirichletBC(V, Constant(1.0), markers_local, side_wall_marker),
         DirichletBC(V, Constant(1.0), markers_local, bottom_wall_marker),
-        DirichletBC(V, Constant(25), markers_local, obstacle_marker),
+        DirichletBC(V, Constant(50.0), markers_local, obstacle_marker),
     ]
     mu = Function(V, name="mu")
     LinearVariationalSolver(LinearVariationalProblem(a, L0, mu, bcs0)).solve()
@@ -124,7 +124,7 @@ def mesh_deformation(h, mesh_local, markers_local):
 def forward_solve(h_control):
     # Copy the “master” mesh and its facet markers
     mesh_copy = Mesh(mesh)
-    markers_copy = MeshFunction("size_t", mesh_copy, f"meshes/square_with_rect_obstacle_facet_region.xml")
+    markers_copy = MeshFunction("size_t", mesh_copy, f"meshes/square_with_gaussian_perturbed_rect_facet_region.xml")
 
     # Transfer h → volume and deform the copy since we want to preserve always the original
     h_vol = transfer_from_boundary(h_control, mesh_copy)

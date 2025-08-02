@@ -42,9 +42,9 @@ def mesh_deformation(h, mesh_local, markers_local):
     a  = inner(grad(u), grad(v)) * dx
     L0 = Constant(0.0) * v * dx
     bcs0 = [
-        DirichletBC(V, Constant(2.0), markers_local, side_wall_marker),
+        DirichletBC(V, Constant(1.0), markers_local, side_wall_marker),
         DirichletBC(V, Constant(1.0), markers_local, bottom_wall_marker),
-        DirichletBC(V, Constant(50.0), markers_local, obstacle_marker),
+        DirichletBC(V, Constant(50), markers_local, obstacle_marker),
     ]
     mu = Function(V, name="mu")
     LinearVariationalSolver(LinearVariationalProblem(a, L0, mu, bcs0)).solve()
@@ -72,7 +72,7 @@ def mesh_deformation(h, mesh_local, markers_local):
     return s
 
 # Load the perturbed mesh
-mesh_perturbed = Mesh("meshes/square_with_perturbed_rect_obstacle.xml")
+mesh_perturbed = Mesh("meshes/square_with_gaussian_perturbed_rect.xml")
 
 # Make a copy of the mesh for deformation
 mesh_copy = Mesh(mesh)
@@ -96,9 +96,9 @@ plt.axis("equal")
 
 plt.subplot(1, 3, 3)
 plot(mesh_copy, color="r", linewidth=0.5)
-plt.title(f"Deformed mesh (iteration 50 (mu = 25))")
+plt.title(f"Deformed mesh (iteration 126 (mu = 50))")
 plt.axis("equal")
 
 plt.tight_layout()
-plt.savefig("outputs/rec_obs_perturbed mu = 25.png")
+plt.savefig("outputs/rec_obs_gaussian_perturbed mu = 50.png")
 plt.show()
