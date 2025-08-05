@@ -1,6 +1,7 @@
 from dolfin import *
 from dolfin_adjoint import *
 import numpy as np
+import pandas as pd
 
 def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_stiffness=50):
     # Create scalar function space for material properties
@@ -51,26 +52,39 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
 
     return s
 
+def load_forward_simulation_data_bottomwall(V_DG0, forward_sim_result_file_path):
+    df = pd.read_csv(forward_sim_result_file_path)
+    points = df[["x", "y"]].values
+    values = df["u"].values
+
+    u_ref_dg0 = Function(V_DG0)
+    
+    mesh = V_DG0.mesh()
+    tree = mesh.bounding_box_tree()
+    dofmap = V_DG0.dofmap()
+    u_vec = u_ref_dg0.vector().get_local()
+
+    assigned = np.zeros(mesh.num_cells(), dtype=bool)
+
+    for (x, y), val in zip(points, values):
+        point = Point(x, y)
+        cell_id = tree.compute_first_entity_collision(point)
+        if cell_id < mesh.num_cells() and not assigned[cell_id]:
+            dof_idx = dofmap.cell_dofs(cell_id)[0]
+            u_vec[dof_idx] = val
+            assigned[cell_id] = True
+        elif cell_id < mesh.num_cells() and assigned[cell_id]:
+            print(f"Warning: cell {cell_id} already assigned, skipping duplicate point.")
+        else:
+            print(f"Warning: No cell found containing point ({x}, {y})")
+
+    u_ref_dg0.vector().set_local(u_vec)
+    u_ref_dg0.vector().apply("insert")
+
+    return u_ref_dg0
 
 def helmholtz_solve(mesh_copy, markers_copy, h_control, k_background, incident_wave_amp, 
                    obstacle_marker, side_wall_marker, bottom_wall_marker):
-    """
-    Solves the Helmholtz equation on a deformed mesh.
-    
-    Args:
-        mesh_copy: Copy of the mesh to be deformed
-        markers_copy: Boundary markers for the mesh
-        h_control: Boundary displacement field
-        k_background: Wave number
-        incident_wave_amp: Amplitude of incident wave
-        obstacle_marker, side_wall_marker, bottom_wall_marker: Boundary markers
-    
-    Returns:
-        u_tot_mag_dg0: Total field magnitude on DG0 space
-        ds_bottom: Measure for bottom boundary
-        V_DG0: DG0 function space
-        mesh_copy: The deformed mesh
-    """
     # Define incident field expressions
     class IncidentReal(UserExpression):
         def eval(self, values, x):
