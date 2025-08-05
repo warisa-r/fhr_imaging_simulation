@@ -35,7 +35,7 @@ else:
 # Transfer h to volume mesh
 h_V = transfer_from_boundary(h, mesh)
 
-# Mesh deformation function (copied from your main script)
+# Mesh deformation function 
 def mesh_deformation(h, mesh_local, markers_local):
     V = FunctionSpace(mesh_local, "CG", 1)
     u, v = TrialFunction(V), TestFunction(V)
