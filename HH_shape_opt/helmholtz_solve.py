@@ -1,0 +1,150 @@
+from dolfin import *
+from dolfin_adjoint import *
+import numpy as np
+
+def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_stiffness=50):
+    # Create scalar function space for material properties
+    V = FunctionSpace(mesh, "CG", 1)
+    u, v = TrialFunction(V), TestFunction(V)
+    a = inner(grad(u), grad(v)) * dx
+    L0 = Constant(0.0) * v * dx
+    
+    # Set material properties via boundary conditions
+    bcs0 = [
+        DirichletBC(V, Constant(1.0), markers, side_wall_marker),
+        DirichletBC(V, Constant(1.0), markers, bottom_wall_marker),
+        DirichletBC(V, Constant(obstacle_stiffness), markers, obstacle_marker),
+    ]
+    
+    # Solve for material distribution
+    mu = Function(V, name="mu")
+    solve(a == L0, mu, bcs0)
+
+    # Create vector function space for displacement
+    S = VectorFunctionSpace(mesh, "CG", 1)
+    u_vec, v_vec = TrialFunction(S), TestFunction(S)
+    
+    # Define measure for obstacle boundary
+    dObs = Measure("ds",
+        domain=mesh,
+        subdomain_data=markers,
+        subdomain_id=obstacle_marker
+    )
+
+    # Define strain and stress tensors
+    def ε(w): return sym(grad(w))
+    def σ(w): return 2 * mu * ε(w)
+
+    # Elastic variational problem
+    a_el = inner(σ(u_vec), grad(v_vec)) * dx
+    L_el = inner(h_vol, v_vec) * dObs
+
+    # Boundary conditions: fix bottom and side walls
+    bc_el = [
+        DirichletBC(S, Constant((0.0, 0.0)), markers, bottom_wall_marker),
+        DirichletBC(S, Constant((0.0, 0.0)), markers, side_wall_marker)
+    ]
+    
+    # Solve for displacement field
+    s = Function(S, name="deformation")
+    solve(a_el == L_el, s, bc_el)
+
+    return s
+
+
+def helmholtz_solve(mesh_copy, markers_copy, h_control, k_background, incident_wave_amp, 
+                   obstacle_marker, side_wall_marker, bottom_wall_marker):
+    """
+    Solves the Helmholtz equation on a deformed mesh.
+    
+    Args:
+        mesh_copy: Copy of the mesh to be deformed
+        markers_copy: Boundary markers for the mesh
+        h_control: Boundary displacement field
+        k_background: Wave number
+        incident_wave_amp: Amplitude of incident wave
+        obstacle_marker, side_wall_marker, bottom_wall_marker: Boundary markers
+    
+    Returns:
+        u_tot_mag_dg0: Total field magnitude on DG0 space
+        ds_bottom: Measure for bottom boundary
+        V_DG0: DG0 function space
+        mesh_copy: The deformed mesh
+    """
+    # Define incident field expressions
+    class IncidentReal(UserExpression):
+        def eval(self, values, x):
+            values[0] = np.real(incident_wave_amp * np.exp(1j * k_background * x[1]))
+        def value_shape(self):
+            return ()
+
+    class IncidentImag(UserExpression):
+        def eval(self, values, x):
+            values[0] = np.imag(incident_wave_amp * np.exp(1j * k_background * x[1]))
+        def value_shape(self):
+            return ()
+
+    # Perform mesh deformation
+    h_vol = transfer_from_boundary(h_control, mesh_copy)
+    s = mesh_deformation(h_vol, mesh_copy, markers_copy, 
+                        obstacle_marker, side_wall_marker, bottom_wall_marker, 
+                        obstacle_stiffness=50)
+    ALE.move(mesh_copy, s)
+
+    # Create function space and project incident fields
+    V = FunctionSpace(mesh_copy, "CG", 5)
+    u_inc_re = project(IncidentReal(degree=2), V)
+    u_inc_im = project(IncidentImag(degree=2), V)
+
+    # Define boundary measures
+    ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=bottom_wall_marker)
+    ds_sides = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=side_wall_marker)
+    ds_obstacle = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=obstacle_marker)
+    ds_outer = ds_bottom + ds_sides
+
+    # Create mixed function space for complex-valued problem
+    W = FunctionSpace(mesh_copy, MixedElement([V.ufl_element(), V.ufl_element()]))
+    (u_re, u_im), (v_re, v_im) = TrialFunctions(W), TestFunctions(W)
+
+    # Define variational form
+    a = (inner(grad(u_re), grad(v_re)) - k_background**2*u_re*v_re)*dx \
+        + k_background*u_im*v_re*ds_outer \
+        + (inner(grad(u_im), grad(v_im)) - k_background**2*u_im*v_im)*dx \
+        - k_background*u_re*v_im*ds_outer
+
+    L = Constant(0.0)*(v_re + v_im)*dx
+
+    # Boundary conditions: u_scattered = -u_incident on obstacle
+    uinc_re_neg = Function(V)
+    uinc_re_neg.vector()[:] = -u_inc_re.vector()[:]
+    uinc_im_neg = Function(V)
+    uinc_im_neg.vector()[:] = -u_inc_im.vector()[:]
+
+    bcs = [
+        DirichletBC(W.sub(0), uinc_re_neg, markers_copy, obstacle_marker),
+        DirichletBC(W.sub(1), uinc_im_neg, markers_copy, obstacle_marker),
+    ]
+
+    # Solve the system
+    w = Function(W)
+    solve(a == L, w, bcs)
+    
+    # Extract solutions
+    u_sol_re, u_sol_im = w.split()
+
+    # Compute total fields
+    u_tot_re = u_inc_re + u_sol_re
+    u_tot_im = u_inc_im + u_sol_im
+
+    # Compute magnitude
+    u_tot_mag = sqrt(u_tot_re**2 + u_tot_im**2)
+
+    # Project to DG0 for easier integration
+    V_DG0 = FunctionSpace(mesh_copy, "DG", 0)
+    u_tot_mag_dg0 = project(u_tot_mag, V_DG0)
+    
+    # Create measure for bottom boundary with appropriate quadrature
+    ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, 
+                       subdomain_id=bottom_wall_marker, metadata={"quadrature_degree": 0})
+    
+    return u_tot_mag_dg0, ds_bottom, V_DG0
