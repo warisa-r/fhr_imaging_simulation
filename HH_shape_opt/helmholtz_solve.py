@@ -33,8 +33,8 @@ class HelmholtzSetup:
             def value_shape(self):
                 return ()
 
-        self.u_inc_re = IncidentReal(degree=2)
-        self.u_inc_im = IncidentImag(degree=2)
+        self.u_inc_re = IncidentReal(degree=5)
+        self.u_inc_im = IncidentImag(degree=5)
 
 def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_stiffness):
     # Create scalar function space for material properties
@@ -85,18 +85,24 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
 
     return s
 
-def load_forward_simulation_data_bottomwall(V_DG0, forward_sim_result_file_path):
+def load_forward_simulation_data_bottomwall(V_DG0, forward_sim_result_file_path, angle=None):
     df = pd.read_csv(forward_sim_result_file_path)
+
+    if angle is not None:
+        df = df.loc[df["angle"] == angle]
+
+    # Extract points and values
     points = df[["x", "y"]].values
     values = df["u"].values
 
+    # Initialize DG0 function
     u_ref_dg0 = Function(V_DG0)
-    
     mesh = V_DG0.mesh()
     tree = mesh.bounding_box_tree()
     dofmap = V_DG0.dofmap()
     u_vec = u_ref_dg0.vector().get_local()
 
+    # Track assigned cells
     assigned = np.zeros(mesh.num_cells(), dtype=bool)
 
     for (x, y), val in zip(points, values):
@@ -106,14 +112,13 @@ def load_forward_simulation_data_bottomwall(V_DG0, forward_sim_result_file_path)
             dof_idx = dofmap.cell_dofs(cell_id)[0]
             u_vec[dof_idx] = val
             assigned[cell_id] = True
-        elif cell_id < mesh.num_cells() and assigned[cell_id]:
+        elif cell_id < mesh.num_cells():
             print(f"Warning: cell {cell_id} already assigned, skipping duplicate point.")
         else:
             print(f"Warning: No cell found containing point ({x}, {y})")
 
     u_ref_dg0.vector().set_local(u_vec)
     u_ref_dg0.vector().apply("insert")
-
     return u_ref_dg0
 
 def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup, 

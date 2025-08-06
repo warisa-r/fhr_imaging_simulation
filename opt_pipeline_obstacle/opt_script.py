@@ -21,30 +21,58 @@ from HH_shape_opt.process_result import save_optimization_result, plot_mesh_defo
 
 
 ######################################
-
-iteration = 0
-num_iterations = 500
-
-msh_file_path = "meshes/square_with_gaussian_perturbed_rect.msh"
+#msh_file_path = "meshes/square_with_rect_obstacle.msh"
+#msh_file_path = "meshes/square_with_gaussian_perturbed_rect.msh" # To check and see the degree of 
 forward_sim_result_file_path = "forward_sim_data_bottom.csv"
 result_path = "result.h5"
 
 frequency = 5e9
 incident_field_func = plane_wave
-hh_setup = HelmholtzSetup(frequency, incident_field_func)
 
-# Initialization by copying the mesh we want to perform the forward sim on and
-# get the first initial guesses of h (all zero by default)
-h, mesh, markers = initialize_opt(msh_file_path)
+angles = [-45, 0, 45]
 
-# Solve the forward problem
-u_tot_mag_dg0, ds_bottom, V_DG0 = helmholtz_solve(mesh, markers, h, hh_setup,
-                                                             obstacle_marker, side_wall_marker, bottom_wall_marker)
-# Load reference data
-u_ref_dg0 = load_forward_simulation_data_bottomwall(V_DG0, forward_sim_result_file_path)
+h, _, _ = initialize_opt(msh_file_path)
 
-J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
+# Initialize list to store individual cost function contributions
+J_contributions = []
 
+# A factory function to correctly capture the angle in the closure
+def make_plane_wave(angle):
+    def plane_wave(x, k_background):
+        # Note: angle is given as a degree
+        direction_x = np.sin(np.deg2rad(angle))  # x-component of the direction
+        direction_y = np.cos(np.deg2rad(angle))  # y-component of the direction
+
+        # Dot product of the direction vector with the spatial coordinates
+        dot_product = direction_x * x[0] + direction_y * x[1]
+
+        return np.exp(1j * k_background * dot_product)
+    return plane_wave
+
+# Initialize the optimization control variables and generate mesh and markers object
+for i, angle in enumerate(angles):
+    # Create the incident field function for the current angle
+    incident_field_func = make_plane_wave(angle)
+    hh_setup = HelmholtzSetup(frequency, incident_field_func)
+
+    # CREATE FRESH MESH COPIES FOR EACH SOLVE
+    _, mesh_copy, markers_copy = initialize_opt(msh_file_path)
+
+    # Solve the forward problem
+    u_tot_mag_dg0, ds_bottom, V_DG0 = helmholtz_solve(mesh_copy, markers_copy, h, hh_setup,
+                                                                obstacle_marker, side_wall_marker, bottom_wall_marker)
+
+    # Load reference data
+    u_ref_dg0 = load_forward_simulation_data_bottomwall(V_DG0, forward_sim_result_file_path, angle)
+
+    # Assemble and store the contribution to the functional
+    J_i = assemble(inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom)
+    J_contributions.append(J_i)
+
+# Sum the assembled contributions
+J = sum(J_contributions)
+
+# Assemble J and transform it to RH
 Jhat = ReducedFunctional(J, Control(h))
 
 problem = MoolaOptimizationProblem(Jhat)
@@ -53,7 +81,7 @@ h_moola = moola.DolfinPrimalVector(h)
 solver = moola.BFGS(problem, h_moola, options={'jtol': 1e-8,
                                                'gtol': 1e-7,
                                                'Hinit': "default",
-                                               'maxiter': 1,
+                                               'maxiter': 500,
                                                'mem_lim': 10})
 
 # Solve
@@ -66,5 +94,5 @@ plot_mesh_deformation_from_result(
     msh_file_path,
     obstacle_marker,
     side_wall_marker,
-    bottom_wall_marker,
+    bottom_wall_marker
 )

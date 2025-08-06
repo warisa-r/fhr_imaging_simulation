@@ -9,8 +9,9 @@ from .helmholtz_solve import mesh_deformation
 def save_optimization_result(
     sol,
     msh_file_path,
-    result_file = "result.h5",
+    result_file = "result.h5"
 ):
+    #TODO: Save obstacle stiffness
     with HDF5File(MPI.comm_world, result_file, "w") as h5f:
         h5f.write(sol['control'].data, "/h_opt")
         h5f.attributes("/h_opt")["nit"] = sol['iteration']
@@ -25,6 +26,7 @@ def plot_mesh_deformation_from_result(
     obstacle_marker,
     side_wall_marker,
     bottom_wall_marker,
+    obstacle_stiffness = 50,
     subplot_titles=None,
     plot_file_name="mesh_deformation.png"
 ):
@@ -68,7 +70,7 @@ def plot_mesh_deformation_from_result(
     # Deform the mesh using the imported mesh_deformation
     s_final = mesh_deformation(
         h_vol, mesh_copy, boundary_markers_copy,
-        obstacle_marker, side_wall_marker, bottom_wall_marker
+        obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_stiffness
     )
     ALE.move(mesh_copy, s_final)
 
