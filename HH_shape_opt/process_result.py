@@ -1,26 +1,25 @@
-from dolfin import HDF5File, MPI
+from dolfin import *
+from dolfin_adjoint import *
 import numpy as np
+import matplotlib.pyplot as plt
 
 from .util import msh2xml_path
 from .helmholtz_solve import mesh_deformation
 
-#TODO fix so that this works with MOOLA optimizer
 def save_optimization_result(
-    h_opt,
-    opt_result,
+    sol,
     msh_file_path,
-    checkpoint_file = "result.h5",
+    result_file = "result.h5",
 ):
-    with HDF5File(MPI.comm_world, checkpoint_file, "w") as h5f:
-        h5f.write(h_opt, "/h_opt") # The final design variable
-        h5f.attributes("/h_opt")["num_iterations"] = opt_result.get("nit", None)
-        h5f.attributes("/h_opt")["final_residual"] = opt_result.get("fun", None)
-        h5f.attributes("/h_opt")["final_gradient"] = np.linalg.norm(opt_result.get("jac", np.zeros_like(h_opt.vector().get_local())))
-        h5f.attributes("/h_opt")["termination_message"] = opt_result.get("message", "")
+    with HDF5File(MPI.comm_world, result_file, "w") as h5f:
+        h5f.write(sol['control'].data, "/h_opt")
+        h5f.attributes("/h_opt")["nit"] = sol['iteration']
+        h5f.attributes("/h_opt")["objective"] = sol['objective']
+        h5f.attributes("/h_opt")["grad_norm"] = sol['grad_norm']
         h5f.attributes("/h_opt")["msh_file_path"] = msh_file_path
-    print(f"Optimization result saved to {checkpoint_file}")
+    print(f"Optimization result saved to {result_file}")
 
-def plot_mesh_deformation_from_checkpoint(
+def plot_mesh_deformation_from_result(
     h5_file_path,
     msh_file_path,
     obstacle_marker,
@@ -53,11 +52,11 @@ def plot_mesh_deformation_from_checkpoint(
         h5f.read(h_temp, "/h_opt")
         h.vector()[:] = h_temp.vector().get_local()
         try:
-            final_residual = h5f.attributes("/h_opt")["final_residual"]
+            final_residual = h5f.attributes("/h_opt")["objective"]
         except Exception:
             final_residual = None
         try:
-            num_iterations = h5f.attributes("/h_opt")["num_iterations"]
+            num_iterations = h5f.attributes("/h_opt")["nit"]
         except Exception:
             num_iterations = None
 

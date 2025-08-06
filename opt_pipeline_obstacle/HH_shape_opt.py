@@ -17,7 +17,7 @@ from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marke
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from HH_shape_opt.helmholtz_solve import helmholtz_solve, load_forward_simulation_data_bottomwall
 from HH_shape_opt.initialize_opt import initialize_opt
-from HH_shape_opt.process_result import save_optimization_result
+from HH_shape_opt.process_result import save_optimization_result, plot_mesh_deformation_from_result
 
 k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
 incident_wave_amp = 1
@@ -29,6 +29,7 @@ num_iterations = 500
 
 msh_file_path = "meshes/square_with_gaussian_perturbed_rect.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom.csv"
+result_path = "result.h5"
 
 # Initialization by copying the mesh we want to perform the forward sim on and
 # get the first initial guesses of h (all zero by default)
@@ -56,12 +57,12 @@ solver = moola.BFGS(problem, h_moola, options={'jtol': 1e-8,
 # Solve
 sol = solver.solve()
 
-# Get optimized control
-h_opt = sol['control'].data
-nit = sol['iteration']
+save_optimization_result(sol, msh_file_path, result_path)
 
-# Print some diagnostics
-print("\nOptimization finished.")
-print(f"Total iterations: {nit}")
-print(f"Res: {sol['objective']}")
-print(h_opt)
+plot_mesh_deformation_from_result(
+    result_path,
+    msh_file_path,
+    obstacle_marker,
+    side_wall_marker,
+    bottom_wall_marker,
+)
