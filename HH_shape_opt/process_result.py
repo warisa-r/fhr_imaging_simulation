@@ -3,7 +3,7 @@ from dolfin_adjoint import *
 import numpy as np
 import matplotlib.pyplot as plt
 
-from .util import msh2xml_path
+from .initialize_opt import msh2xml_path, msh2xdmf_path
 from .helmholtz_solve import mesh_deformation
 
 def save_optimization_result(

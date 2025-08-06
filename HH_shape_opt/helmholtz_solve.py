@@ -85,41 +85,53 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
 
     return s
 
-def load_forward_simulation_data_bottomwall(V_DG0, forward_sim_result_file_path, angle=None):
+def preprocess_reference_data(V_DG0, forward_sim_result_file_path, angle):
+    """
+    Reads reference data and maps it to the cell indices of the initial mesh.
+    """
     df = pd.read_csv(forward_sim_result_file_path)
-
     if angle is not None:
-        df = df.loc[df["angle"] == angle]
+        df = df[df["angle"] == angle]
 
-    # Extract points and values
     points = df[["x", "y"]].values
     values = df["u"].values
 
-    # Initialize DG0 function
-    u_ref_dg0 = Function(V_DG0)
     mesh = V_DG0.mesh()
     tree = mesh.bounding_box_tree()
     dofmap = V_DG0.dofmap()
-    u_vec = u_ref_dg0.vector().get_local()
-
-    # Track assigned cells
-    assigned = np.zeros(mesh.num_cells(), dtype=bool)
-
+    
+    cell_value_map = {}
     for (x, y), val in zip(points, values):
         point = Point(x, y)
-        cell_id = tree.compute_first_entity_collision(point)
-        if cell_id < mesh.num_cells() and not assigned[cell_id]:
-            dof_idx = dofmap.cell_dofs(cell_id)[0]
-            u_vec[dof_idx] = val
-            assigned[cell_id] = True
-        elif cell_id < mesh.num_cells():
-            print(f"Warning: cell {cell_id} already assigned, skipping duplicate point.")
+        cell_id, _ = tree.compute_closest_entity(point)
+        if cell_id < mesh.num_cells():
+            if cell_id not in cell_value_map:
+                dof_idx = dofmap.cell_dofs(cell_id)[0]
+                cell_value_map[dof_idx] = val
+            else:
+                # This case should ideally not happen with DG0 and well-defined data
+                pass
         else:
-            print(f"Warning: No cell found containing point ({x}, {y})")
+            print(f"Warning (preprocess): No cell found for point ({x}, {y}) on initial mesh.")
+            
+    return cell_value_map
 
+def assign_reference_data(V_DG0, cell_value_map):
+    """
+    Assigns pre-processed reference data to a DG0 function.
+    """
+    u_ref_dg0 = Function(V_DG0)
+    u_vec = u_ref_dg0.vector().get_local()
+    
+    for dof_idx, value in cell_value_map.items():
+        u_vec[dof_idx] = value
+        
     u_ref_dg0.vector().set_local(u_vec)
     u_ref_dg0.vector().apply("insert")
     return u_ref_dg0
+
+def load_forward_simulation_data_bottomwall(V_DG0, forward_sim_result_file_path, angle=None):
+    df = pd.read_csv(forward_sim_result_file_path)
 
 def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup, 
                    obstacle_marker, side_wall_marker, bottom_wall_marker):

@@ -13,7 +13,7 @@ from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marke
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from HH_shape_opt.helmholtz_solve import HelmholtzSetup, plane_wave, helmholtz_solve
-from HH_shape_opt.initialize_opt import initialize_opt
+from HH_shape_opt.initialize_opt import initialize_opt_xml
 
 # Simulation setup
 msh_file_path = "meshes/square_with_gaussian_perturbed_rect.msh"
@@ -22,7 +22,7 @@ frequency = 5e9
 
 angles = [-45, 0, 45]
 
-h, mesh, markers = initialize_opt(msh_file_path)
+h, mesh, markers = initialize_opt_xml(msh_file_path)
 for angle in angles:
     # Define the plane wave from different direction
     def plane_wave(x, k_background):
