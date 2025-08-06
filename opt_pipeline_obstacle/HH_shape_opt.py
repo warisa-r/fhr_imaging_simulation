@@ -15,12 +15,10 @@ import matplotlib.pyplot as plt
 from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from HH_shape_opt.helmholtz_solve import helmholtz_solve, load_forward_simulation_data_bottomwall
+from HH_shape_opt.helmholtz_solve import HelmholtzSetup, plane_wave, helmholtz_solve, load_forward_simulation_data_bottomwall
 from HH_shape_opt.initialize_opt import initialize_opt
 from HH_shape_opt.process_result import save_optimization_result, plot_mesh_deformation_from_result
 
-k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
-incident_wave_amp = 1
 
 ######################################
 
@@ -31,12 +29,16 @@ msh_file_path = "meshes/square_with_gaussian_perturbed_rect.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom.csv"
 result_path = "result.h5"
 
+frequency = 5e9
+incident_field_func = plane_wave
+hh_setup = HelmholtzSetup(frequency, incident_field_func)
+
 # Initialization by copying the mesh we want to perform the forward sim on and
 # get the first initial guesses of h (all zero by default)
 h, mesh, markers = initialize_opt(msh_file_path)
 
 # Solve the forward problem
-u_tot_mag_dg0, ds_bottom, V_DG0 = helmholtz_solve(mesh, markers, h, k_background, incident_wave_amp,
+u_tot_mag_dg0, ds_bottom, V_DG0 = helmholtz_solve(mesh, markers, h, hh_setup,
                                                              obstacle_marker, side_wall_marker, bottom_wall_marker)
 # Load reference data
 u_ref_dg0 = load_forward_simulation_data_bottomwall(V_DG0, forward_sim_result_file_path)

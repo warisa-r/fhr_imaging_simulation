@@ -3,7 +3,39 @@ from dolfin_adjoint import *
 import numpy as np
 import pandas as pd
 
-def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_stiffness=50):
+## CONSTANTS ##
+
+LIGHT_SPEED = 299792458
+
+def plane_wave(x, k_background, incident_wave_amp = 1.0):
+    return incident_wave_amp * np.exp(1j * k_background * x[1])
+
+class HelmholtzSetup:
+    def __init__(self, frequency, incident_field_func, obstacle_stiffness = 50):
+        self.frequency = frequency
+        self.k_background = 2* np.pi * frequency / LIGHT_SPEED
+        self.set_incident_field(incident_field_func)
+        self.obstacle_stiffness = obstacle_stiffness
+
+    def set_incident_field(self, incident_field_func):
+        k_background = self.k_background
+
+        class IncidentReal(UserExpression):
+            def eval(self, values, x):
+                values[0] = np.real(incident_field_func(x, k_background))
+            def value_shape(self):
+                return ()
+
+        class IncidentImag(UserExpression):
+            def eval(self, values, x):
+                values[0] = np.imag(incident_field_func(x, k_background))
+            def value_shape(self):
+                return ()
+
+        self.u_inc_re = IncidentReal(degree=2)
+        self.u_inc_im = IncidentImag(degree=2)
+
+def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_stiffness):
     # Create scalar function space for material properties
     V = FunctionSpace(mesh, "CG", 1)
     u, v = TrialFunction(V), TestFunction(V)
@@ -83,32 +115,20 @@ def load_forward_simulation_data_bottomwall(V_DG0, forward_sim_result_file_path)
 
     return u_ref_dg0
 
-def helmholtz_solve(mesh_copy, markers_copy, h_control, k_background, incident_wave_amp, 
+def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup, 
                    obstacle_marker, side_wall_marker, bottom_wall_marker):
-    # Define incident field expressions
-    class IncidentReal(UserExpression):
-        def eval(self, values, x):
-            values[0] = np.real(incident_wave_amp * np.exp(1j * k_background * x[1]))
-        def value_shape(self):
-            return ()
-
-    class IncidentImag(UserExpression):
-        def eval(self, values, x):
-            values[0] = np.imag(incident_wave_amp * np.exp(1j * k_background * x[1]))
-        def value_shape(self):
-            return ()
 
     # Perform mesh deformation
     h_vol = transfer_from_boundary(h_control, mesh_copy)
     s = mesh_deformation(h_vol, mesh_copy, markers_copy, 
                         obstacle_marker, side_wall_marker, bottom_wall_marker, 
-                        obstacle_stiffness=50)
+                        obstacle_stiffness=hh_setup.obstacle_stiffness)
     ALE.move(mesh_copy, s)
 
     # Create function space and project incident fields
     V = FunctionSpace(mesh_copy, "CG", 5)
-    u_inc_re = project(IncidentReal(degree=2), V)
-    u_inc_im = project(IncidentImag(degree=2), V)
+    u_inc_re = project(hh_setup.u_inc_re, V)
+    u_inc_im = project(hh_setup.u_inc_im, V)
 
     # Define boundary measures
     ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=bottom_wall_marker)
@@ -121,10 +141,10 @@ def helmholtz_solve(mesh_copy, markers_copy, h_control, k_background, incident_w
     (u_re, u_im), (v_re, v_im) = TrialFunctions(W), TestFunctions(W)
 
     # Define variational form
-    a = (inner(grad(u_re), grad(v_re)) - k_background**2*u_re*v_re)*dx \
-        + k_background*u_im*v_re*ds_outer \
-        + (inner(grad(u_im), grad(v_im)) - k_background**2*u_im*v_im)*dx \
-        - k_background*u_re*v_im*ds_outer
+    a = (inner(grad(u_re), grad(v_re)) - hh_setup.k_background**2*u_re*v_re)*dx \
+        + hh_setup.k_background*u_im*v_re*ds_outer \
+        + (inner(grad(u_im), grad(v_im)) - hh_setup.k_background**2*u_im*v_im)*dx \
+        - hh_setup.k_background*u_re*v_im*ds_outer
 
     L = Constant(0.0)*(v_re + v_im)*dx
 
