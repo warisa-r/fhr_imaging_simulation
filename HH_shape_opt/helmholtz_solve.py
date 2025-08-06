@@ -7,8 +7,8 @@ import pandas as pd
 
 LIGHT_SPEED = 299792458
 
-def plane_wave(x, k_background, incident_wave_amp = 1.0):
-    return incident_wave_amp * np.exp(1j * k_background * x[1])
+def plane_wave(x, k_background):
+    return np.exp(1j * k_background * x[1])
 
 class HelmholtzSetup:
     def __init__(self, frequency, incident_field_func, obstacle_stiffness = 50):
@@ -18,6 +18,7 @@ class HelmholtzSetup:
         self.obstacle_stiffness = obstacle_stiffness
 
     def set_incident_field(self, incident_field_func):
+        # Any incident field function that works has to take in 2 arguments: x and k_background
         k_background = self.k_background
 
         class IncidentReal(UserExpression):
