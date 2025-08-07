@@ -3,7 +3,7 @@ from dolfin_adjoint import *
 import numpy as np
 import matplotlib.pyplot as plt
 
-from .initialize_opt import msh2xml_path, msh2xdmf_path
+from .initialize_opt import msh2xml_path, initialize_opt_xdmf
 from .helmholtz_solve import mesh_deformation
 
 def save_optimization_result(
@@ -30,18 +30,15 @@ def plot_mesh_deformation_from_result(
     subplot_titles=None,
     plot_file_name="mesh_deformation.png"
 ):
+
     if subplot_titles is None:
         subplot_titles = [
             "Original mesh",
             "Reference/perturbed mesh",
             "Mesh resulted from the optimization"
         ]
-    # Get the xml file paths of the msh files
-    xml_path, facet_region_xml_path = msh2xml_path(msh_file_path)
 
-    # Load mesh and markers
-    mesh = Mesh(xml_path)
-    boundary_markers = MeshFunction("size_t", mesh, facet_region_xml_path)
+    _, mesh, markers = initialize_opt_xdmf(msh_file_path)
 
     # Load h and optimization info from checkpoint
     b_mesh = BoundaryMesh(mesh, "exterior")
@@ -63,18 +60,18 @@ def plot_mesh_deformation_from_result(
             num_iterations = None
 
     # Make a copy of the mesh for deformation to get the optimized mesh
-    mesh_copy = Mesh(mesh)
-    boundary_markers_copy = MeshFunction("size_t", mesh_copy, facet_region_xml_path)
+    # Load mesh and markers from XDMF files
+    _, mesh_copy, markers_copy = initialize_opt_xdmf(msh_file_path)
+
     h_vol = transfer_from_boundary(h, mesh_copy)
 
     # Deform the mesh using the imported mesh_deformation
     s_final = mesh_deformation(
-        h_vol, mesh_copy, boundary_markers_copy,
+        h_vol, mesh_copy, markers_copy,
         obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_stiffness
     )
     ALE.move(mesh_copy, s_final)
 
-    # Plot
     plt.figure(figsize=(18, 6))
     plt.subplot(1, 3, 1)
     plot(mesh, color="b", linewidth=0.5)

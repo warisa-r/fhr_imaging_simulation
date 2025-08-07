@@ -12,6 +12,8 @@ import sys
 import gmsh
 import matplotlib.pyplot as plt
 
+#set_log_level(LogLevel.PROGRESS)
+
 # MPI setup
 comm = MPI.comm_world
 rank = MPI.rank(comm)
@@ -26,8 +28,9 @@ from HH_shape_opt.process_result import save_optimization_result, plot_mesh_defo
 
 
 ######################################
-#msh_file_path = "meshes/square_with_rect_obstacle.msh"
-msh_file_path = "meshes/square_with_gaussian_perturbed_rect.msh" # To check and see the degree of 
+msh_file_path = "meshes/square_with_rect_obstacle.msh"
+#msh_file_path = "meshes/square_with_gaussian_perturbed_rect.msh" # To check and see the degree of 
+#msh_file_path = "meshes/square_with_perturbed_rect_obstacle.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom.csv"
 result_path = "result.h5"
 
@@ -91,7 +94,7 @@ h_moola = moola.DolfinPrimalVector(h)
 solver = moola.BFGS(problem, h_moola, options={'jtol': 1e-8,
                                             'gtol': 1e-7,
                                             'Hinit': "default",
-                                            'maxiter': 1,
+                                            'maxiter': 150,
                                             'mem_lim': 10})
 
 # Solve
@@ -99,13 +102,12 @@ sol = solver.solve()
 
 comm.Barrier()
 
-if rank == 0:
-    save_optimization_result(sol, msh_file_path, result_path)
+save_optimization_result(sol, msh_file_path, result_path)
 
-    plot_mesh_deformation_from_result(
-        result_path,
-        msh_file_path,
-        obstacle_marker,
-        side_wall_marker,
-        bottom_wall_marker
-    )
+#plot_mesh_deformation_from_result(
+#    result_path,
+#    msh_file_path,
+#    obstacle_marker,
+#    side_wall_marker,
+#    bottom_wall_marker
+#)

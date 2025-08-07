@@ -16,7 +16,7 @@ from HH_shape_opt.helmholtz_solve import HelmholtzSetup, plane_wave, helmholtz_s
 from HH_shape_opt.initialize_opt import initialize_opt_xml
 
 # Simulation setup
-msh_file_path = "meshes/square_with_gaussian_perturbed_rect.msh"
+msh_file_path = "meshes/square_with_perturbed_rect_obstacle.msh"
 
 frequency = 5e9
 
