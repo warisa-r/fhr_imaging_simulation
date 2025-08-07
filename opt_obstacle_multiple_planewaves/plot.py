@@ -13,13 +13,16 @@ from HH_shape_opt.process_result import save_optimization_result, plot_mesh_defo
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
 #msh_file_path = "meshes/square_with_gaussian_perturbed_rect.msh" # To check and see the degree of 
 #msh_file_path = "meshes/square_with_perturbed_rect_obstacle.msh"
+goal_geometry_msh_path = "meshes/square_with_perturbed_rect_obstacle.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom.csv"
-result_path = "outputs/3_planewaves/result_sin_150.h5"
+result_path = "outputs/3_planewaves/result_sin_15.h5"
 
 plot_mesh_deformation_from_result(
     result_path,
     msh_file_path,
+    goal_geometry_msh_path,
     obstacle_marker,
     side_wall_marker,
     bottom_wall_marker,
+    "outputs/3_planewaves/mesh_deformation_sin_15.png"
 )

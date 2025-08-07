@@ -23,12 +23,13 @@ def save_optimization_result(
 def plot_mesh_deformation_from_result(
     h5_file_path,
     msh_file_path,
+    goal_geometry_msh_path,
     obstacle_marker,
     side_wall_marker,
     bottom_wall_marker,
+    plot_file_name="mesh_deformation.png",
     obstacle_stiffness = 50,
     subplot_titles=None,
-    plot_file_name="mesh_deformation.png"
 ):
 
     if subplot_titles is None:
@@ -72,6 +73,9 @@ def plot_mesh_deformation_from_result(
     )
     ALE.move(mesh_copy, s_final)
 
+    # Load goal geometry mesh
+    _, mesh_goal, _ = initialize_opt_xdmf(goal_geometry_msh_path)
+
     plt.figure(figsize=(18, 6))
     plt.subplot(1, 3, 1)
     plot(mesh, color="b", linewidth=0.5)
@@ -79,7 +83,7 @@ def plot_mesh_deformation_from_result(
     plt.axis("equal")
 
     plt.subplot(1, 3, 2)
-    plot(mesh, color="r", linewidth=0.5)
+    plot(mesh_goal, color="r", linewidth=0.5)
     plt.title(subplot_titles[1])
     plt.axis("equal")
 

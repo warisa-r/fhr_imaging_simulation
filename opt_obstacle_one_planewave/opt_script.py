@@ -22,12 +22,10 @@ from HH_shape_opt.process_result import save_optimization_result, plot_mesh_defo
 
 ######################################
 
-iteration = 0
-num_iterations = 500
-
 #msh_file_path = "meshes/square_with_perturbed_rect_obstacle.msh"
+msh_file_path = "meshes/square_with_rect_obstacle.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom.csv"
-result_path = "result.h5"
+result_path = "result_sin.h5"
 
 frequency = 5e9
 incident_field_func = plane_wave
@@ -55,7 +53,7 @@ h_moola = moola.DolfinPrimalVector(h)
 solver = moola.BFGS(problem, h_moola, options={'jtol': 1e-8,
                                                'gtol': 1e-7,
                                                'Hinit': "default",
-                                               'maxiter': 1,
+                                               'maxiter': 150,
                                                'mem_lim': 10})
 
 # Solve
@@ -69,4 +67,5 @@ plot_mesh_deformation_from_result(
     obstacle_marker,
     side_wall_marker,
     bottom_wall_marker,
+    "outputs/mesh_deformation_sin.png"
 )
