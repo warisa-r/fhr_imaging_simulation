@@ -22,8 +22,9 @@ from HH_shape_opt.process_result import save_optimization_result, plot_mesh_defo
 
 ######################################
 
-#msh_file_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
-msh_file_path = "meshes/square_with_rect_obstacle.msh"
+set_log_level(LogLevel.PROGRESS)
+msh_file_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
+#msh_file_path = "meshes/square_with_rect_obstacle.msh"
 goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom.csv"
 result_path = "result_sym_exp_100.h5"
@@ -54,20 +55,21 @@ h_moola = moola.DolfinPrimalVector(h)
 solver = moola.BFGS(problem, h_moola, options={'jtol': 1e-8,
                                                'gtol': 1e-7,
                                                'Hinit': "default",
-                                               'maxiter': 100,
+                                               'maxiter': 1,
                                                'mem_lim': 10})
 
 # Solve
 sol = solver.solve()
 
-save_optimization_result(sol, msh_file_path, result_path)
 
-plot_mesh_deformation_from_result(
-    result_path,
-    msh_file_path,
-    goal_geometry_msh_path,
-    obstacle_marker,
-    side_wall_marker,
-    bottom_wall_marker,
-    "outputs/mesh_deformation_sym_exp_100.png"
-)
+#save_optimization_result(sol, msh_file_path, result_path)
+
+#plot_mesh_deformation_from_result(
+#    result_path,
+#    msh_file_path,
+#    goal_geometry_msh_path,
+#    obstacle_marker,
+#    side_wall_marker,
+#    bottom_wall_marker,
+#    "outputs/mesh_deformation_sym_exp_100.png"
+#)
