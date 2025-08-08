@@ -97,19 +97,26 @@ def preprocess_reference_data(V_DG0, forward_sim_result_file_path, angle):
     tree = mesh.bounding_box_tree()
     dofmap = V_DG0.dofmap()
     
+    tolerance = 1e-8
     cell_value_map = {}
+    
     for (x, y), val in zip(points, values):
         point = Point(x, y)
-        cell_id, _ = tree.compute_closest_entity(point)
-        if cell_id < mesh.num_cells():
-            if cell_id not in cell_value_map:
-                dof_idx = dofmap.cell_dofs(cell_id)[0]
-                cell_value_map[dof_idx] = val
-            else:
-                # This case should ideally not happen with DG0 and well-defined data
-                pass
-        else:
-            print(f"Warning (preprocess): No cell found for point ({x}, {y}) on initial mesh.")
+        try:
+            cell_id, distance = tree.compute_closest_entity(point)
+            
+            # Only assign if point is close enough and cell exists in this partition
+            if distance < tolerance and cell_id < mesh.num_cells():
+                if cell_id not in cell_value_map:
+                    dof_idx = dofmap.cell_dofs(cell_id)[0]
+                    cell_value_map[dof_idx] = val
+                else:
+                    # This case should ideally not happen with DG0 and well-defined data
+                    pass
+            # Skip points that are too far away (not in this partition)
+        except:
+            # Point not in this rank's partition, skip
+            pass
             
     return cell_value_map
 
