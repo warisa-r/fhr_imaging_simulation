@@ -47,7 +47,7 @@ olefile==0.46
 packaging==21.3
 pandas==2.3.1
 parso==0.8.4
-petsc4py @ file:///usr/local/petsc/src/binding/petsc4py
+petsc4py==3.19.6
 pexpect==4.9.0
 Pillow==9.0.1
 pkgconfig==1.5.5
@@ -72,7 +72,7 @@ ROL==0.0.16
 roltrilinos==0.0.9
 scipy==1.8.0
 six==1.16.0
-slepc4py @ file:///usr/local/slepc/src/binding/slepc4py
+slepc4py==3.19.2
 soupsieve==2.3.1
 stack-data==0.6.3
 sympy==1.9
