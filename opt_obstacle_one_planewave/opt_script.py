@@ -27,9 +27,9 @@ os.chdir(script_dir)
 
 #msh_file_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
-goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
+#goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom.csv"
-result_path = "outputs/result_sym_exp_500.h5"
+result_path = "outputs/result_sin_40.h5"
 
 frequency = 5e9
 incident_field_func = plane_wave
@@ -50,7 +50,7 @@ u_ref_dg0 = assign_reference_data(V_DG0, reference_data_map)
 J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
 
 Jhat = ReducedFunctional(J, Control(h))
-dJdh = Jhat.derivative()
+#dJdh = Jhat.derivative()
 #plot(dJdh, title=f"Gradient of J with respect to h for symmetric exponential perturbation")
 #savefig("outputs/gradient_sy,.png")
 
@@ -60,7 +60,7 @@ h_moola = moola.DolfinPrimalVector(h)
 solver = moola.BFGS(problem, h_moola, options={'jtol': 1e-8,
                                                'gtol': 1e-7,
                                                'Hinit': "default",
-                                               'maxiter': 4,
+                                               'maxiter': 40,
                                                'mem_lim': 10})
 
 # Solve
