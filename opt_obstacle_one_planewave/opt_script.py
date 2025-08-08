@@ -3,7 +3,7 @@ import json
 from dolfin import *
 from dolfin_adjoint import * 
 import numpy as np
-
+from matplotlib.pyplot import show, savefig
 
 import moola
 import subprocess
@@ -50,6 +50,9 @@ u_ref_dg0 = assign_reference_data(V_DG0, reference_data_map)
 J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
 
 Jhat = ReducedFunctional(J, Control(h))
+dJdh = Jhat.derivative()
+#plot(dJdh, title=f"Gradient of J with respect to h for symmetric exponential perturbation")
+#savefig("outputs/gradient_sy,.png")
 
 problem = MoolaOptimizationProblem(Jhat)
 h_moola = moola.DolfinPrimalVector(h)
@@ -57,7 +60,7 @@ h_moola = moola.DolfinPrimalVector(h)
 solver = moola.BFGS(problem, h_moola, options={'jtol': 1e-8,
                                                'gtol': 1e-7,
                                                'Hinit': "default",
-                                               'maxiter': 1,
+                                               'maxiter': 4,
                                                'mem_lim': 10})
 
 # Solve

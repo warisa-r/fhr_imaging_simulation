@@ -13,11 +13,6 @@ decorator==4.4.2
 -e git+https://github.com/dolfin-adjoint/dolfin-adjoint@388f94be89a8cd43a40dc465da2e763f8413be01#egg=dolfin_adjoint
 exceptiongroup==1.2.1
 executing==2.0.1
-fenics-dijitso @ file:///src/dijitso
-fenics-dolfin @ file:///src/dolfin/python
-fenics-ffc @ file:///src/ffc
-fenics-fiat @ file:///src/fiat
-fenics-ufl-legacy @ file:///src/ufl-legacy
 flake8==7.3.0
 fonttools==4.29.1
 fs==2.4.12
