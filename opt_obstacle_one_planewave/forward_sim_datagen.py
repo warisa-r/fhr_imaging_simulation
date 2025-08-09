@@ -12,15 +12,15 @@ from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marke
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from HH_shape_opt.helmholtz_solve import HelmholtzSetup, plane_wave, helmholtz_solve
-from HH_shape_opt.initialize_opt import initialize_opt_xml
+from HH_shape_opt.initialize_opt import initialize_opt_xml, initialize_opt_xdmf
 
-msh_file_path = "meshes/square_with_perturbed_rect_obstacle.msh"
+msh_file_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 
 frequency = 5e9
 incident_field_func = plane_wave
 hh_setup = HelmholtzSetup(frequency, incident_field_func)
 # Run forward simulation
-h, mesh, markers = initialize_opt_xml(msh_file_path)
+h, mesh, markers = initialize_opt_xdmf(msh_file_path)
 u_tot_mag_dg0, _, V_DG0 = helmholtz_solve(mesh, markers, h, hh_setup,
                                                              obstacle_marker, side_wall_marker, bottom_wall_marker)
 
@@ -58,4 +58,5 @@ plt.colorbar(p)
 plt.xlabel("x")
 plt.ylabel("y")
 plt.axis("equal")
-plt.show()
+#plt.show()
+plt.savefig("picwave.png")
