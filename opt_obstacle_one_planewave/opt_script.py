@@ -19,6 +19,7 @@ from HH_shape_opt.helmholtz_solve import HelmholtzSetup, plane_wave, helmholtz_s
 from HH_shape_opt.initialize_opt import initialize_opt_xdmf
 from HH_shape_opt.process_result import save_optimization_result, plot_mesh_deformation_from_result
 
+set_log_level(LogLevel.ERROR)
 
 ######################################
 
@@ -33,7 +34,7 @@ result_path = "outputs/result_sym_exp_500.h5"
 
 frequency = 5e9
 incident_field_func = plane_wave
-hh_setup = HelmholtzSetup(frequency, incident_field_func)
+hh_setup = HelmholtzSetup(frequency, incident_field_func, 500)
 
 # Initialization by copying the mesh we want to perform the forward sim on and
 # get the first initial guesses of h (all zero by default)
@@ -43,7 +44,7 @@ reference_data_map = preprocess_reference_data(V_DG0_initial, forward_sim_result
 
 # Solve the forward problem
 u_tot_mag_dg0, ds_bottom, V_DG0 = helmholtz_solve(mesh, markers, h, hh_setup,
-                                                             obstacle_marker, side_wall_marker, bottom_wall_marker)
+                                                             obstacle_marker, side_wall_marker, bottom_wall_marker, )
 # Load reference data
 u_ref_dg0 = assign_reference_data(V_DG0, reference_data_map)
 
