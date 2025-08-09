@@ -17,4 +17,4 @@
 6. Check if your dolfin is working by
     `python -c "import dolfin_adjoint"`
 7. If this is successful, install the rest of the dependencies:
-  `conda install conda-forge meshio pandas matplotlib`
+  `conda install conda-forge python-gmsh meshio pandas matplotlib`
