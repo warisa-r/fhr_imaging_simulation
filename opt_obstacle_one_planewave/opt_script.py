@@ -29,8 +29,8 @@ os.chdir(script_dir)
 #msh_file_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
-forward_sim_result_file_path = "matlab_measurements.csv"
-result_path = "outputs/result_sin_freq3_matlab.h5"
+forward_sim_result_file_path = "forward_sim_data_bottom.csv"
+result_path = "outputs/result_sin_freq3.h5"
 
 frequency = 5e9
 incident_field_func = plane_wave
@@ -47,8 +47,6 @@ u_tot_mag_dg0, ds_bottom, V_DG0 = helmholtz_solve(mesh, markers, h, hh_setup,
                                                              obstacle_marker, side_wall_marker, bottom_wall_marker)
 # Load reference data
 u_ref_dg0 = assign_reference_data(V_DG0, reference_data_map)
-
-print(u_ref_dg0)
 
 J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
 
