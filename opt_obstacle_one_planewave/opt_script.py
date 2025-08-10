@@ -29,12 +29,12 @@ os.chdir(script_dir)
 #msh_file_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
-forward_sim_result_file_path = "forward_sim_data_bottom.csv"
-result_path = "outputs/result_sym_exp_500.h5"
+forward_sim_result_file_path = "matlab_measurement.csv"
+result_path = "outputs/result_sin_freq3_matlab.h5"
 
 frequency = 5e9
 incident_field_func = plane_wave
-hh_setup = HelmholtzSetup(frequency, incident_field_func, 500)
+hh_setup = HelmholtzSetup(frequency, incident_field_func)
 
 # Initialization by copying the mesh we want to perform the forward sim on and
 # get the first initial guesses of h (all zero by default)
@@ -44,7 +44,7 @@ reference_data_map = preprocess_reference_data(V_DG0_initial, forward_sim_result
 
 # Solve the forward problem
 u_tot_mag_dg0, ds_bottom, V_DG0 = helmholtz_solve(mesh, markers, h, hh_setup,
-                                                             obstacle_marker, side_wall_marker, bottom_wall_marker, )
+                                                             obstacle_marker, side_wall_marker, bottom_wall_marker)
 # Load reference data
 u_ref_dg0 = assign_reference_data(V_DG0, reference_data_map)
 
