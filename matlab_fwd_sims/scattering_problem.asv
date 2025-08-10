@@ -3,7 +3,7 @@ light_speed = 299792458;
 frequency = 5e9;
 k = 2 * pi * frequency / light_speed;
 wavelength = light_speed / frequency;
-mesh_size = wavelength / 8; % Use a slightly finer mesh
+mesh_size = wavelength / 5; % Use a slightly finer mesh
 
 %% Create a geometry
 model = createpde;
@@ -21,8 +21,8 @@ xRight  = xCenter + width/2;
 yBottom = yCenter - height/2;
 yTop    = yCenter + height/2;
 NwavePts = 100;
-amp  = 0.02;
-freq = 2;
+amp  = 0.01;
+freq = 3;
 xWave = linspace(xLeft, xRight, NwavePts);
 yWave = yBottom + amp * sin(freq * 2*pi * (xWave - xLeft)/width);
 xHole = [xWave, xRight, xLeft];
@@ -96,23 +96,29 @@ axis equal;
 
 % Original measurement points (edges)
 x_edges = linspace(0, 1, 100);  % 100 points, defining 99 intervals
-
+y_edges = linspace(0, 1, 100);
 % Midpoints where you want to save data
 dx = x_edges(2) - x_edges(1);
 x_meas_mid = x_edges(1:end-1) + dx/2;  % 99 midpoints
 
 % y coordinate along bottom edge (assuming y=0)
-y_meas = zeros(size(x_meas));
+y_meas = zeros(size(x_edges));
+
+y_meas_mid = zeros(size(x_meas_mid));
+u_inc_meas = exp(1i * k * y_meas_mid);
 
 % Interpolate u at left and right edges of each interval
-u_left = interpolateSolution(result, x_edges(1:end-1), y_meas(1:end-1));
-u_right = interpolateSolution(result, x_edges(2:end), y_meas(2:end));
+u_left = interpolateSolution(result, x_edges(1:end-1), y_meas(1:end-1)) + u_inc_meas;
+u_right = interpolateSolution(result, x_edges(2:end), y_meas(2:end)) + u_inc_meas;
 
+% Interpolate u at left and right edges of each interval
+u_inc_edges = exp
+u_total_eges = interpolateSolution(result, x_edges, y_edges) + u_inc_edges;
 % Average value for each interval midpoint
 u_avg = (u_left + u_right) / 2;
 
 % Now save measurement table with midpoints and averaged values
-T = table(x_meas_mid.', zeros(length(x_meas_mid),1), abs(u_avg), ...
+T = table(x_meas_mid.', zeros(length(x_meas_mid),1), abs(u_avg(1,:)), ...
           'VariableNames', {'x', 'y', 'u'});
 
 writetable(T, 'measurements_avg.csv');

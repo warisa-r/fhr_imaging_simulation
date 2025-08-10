@@ -3,7 +3,7 @@ light_speed = 299792458;
 frequency = 5e9;
 k = 2 * pi * frequency / light_speed;
 wavelength = light_speed / frequency;
-mesh_size = wavelength / 8; % Use a slightly finer mesh
+mesh_size = wavelength / 5; % Use a slightly finer mesh
 
 %% Create a geometry
 model = createpde;
@@ -21,8 +21,8 @@ xRight  = xCenter + width/2;
 yBottom = yCenter - height/2;
 yTop    = yCenter + height/2;
 NwavePts = 100;
-amp  = 0.02;
-freq = 2;
+amp  = 0.01;
+freq = 3;
 xWave = linspace(xLeft, xRight, NwavePts);
 yWave = yBottom + amp * sin(freq * 2*pi * (xWave - xLeft)/width);
 xHole = [xWave, xRight, xLeft];
@@ -92,33 +92,27 @@ ylabel('y');
 title('Magnitude of Total Field |u_{inc} + u_{scat}|');
 axis equal;
 
-%% Record measurements on the OBSTACLE's bottom edge
-
-% Original measurement points (edges)
-x_edges = linspace(0, 1, 100);  % 100 points, defining 99 intervals
-
-% Midpoints where you want to save data
+%% Take measurements
+% Define edges and midpoints
+% Define edges points where measurements are taken
+x_edges = linspace(0, 1, 100);   % 100 points along x-axis
 dx = x_edges(2) - x_edges(1);
-x_meas_mid = x_edges(1:end-1) + dx/2;  % 99 midpoints
+x_meas_mid = x_edges(1:end-1) + dx/2;
+y_meas_mid = zeros(size(x_meas_mid));  % y = 0 at the bottom edge
 
-% y coordinate along bottom edge (assuming y=0)
-y_meas = zeros(size(x_edges));
+% Interpolate scattered field at edges
+u_scat_mid = interpolateSolution(result, x_meas_mid, y_meas_mid);
 
-y_meas_mid = zeros(size(x_meas_mid));
-u_inc_meas = exp(1i * k * y_meas_mid);
+% Calculate incident field at edges
+u_inc_mid = exp(1i * k * y_meas_mid);
 
-% Interpolate u at left and right edges of each interval
-u_left = interpolateSolution(result, x_edges(1:end-1), y_meas(1:end-1)) + u_inc_meas;
-u_right = interpolateSolution(result, x_edges(2:end), y_meas(2:end)) + u_inc_meas;
+% Total field at edges
+u_total_mid = u_scat_mid + u_inc_mid;
+u_mag_mid = abs(u_total_mid(:,1));
 
-% Average value for each interval midpoint
-u_avg = (u_left + u_right) / 2;
-
-u_meas = interpolateSolution(result, x_edges, y_meas);
-u_inc_meas = exp(1i * k * y_meas);
-u_points = u_meas + u_inc_meas;
-% Now save measurement table with midpoints and averaged values
-T = table(x_meas_mid.', zeros(length(x_meas_mid),1), abs(u_points(1,:)), ...
+% Save measurements in a table
+T = table(x_meas_mid.', y_meas_mid.', u_mag_mid, ...
           'VariableNames', {'x', 'y', 'u'});
 
-writetable(T, 'measurements_avg.csv');
+% Write to CSV
+writetable(T, 'measurements.csv');
