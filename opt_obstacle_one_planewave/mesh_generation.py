@@ -452,7 +452,7 @@ if __name__ == "__main__":
     mesh_file_name = generate_square_with_sin_perturbed_rect_obstacle_mesh(mesh_size=mesh_size,
         output_name="meshes/square_with_sin_exp_perturbed_rect",
         n_points_bottom=100, n_points_rect_bottom=100,
-        perturb_amplitude=0.01, perturb_frequency=1
+        perturb_amplitude=0.02, perturb_frequency=1
     )
 
     fig, ax = plt.subplots(figsize=(6, 6))

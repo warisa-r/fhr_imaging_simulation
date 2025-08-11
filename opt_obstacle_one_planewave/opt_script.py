@@ -30,7 +30,7 @@ os.chdir(script_dir)
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom.csv"
-result_path = "outputs/result_sin_freq3.h5"
+result_path = "outputs/result_sin_freq1.h5"
 
 frequency = 5e9
 incident_field_func = plane_wave
@@ -61,7 +61,7 @@ h_moola = moola.DolfinPrimalVector(h)
 solver = moola.BFGS(problem, h_moola, options={'jtol': 1e-8,
                                                'gtol': 1e-7,
                                                'Hinit': "default",
-                                               'maxiter': 500,
+                                               'maxiter': 100,
                                                'mem_lim': 10})
 
 # Solve
