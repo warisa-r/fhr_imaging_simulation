@@ -97,7 +97,7 @@ def preprocess_reference_data(V_DG0, forward_sim_result_file_path, angle):
     tree = mesh.bounding_box_tree()
     dofmap = V_DG0.dofmap()
     
-    tolerance = 1e-8
+    tolerance = 1e-6
     cell_value_map = {}
     
     for (x, y), val in zip(points, values):
