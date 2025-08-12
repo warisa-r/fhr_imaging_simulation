@@ -37,5 +37,5 @@ plt.title("Comparison of Dolfin and Matlab results")
 plt.legend()
 plt.grid(True, alpha=0.3)
 
-plt.savefig("outputs/difference_dolfin_matlab_sin_freq1.png", dpi=300, bbox_inches='tight')
+plt.savefig("outputs/difference_dolfin_matlab_cos_freq1.png", dpi=300, bbox_inches='tight')
 plt.show()
