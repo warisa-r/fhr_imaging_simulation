@@ -6,7 +6,7 @@ side_wall_marker = 1
 bottom_wall_marker = 2
 obstacle_marker = 3
 domain_marker = 4
-
+obstacle_opt_marker = 5
 
 def plot_mesh(filename, ax, title=""):
     mesh = meshio.read(filename)
@@ -146,17 +146,20 @@ def generate_square_with_rect_obstacle_mesh(
     rp4 = gmsh.model.geo.addPoint(rx1, ry2, 0, mesh_size)
 
     # Rectangle obstacle lines
-    rl1 = gmsh.model.geo.addLine(rp1, rp2)
-    rl2 = gmsh.model.geo.addLine(rp2, rp3)
-    rl3 = gmsh.model.geo.addLine(rp3, rp4)
-    rl4 = gmsh.model.geo.addLine(rp4, rp1)
-    rect_lines = [rl1, rl2, rl3, rl4]
-
+    rl1 = gmsh.model.geo.addLine(rp1, rp2)  # Bottom edge (to be optimized)
+    rl2 = gmsh.model.geo.addLine(rp2, rp3)  # Right edge
+    rl3 = gmsh.model.geo.addLine(rp3, rp4)  # Top edge
+    rl4 = gmsh.model.geo.addLine(rp4, rp1)  # Left edge
+    
+    # Separate bottom edge from other edges
+    rect_bottom_line = [rl1]
+    rect_other_lines = [rl2, rl3, rl4]
+    
     gmsh.model.geo.mesh.setTransfiniteCurve(rl1, n_points_rect_bottom)
 
     # Curve loops
     outer_loop = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4])
-    rect_loop = gmsh.model.geo.addCurveLoop(rect_lines)
+    rect_loop = gmsh.model.geo.addCurveLoop([rl1, rl2, rl3, rl4])
 
     # Plane surface with rectangle obstacle
     surface = gmsh.model.geo.addPlaneSurface([outer_loop, rect_loop])
@@ -166,7 +169,8 @@ def generate_square_with_rect_obstacle_mesh(
     # Physical groups
     gmsh.model.addPhysicalGroup(1, [l1], bottom_wall_marker, "bottom_wall")
     gmsh.model.addPhysicalGroup(1, [l2, l3, l4], side_wall_marker, "outer_walls")
-    gmsh.model.addPhysicalGroup(1, rect_lines, obstacle_marker, "rect_obstacle_boundary")
+    gmsh.model.addPhysicalGroup(1, rect_other_lines, obstacle_marker, "rect_obstacle_boundary")
+    gmsh.model.addPhysicalGroup(1, rect_bottom_line, obstacle_opt_marker, "rect_obstacle_bottom")
     gmsh.model.addPhysicalGroup(2, [surface], domain_marker, "domain")
 
     # Generate mesh
@@ -530,12 +534,17 @@ if __name__ == "__main__":
     """
 
     
-    mesh_file_name = generate_square_with_cos_perturbed_rect_obstacle_mesh(mesh_size=mesh_size,
-        output_name="meshes/square_with_cos_exp_perturbed_rect",
-        n_points_bottom=100, n_points_rect_bottom=100,
-        perturb_amplitude=0.02, perturb_frequency=1
+    mesh_file = generate_square_with_rect_obstacle_mesh(
+        width=1.0,
+        height=1.0,
+        rect_w=0.4,
+        rect_h=0.2,
+        mesh_size=mesh_size,
+        output_name="meshes/square_with_rect_obstacle",
+        n_points_bottom=100,
+        n_points_rect_bottom = 100
     )
-
+    
     fig, ax = plt.subplots(figsize=(6, 6))
     plot_mesh(mesh_file_name, ax, title="Square with symmetric gaussian perturbations")
     plt.show()

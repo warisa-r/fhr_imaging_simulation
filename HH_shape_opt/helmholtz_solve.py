@@ -36,7 +36,7 @@ class HelmholtzSetup:
         self.u_inc_re = IncidentReal(degree=5)
         self.u_inc_im = IncidentImag(degree=5)
 
-def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_stiffness):
+def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker, obstacle_stiffness):
     # Create scalar function space for material properties
     V = FunctionSpace(mesh, "CG", 1)
     u, v = TrialFunction(V), TestFunction(V)
@@ -44,11 +44,20 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
     L0 = Constant(0.0) * v * dx
     
     # Set material properties via boundary conditions
-    bcs0 = [
-        DirichletBC(V, Constant(1.0), markers, side_wall_marker),
-        DirichletBC(V, Constant(1.0), markers, bottom_wall_marker),
-        DirichletBC(V, Constant(obstacle_stiffness), markers, obstacle_marker),
-    ]
+    if obstacle_opt_marker:
+        bcs0 = [
+            DirichletBC(V, Constant(1.0), markers, side_wall_marker),
+            DirichletBC(V, Constant(1.0), markers, bottom_wall_marker),
+            DirichletBC(V, Constant(1.0), markers, obstacle_marker),
+            DirichletBC(V, Constant(obstacle_stiffness), markers, obstacle_opt_marker),
+        ]
+
+    else:
+        bcs0 = [
+            DirichletBC(V, Constant(1.0), markers, side_wall_marker),
+            DirichletBC(V, Constant(1.0), markers, bottom_wall_marker),
+            DirichletBC(V, Constant(obstacle_stiffness), markers, obstacle_marker),
+        ]
     
     # Solve for material distribution
     mu = Function(V, name="mu")
@@ -59,11 +68,18 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
     u_vec, v_vec = TrialFunction(S), TestFunction(S)
     
     # Define measure for obstacle boundary
-    dObs = Measure("ds",
-        domain=mesh,
-        subdomain_data=markers,
-        subdomain_id=obstacle_marker
-    )
+    if obstacle_opt_marker:
+        dObs = Measure("ds",
+            domain=mesh,
+            subdomain_data=markers,
+            subdomain_id=obstacle_opt_marker
+        )
+    else:
+        dObs = Measure("ds",
+            domain=mesh,
+            subdomain_data=markers,
+            subdomain_id=obstacle_marker
+        )
 
     # Define strain and stress tensors
     def ε(w): return sym(grad(w))
@@ -78,6 +94,9 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
         DirichletBC(S, Constant((0.0, 0.0)), markers, bottom_wall_marker),
         DirichletBC(S, Constant((0.0, 0.0)), markers, side_wall_marker)
     ]
+
+    if obstacle_opt_marker:
+        bc_el.append(DirichletBC(S, Constant((0.0, 0.0)), markers, obstacle_marker))
     
     # Solve for displacement field
     s = Function(S, name="deformation")
@@ -135,12 +154,12 @@ def load_forward_simulation_data_bottomwall(V_DG0, forward_sim_result_file_path,
     df = pd.read_csv(forward_sim_result_file_path)
 
 def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup, 
-                   obstacle_marker, side_wall_marker, bottom_wall_marker):
+                   obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker = None):
 
     # Perform mesh deformation
     h_vol = transfer_from_boundary(h_control, mesh_copy)
     s = mesh_deformation(h_vol, mesh_copy, markers_copy, 
-                        obstacle_marker, side_wall_marker, bottom_wall_marker, 
+                        obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker,
                         obstacle_stiffness=hh_setup.obstacle_stiffness)
     ALE.move(mesh_copy, s)
 
@@ -152,7 +171,11 @@ def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup,
     # Define boundary measures
     ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=bottom_wall_marker)
     ds_sides = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=side_wall_marker)
-    ds_obstacle = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=obstacle_marker)
+    if obstacle_opt_marker:
+        ds_obstacle = (Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=obstacle_marker) +
+                        Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=obstacle_opt_marker))
+    else:
+        ds_obstacle = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=obstacle_marker)
     ds_outer = ds_bottom + ds_sides
 
     # Create mixed function space for complex-valued problem
@@ -177,6 +200,10 @@ def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup,
         DirichletBC(W.sub(0), uinc_re_neg, markers_copy, obstacle_marker),
         DirichletBC(W.sub(1), uinc_im_neg, markers_copy, obstacle_marker),
     ]
+
+    if obstacle_opt_marker:
+        bcs.append(DirichletBC(W.sub(0), uinc_re_neg, markers_copy, obstacle_opt_marker))
+        bcs.append(DirichletBC(W.sub(1), uinc_im_neg, markers_copy, obstacle_opt_marker))
 
     # Solve the system
     w = Function(W)

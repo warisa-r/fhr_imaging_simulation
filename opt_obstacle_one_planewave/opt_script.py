@@ -12,7 +12,7 @@ import sys
 import gmsh
 import matplotlib.pyplot as plt
 
-from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
+from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from HH_shape_opt.helmholtz_solve import HelmholtzSetup, plane_wave, helmholtz_solve, preprocess_reference_data, assign_reference_data
@@ -44,16 +44,16 @@ reference_data_map = preprocess_reference_data(V_DG0_initial, forward_sim_result
 
 # Solve the forward problem
 u_tot_mag_dg0, ds_bottom, V_DG0 = helmholtz_solve(mesh, markers, h, hh_setup,
-                                                             obstacle_marker, side_wall_marker, bottom_wall_marker)
+                                                  obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker)
 # Load reference data
 u_ref_dg0 = assign_reference_data(V_DG0, reference_data_map)
 
 J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
 
 Jhat = ReducedFunctional(J, Control(h))
-#dJdh = Jhat.derivative()
-#plot(dJdh, title=f"Gradient of J with respect to h for symmetric exponential perturbation")
-#savefig("outputs/gradient_sy,.png")
+dJdh = Jhat.derivative()
+plot(dJdh, title=f"Gradient of J with respect to h")
+savefig("outputs/gradient_cos_1.png")
 
 problem = MoolaOptimizationProblem(Jhat)
 h_moola = moola.DolfinPrimalVector(h)
