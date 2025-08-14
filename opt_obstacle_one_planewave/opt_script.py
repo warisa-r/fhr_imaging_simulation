@@ -26,29 +26,40 @@ set_log_level(LogLevel.ERROR)
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
-#msh_file_path = "meshes/square_with_cos_perturbed_rect_obstacle.msh"
+
+#msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
-forward_sim_result_file_path = "forward_sim_data_bottom.csv"
-result_path = "outputs/result_sin2_200_restrict.h5"
+forward_sim_result_file_path = "forward_sim_data_bottom_sweep.csv"
+result_path = "outputs_st1/result_sin2_5_restrict.h5"
 
-frequency = 5e9
-incident_field_func = plane_wave
-hh_setup = HelmholtzSetup(frequency, incident_field_func, 50)
+frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
 
-# Initialization by copying the mesh we want to perform the forward sim on and
-# get the first initial guesses of h (all zero by default)
 h, mesh, markers = initialize_opt_xdmf(msh_file_path)
 V_DG0_initial = FunctionSpace(mesh, "DG", 0)
-reference_data_map = preprocess_reference_data(V_DG0_initial, forward_sim_result_file_path, None)
+reference_data_maps = []
 
-# Solve the forward problem
-u_tot_mag_dg0, ds_bottom, V_DG0 = helmholtz_solve(mesh, markers, h, hh_setup,
-                                                  obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker)
-# Load reference data
-u_ref_dg0 = assign_reference_data(V_DG0, reference_data_map)
+for frequency in frequencies:
+    reference_data_map = preprocess_reference_data(V_DG0_initial, forward_sim_result_file_path, frequency)
+    reference_data_maps.append(reference_data_map)
 
-J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
+for i, frequency in enumerate(frequencies):
+    incident_field_func = plane_wave
+    hh_setup = HelmholtzSetup(frequency, incident_field_func, 1)
+
+    # Initialization by copying the mesh we want to perform the forward sim on and
+    # get the first initial guesses of h (all zero by default)
+
+    # Solve the forward problem
+    u_tot_mag_dg0, ds_bottom, V_DG0 = helmholtz_solve(mesh, markers, h, hh_setup,
+                                                    obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker)
+    # Load reference data
+    u_ref_dg0 = assign_reference_data(V_DG0, reference_data_maps[i])
+
+    if i ==0:
+        J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
+    else:
+        J += assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
 
 Jhat = ReducedFunctional(J, Control(h))
 #dJdh = Jhat.derivative()
@@ -61,13 +72,13 @@ h_moola = moola.DolfinPrimalVector(h)
 solver = moola.BFGS(problem, h_moola, options={'jtol': 0,
                                                'gtol': 1e-9,
                                                'Hinit': "default",
-                                               'maxiter': 200,
+                                               'maxiter':5,
                                                'mem_lim': 20})
 # Solve
 sol = solver.solve()
 
 
-save_optimization_result(sol, msh_file_path, result_path)
+save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path)
 
 #plot_mesh_deformation_from_result(
 #    result_path,

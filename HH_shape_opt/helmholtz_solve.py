@@ -105,10 +105,10 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
 
     return s
 
-def preprocess_reference_data(V_DG0, forward_sim_result_file_path, angle):
+def preprocess_reference_data(V_DG0, forward_sim_result_file_path, frequency = None):
     df = pd.read_csv(forward_sim_result_file_path)
-    if angle is not None:
-        df = df[df["angle"] == angle]
+    if frequency is not None:
+        df = df.loc[df['frequency'] == frequency]
 
     points = df[["x", "y"]].values
     values = df["u"].values

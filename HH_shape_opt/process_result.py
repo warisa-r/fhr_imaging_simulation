@@ -9,6 +9,7 @@ from .helmholtz_solve import mesh_deformation
 def save_optimization_result(
     sol,
     msh_file_path,
+    obstacle_stiffness,
     result_file = "result.h5"
 ):
     #TODO: Save obstacle stiffness
@@ -18,6 +19,13 @@ def save_optimization_result(
         h5f.attributes("/h_opt")["objective"] = sol['objective']
         h5f.attributes("/h_opt")["grad_norm"] = sol['grad_norm']
         h5f.attributes("/h_opt")["msh_file_path"] = msh_file_path
+        h5f.attributes("/h_opt")["obstacle_stiffness"] = obstacle_stiffness
+
+    h_opt_vec = sol['control'].data.vector()
+    h_min = h_opt_vec.min()
+    h_max = h_opt_vec.max()
+    h_mean_abs = np.mean(np.abs(h_opt_vec.get_local()))
+    print(f"h_opt min: {h_min}, h_opt max: {h_max}, mean|h_opt|: {h_mean_abs}")
     print(f"Optimization result saved to {result_file}")
 
 def plot_mesh_deformation_from_result(
@@ -52,6 +60,9 @@ def plot_mesh_deformation_from_result(
         h_temp = Function(S_b, name="Design")
         h5f.read(h_temp, "/h_opt")
         h.vector()[:] = h_temp.vector().get_local()
+        h_opt_vec = h.vector()
+        h_mean_abs = np.mean(np.abs(h_opt_vec.get_local()))
+        print("h_mean_abs:", h_mean_abs)
         try:
             final_residual = h5f.attributes("/h_opt")["objective"]
         except Exception:
