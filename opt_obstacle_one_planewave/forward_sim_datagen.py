@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from HH_shape_opt.helmholtz_solve import HelmholtzSetup, plane_wave, helmholtz_solve
 from HH_shape_opt.initialize_opt import initialize_opt_xml, initialize_opt_xdmf
 
-msh_file_path = "meshes/square_with_cos_exp_perturbed_rect.msh"
+msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
 frequency = 5e9
 incident_field_func = plane_wave
 hh_setup = HelmholtzSetup(frequency, incident_field_func)

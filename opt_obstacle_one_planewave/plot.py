@@ -1,7 +1,7 @@
 import sys
 import os
 
-from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
+from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from HH_shape_opt.helmholtz_solve import HelmholtzSetup, plane_wave, helmholtz_solve, preprocess_reference_data, assign_reference_data
@@ -16,8 +16,8 @@ os.chdir(script_dir)
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
 #msh_file_path = "meshes/square_with_gaussian_perturbed_rect.msh" # To check and see the degree of 
 #msh_file_path = "meshes/square_with_perturbed_rect_obstacle.msh"
-goal_geometry_msh_path = "meshes/square_with_cos_exp_perturbed_rect.msh"
-result_path = "outputs/result_cos_freq1.h5"
+goal_geometry_msh_path = "meshes/square_with_cos_perturbed_rect_obstacle.msh"
+result_path = "outputs/result_cos_100_restrict.h5"
 
 plot_mesh_deformation_from_result(
     result_path,
@@ -26,6 +26,7 @@ plot_mesh_deformation_from_result(
     obstacle_marker,
     side_wall_marker,
     bottom_wall_marker,
-    "outputs/mesh_deformation_cos_freq1.png",
-    200
+    obstacle_opt_marker,
+    "outputs/mesh_deformation_cos_100_restrict.png",
+    50
 )

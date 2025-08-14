@@ -27,6 +27,7 @@ def plot_mesh_deformation_from_result(
     obstacle_marker,
     side_wall_marker,
     bottom_wall_marker,
+    obstacle_opt_marker = None,
     plot_file_name="mesh_deformation.png",
     obstacle_stiffness = 50,
     subplot_titles=None,
@@ -69,7 +70,7 @@ def plot_mesh_deformation_from_result(
     # Deform the mesh using the imported mesh_deformation
     s_final = mesh_deformation(
         h_vol, mesh_copy, markers_copy,
-        obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_stiffness
+        obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker, obstacle_stiffness
     )
     ALE.move(mesh_copy, s_final)
 

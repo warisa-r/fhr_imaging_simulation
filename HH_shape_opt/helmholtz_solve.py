@@ -7,8 +7,9 @@ import pandas as pd
 
 LIGHT_SPEED = 299792458
 
+AMP = 10
 def plane_wave(x, k_background):
-    return np.exp(1j * k_background * x[1])
+    return AMP * np.exp(1j * k_background * x[1])
 
 class HelmholtzSetup:
     def __init__(self, frequency, incident_field_func, obstacle_stiffness = 50):
@@ -33,8 +34,8 @@ class HelmholtzSetup:
             def value_shape(self):
                 return ()
 
-        self.u_inc_re = IncidentReal(degree=5)
-        self.u_inc_im = IncidentImag(degree=5)
+        self.u_inc_re = IncidentReal()
+        self.u_inc_im = IncidentImag()
 
 def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker, obstacle_stiffness):
     # Create scalar function space for material properties
@@ -44,7 +45,7 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
     L0 = Constant(0.0) * v * dx
     
     # Set material properties via boundary conditions
-    if obstacle_opt_marker:
+    if obstacle_opt_marker is not None:
         bcs0 = [
             DirichletBC(V, Constant(1.0), markers, side_wall_marker),
             DirichletBC(V, Constant(1.0), markers, bottom_wall_marker),
@@ -68,7 +69,7 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
     u_vec, v_vec = TrialFunction(S), TestFunction(S)
     
     # Define measure for obstacle boundary
-    if obstacle_opt_marker:
+    if obstacle_opt_marker is not None:
         dObs = Measure("ds",
             domain=mesh,
             subdomain_data=markers,
@@ -95,7 +96,7 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
         DirichletBC(S, Constant((0.0, 0.0)), markers, side_wall_marker)
     ]
 
-    if obstacle_opt_marker:
+    if obstacle_opt_marker is not None:
         bc_el.append(DirichletBC(S, Constant((0.0, 0.0)), markers, obstacle_marker))
     
     # Solve for displacement field
@@ -171,7 +172,7 @@ def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup,
     # Define boundary measures
     ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=bottom_wall_marker)
     ds_sides = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=side_wall_marker)
-    if obstacle_opt_marker:
+    if obstacle_opt_marker is not None:
         ds_obstacle = (Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=obstacle_marker) +
                         Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=obstacle_opt_marker))
     else:
@@ -201,7 +202,7 @@ def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup,
         DirichletBC(W.sub(1), uinc_im_neg, markers_copy, obstacle_marker),
     ]
 
-    if obstacle_opt_marker:
+    if obstacle_opt_marker is not None:
         bcs.append(DirichletBC(W.sub(0), uinc_re_neg, markers_copy, obstacle_opt_marker))
         bcs.append(DirichletBC(W.sub(1), uinc_im_neg, markers_copy, obstacle_opt_marker))
 

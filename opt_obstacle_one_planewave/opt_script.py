@@ -26,15 +26,15 @@ set_log_level(LogLevel.ERROR)
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
-#msh_file_path = "meshes/square_with_cos_exp_perturbed_rect.msh"
+#msh_file_path = "meshes/square_with_cos_perturbed_rect_obstacle.msh"
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom.csv"
-result_path = "outputs/result_cos_freq1.h5"
+result_path = "outputs/result_sin2_50_restrict.h5"
 
 frequency = 5e9
 incident_field_func = plane_wave
-hh_setup = HelmholtzSetup(frequency, incident_field_func, 200)
+hh_setup = HelmholtzSetup(frequency, incident_field_func, 50)
 
 # Initialization by copying the mesh we want to perform the forward sim on and
 # get the first initial guesses of h (all zero by default)
@@ -53,15 +53,16 @@ J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bo
 Jhat = ReducedFunctional(J, Control(h))
 dJdh = Jhat.derivative()
 plot(dJdh, title=f"Gradient of J with respect to h")
-savefig("outputs/gradient_cos_1.png")
+savefig("outputs/gradient_sin2_restricted.png")
 
 problem = MoolaOptimizationProblem(Jhat)
 h_moola = moola.DolfinPrimalVector(h)
 
-solver = moola.NewtonCG(problem, h_moola, options={'gtol': 1e-7,
-                                                   'maxiter': 200,
-                                                   'display': 3,
-                                                   'ncg_hesstol': 1e-8})
+solver = moola.BFGS(problem, h_moola, options={'jtol': 0,
+                                               'gtol': 1e-9,
+                                               'Hinit': "default",
+                                               'maxiter': 50,
+                                               'mem_lim': 20})
 # Solve
 sol = solver.solve()
 
