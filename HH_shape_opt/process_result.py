@@ -10,18 +10,25 @@ def save_optimization_result(
     sol,
     msh_file_path,
     obstacle_stiffness,
-    result_file = "result.h5"
+    result_file = "result.h5",
+    use_scipy = True
 ):
-    #TODO: Save obstacle stiffness
-    with HDF5File(MPI.comm_world, result_file, "w") as h5f:
-        h5f.write(sol['control'].data, "/h_opt")
-        h5f.attributes("/h_opt")["nit"] = sol['iteration']
-        h5f.attributes("/h_opt")["objective"] = sol['objective']
-        h5f.attributes("/h_opt")["grad_norm"] = sol['grad_norm']
-        h5f.attributes("/h_opt")["msh_file_path"] = msh_file_path
-        h5f.attributes("/h_opt")["obstacle_stiffness"] = obstacle_stiffness
-
-    h_opt_vec = sol['control'].data.vector()
+    if use_scipy == False:
+        with HDF5File(MPI.comm_world, result_file, "w") as h5f:
+            h5f.write(sol['control'].data, "/h_opt")
+            h5f.attributes("/h_opt")["nit"] = sol['iteration']
+            h5f.attributes("/h_opt")["objective"] = sol['objective']
+            h5f.attributes("/h_opt")["grad_norm"] = sol['grad_norm']
+            h5f.attributes("/h_opt")["msh_file_path"] = msh_file_path
+            h5f.attributes("/h_opt")["obstacle_stiffness"] = obstacle_stiffness
+            h_opt_vec = sol['control'].data.vector()
+    else:
+        with HDF5File(MPI.comm_world, result_file, "w") as h5f:
+            h5f.write(sol, "/h_opt")
+            h5f.attributes("/h_opt")["msh_file_path"] = msh_file_path
+            h5f.attributes("/h_opt")["obstacle_stiffness"] = obstacle_stiffness
+            h_opt_vec = sol.vector()
+    
     h_min = h_opt_vec.min()
     h_max = h_opt_vec.max()
     h_mean_abs = np.mean(np.abs(h_opt_vec.get_local()))
@@ -57,9 +64,8 @@ def plot_mesh_deformation_from_result(
     final_residual = None
     num_iterations = None
     with HDF5File(MPI.comm_world, h5_file_path, "r") as h5f:
-        h_temp = Function(S_b, name="Design")
-        h5f.read(h_temp, "/h_opt")
-        h.vector()[:] = h_temp.vector().get_local()
+        h = Function(S_b, name="Design")
+        h5f.read(h, "/h_opt")
         h_opt_vec = h.vector()
         h_mean_abs = np.mean(np.abs(h_opt_vec.get_local()))
         print("h_mean_abs:", h_mean_abs)

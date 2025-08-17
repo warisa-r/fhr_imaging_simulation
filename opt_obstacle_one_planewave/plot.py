@@ -16,8 +16,8 @@ os.chdir(script_dir)
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
 #msh_file_path = "meshes/square_with_gaussian_perturbed_rect.msh" # To check and see the degree of 
 #msh_file_path = "meshes/square_with_perturbed_rect_obstacle.msh"
-goal_geometry_msh_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
-result_path = "outputs_st1/result_sin2_5_restrict.h5"
+goal_geometry_msh_path = "meshes/square_with_cos_bump_rect_obstacle.msh"
+result_path = "outputs_sweep_scipy/result_cosbump_50_1freq.h5"
 
 plot_mesh_deformation_from_result(
     result_path,
@@ -26,7 +26,7 @@ plot_mesh_deformation_from_result(
     obstacle_marker,
     side_wall_marker,
     bottom_wall_marker,
-    obstacle_opt_marker,
-    "outputs_st1/mesh_deformation.png",
-    1
+    None,
+    "mesh_deformation_test.png",
+    50
 )

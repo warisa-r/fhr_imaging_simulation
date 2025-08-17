@@ -447,6 +447,99 @@ def generate_square_with_cos_perturbed_rect_obstacle_mesh(
     gmsh.finalize()
     return f"{output_name}.msh"
 
+def generate_square_with_cos_bump_rect_obstacle_mesh(
+    width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=0.05,
+    bump_w=0.08, bump_h=0.05,
+    output_name="square_with_cos_bump_rect_obstacle",
+    n_points_bottom=100, n_points_rect_bottom=100,
+    seed=None
+):
+    import gmsh
+    import numpy as np
+
+    if seed is not None:
+        np.random.seed(seed)
+
+    gmsh.initialize()
+    gmsh.clear()
+    gmsh.model.add("square_with_cos_bump_rect_obstacle")
+
+    # Outer square points
+    p1 = gmsh.model.geo.addPoint(0, 0, 0, mesh_size)
+    p2 = gmsh.model.geo.addPoint(width, 0, 0, mesh_size)
+    p3 = gmsh.model.geo.addPoint(width, height, 0, mesh_size)
+    p4 = gmsh.model.geo.addPoint(0, height, 0, mesh_size)
+
+    # Outer square lines
+    l1 = gmsh.model.geo.addLine(p1, p2)  # Bottom
+    l2 = gmsh.model.geo.addLine(p2, p3)  # Right
+    l3 = gmsh.model.geo.addLine(p3, p4)  # Top
+    l4 = gmsh.model.geo.addLine(p4, p1)  # Left
+
+    gmsh.model.geo.mesh.setTransfiniteCurve(l1, n_points_bottom)
+
+    # Rectangle obstacle center
+    cx, cy = width/2, height/2
+    rx1 = cx - rect_w/2
+    rx2 = cx + rect_w/2
+    ry1 = cy - rect_h/2
+    ry2 = cy + rect_h/2
+
+    # Random bump position (ensure bump stays within obstacle)
+    bump_x_min = rx1
+    bump_x_max = rx2 - bump_w
+    bump_x = np.random.uniform(bump_x_min, bump_x_max)
+
+    # Discretize the bottom edge of the rectangle
+    rect_bottom_points = []
+    for i in range(n_points_rect_bottom):
+        t = i / (n_points_rect_bottom - 1)
+        x = rx1 + t * (rx2 - rx1)
+        # Cosine bump
+        if bump_x <= x <= bump_x + bump_w:
+            s = (x - bump_x) / bump_w  # normalized [0,1] in bump region
+            y = ry1 - bump_h * (1 - np.cos(2 * np.pi * s))
+        else:
+            y = ry1
+        rect_bottom_points.append(gmsh.model.geo.addPoint(x, y, 0, mesh_size))
+
+    # Other rectangle points (top-right and top-left)
+    rp3 = gmsh.model.geo.addPoint(rx2, ry2, 0, mesh_size)
+    rp4 = gmsh.model.geo.addPoint(rx1, ry2, 0, mesh_size)
+
+    # Rectangle lines
+    rect_lines = []
+    # Bottom (with bump)
+    for i in range(n_points_rect_bottom - 1):
+        rect_lines.append(gmsh.model.geo.addLine(rect_bottom_points[i], rect_bottom_points[i+1]))
+    # Right
+    rect_lines.append(gmsh.model.geo.addLine(rect_bottom_points[-1], rp3))
+    # Top
+    rect_lines.append(gmsh.model.geo.addLine(rp3, rp4))
+    # Left
+    rect_lines.append(gmsh.model.geo.addLine(rp4, rect_bottom_points[0]))
+
+    # Curve loops
+    outer_loop = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4])
+    rect_loop = gmsh.model.geo.addCurveLoop(rect_lines)
+
+    # Plane surface with rectangle obstacle + smooth bump
+    surface = gmsh.model.geo.addPlaneSurface([outer_loop, rect_loop])
+
+    gmsh.model.geo.synchronize()
+
+    # Physical groups
+    gmsh.model.addPhysicalGroup(1, [l1], bottom_wall_marker, "bottom_wall")
+    gmsh.model.addPhysicalGroup(1, [l2, l3, l4], side_wall_marker, "outer_walls")
+    gmsh.model.addPhysicalGroup(1, rect_lines, obstacle_marker, "rect_obstacle_cos_bump_boundary")
+    gmsh.model.addPhysicalGroup(2, [surface], domain_marker, "domain")
+
+    # Generate mesh
+    gmsh.model.mesh.generate(2)
+    gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
+    gmsh.write(f"{output_name}.msh")
+    gmsh.finalize()
+    return f"{output_name}.msh"
 
 if __name__ == "__main__":
     print("Generating square with hole mesh...")
@@ -543,14 +636,16 @@ if __name__ == "__main__":
     """
 
     
-    mesh_file = generate_square_with_sin_perturbed_rect_obstacle_mesh(
-    width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=mesh_size,
-    output_name="square_with_sin_perturbed_rect_obstacle",
-    n_points_bottom=100, n_points_rect_bottom=100,
-    perturb_amplitude=0.03, perturb_frequency=2
+    mesh_file = generate_square_with_cos_bump_rect_obstacle_mesh(
+        width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=mesh_size,
+        bump_w=0.08, bump_h=0.025,
+        output_name="meshes/square_with_cos_bump_rect_obstacle",
+        n_points_bottom=100, n_points_rect_bottom=100,
+        seed=555
     )
 
     
     fig, ax = plt.subplots(figsize=(6, 6))
-    plot_mesh(mesh_file_name, ax, title="Square with symmetric gaussian perturbations")
+    plot_mesh(mesh_file, ax, title="Mesh")
+    plt.savefig("meshpic.png")
     plt.show()

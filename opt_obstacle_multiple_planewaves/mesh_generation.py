@@ -65,7 +65,7 @@ def generate_square_with_hole_mesh(
         p_start = hole_points[i]
         p_end = hole_points[(i + 1) % n_circle]
         line = gmsh.model.geo.addLine(p_start, p_end)
-        gmsh.model.geo.mesh.setTransfiniteCurve(line, 2)  # 2 = 1 segment
+        #gmsh.model.geo.mesh.setTransfiniteCurve(line, 2)  # 2 = 1 segment
         hole_lines.append(line)
 
     # Curve loops

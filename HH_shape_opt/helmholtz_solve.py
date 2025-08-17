@@ -7,7 +7,7 @@ import pandas as pd
 
 LIGHT_SPEED = 299792458
 
-AMP = 10
+AMP = 1
 def plane_wave(x, k_background):
     return AMP * np.exp(1j * k_background * x[1])
 
@@ -41,7 +41,7 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
     # Create scalar function space for material properties
     V = FunctionSpace(mesh, "CG", 1)
     u, v = TrialFunction(V), TestFunction(V)
-    a = inner(grad(u), grad(v)) * dx
+    a = -inner(grad(u), grad(v)) * dx
     L0 = Constant(0.0) * v * dx
     
     # Set material properties via boundary conditions
