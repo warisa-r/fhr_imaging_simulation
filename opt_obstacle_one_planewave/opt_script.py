@@ -31,8 +31,8 @@ os.chdir(script_dir)
 #msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
 msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
-forward_sim_result_file_path = "forward_sim_data_bottom_sweep2.csv"
-result_path = "outputs_sweep_scipy/result_cosbump_100_freq1_lowmem.h5"
+forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
+result_path = "outputs_sweep_scipy/result_sin_50_freq1.h5"
 
 frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
 
@@ -67,7 +67,15 @@ for i, frequency in enumerate(frequencies):
 
 def derivative_cb(j, dj, m):
     iteration_counter[0] += 1
-    print("iter %d j = %f, max(dj) = %f, max(h) = %f." % (iteration_counter[0], j, dj[0].vector().max(), h.vector().max()))
+    print(
+        "iter %d j = %f, ||dj||_2 = %f, ||h||_2 = %f." % (
+            iteration_counter[0],
+            j,
+            norm(dj[0], 'l2'),
+            norm(m[0], 'l2')
+        ),
+        flush=True
+    )
     return dj
 
 Jhat = ReducedFunctional(
@@ -77,17 +85,16 @@ Jhat = ReducedFunctional(
 
 #dJdh = Jhat.derivative()
 #plot(dJdh, title=f"Gradient of J with respect to h")
-#savefig("outputs_sweep_scipy/gradient_cosbump.png")
+#savefig("outputs_sweep_scipy/gradient_sin.png")
 
 sol = minimize(
     Jhat,
-    method='CG'
+    #method='CG',
     tol=1e-6,
     options={
         "gtol": 1e-6,
-        "maxiter": 100,
+        "maxiter": 50,
         "disp": True,
-        "maxcor": 3  # Reduce memory usage
     }
 )
 sys.stdout.flush()
