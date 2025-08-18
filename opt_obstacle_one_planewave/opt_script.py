@@ -32,7 +32,7 @@ os.chdir(script_dir)
 msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom_sweep2.csv"
-result_path = "outputs_sweep_scipy/result_cosbump_200_1freq.h5"
+result_path = "outputs_sweep_scipy/result_cosbump_100_freq1_lowmem.h5"
 
 frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
 
@@ -40,6 +40,7 @@ h, mesh, markers = initialize_opt_xdmf(msh_file_path)
 V_DG0_initial = FunctionSpace(mesh, "DG", 0)
 reference_data_maps = []
 
+iteration_counter = [0]
 frequencies = [frequencies[-1]]
 
 for frequency in frequencies:
@@ -63,18 +64,32 @@ for i, frequency in enumerate(frequencies):
         J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
     else:
         J += assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
-comm = MPI.comm_world
-def eval_cb(j, h):
-    if comm.rank == 0:
-        print("objective = %f, norm of h = %f." % (j, float(norm(h))))
-#dJdh = Jhat.derivative()
-#plot(dJdh, title=f"Gradient of J with respect to h")
-#savefig("outputs_sweep/gradient_sin2.png")
+
+def derivative_cb(j, dj, m):
+    iteration_counter[0] += 1
+    print("iter %d j = %f, max(dj) = %f, max(h) = %f." % (iteration_counter[0], j, dj[0].vector().max(), h.vector().max()))
+    return dj
+
 Jhat = ReducedFunctional(
     J,
-    Control(h), eval_cb_post = eval_cb
+    Control(h), derivative_cb_post=derivative_cb
 )
-sol = minimize(Jhat, tol=1e-6, options={"gtol": 1e-6, "maxiter": 200, "disp": True})
+
+#dJdh = Jhat.derivative()
+#plot(dJdh, title=f"Gradient of J with respect to h")
+#savefig("outputs_sweep_scipy/gradient_cosbump.png")
+
+sol = minimize(
+    Jhat,
+    method='CG'
+    tol=1e-6,
+    options={
+        "gtol": 1e-6,
+        "maxiter": 100,
+        "disp": True,
+        "maxcor": 3  # Reduce memory usage
+    }
+)
 sys.stdout.flush()
 
 save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path, True)
