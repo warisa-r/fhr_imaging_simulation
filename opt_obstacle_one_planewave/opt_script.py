@@ -32,7 +32,7 @@ os.chdir(script_dir)
 msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
-result_path = "outputs_sweep_scipy/result_sin_50_freq1.h5"
+result_path = "outputs_SD/result_sin_10_fixed2.5.h5"
 
 frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
 
@@ -80,26 +80,25 @@ def derivative_cb(j, dj, m):
 
 Jhat = ReducedFunctional(
     J,
-    Control(h), derivative_cb_post=derivative_cb
+    Control(h)
+    #, derivative_cb_post=derivative_cb
 )
 
 #dJdh = Jhat.derivative()
 #plot(dJdh, title=f"Gradient of J with respect to h")
 #savefig("outputs_sweep_scipy/gradient_sin.png")
+problem = MoolaOptimizationProblem(Jhat)
+h_moola = moola.DolfinPrimalVector(h)
 
-sol = minimize(
-    Jhat,
-    #method='CG',
-    tol=1e-6,
-    options={
-        "gtol": 1e-6,
-        "maxiter": 50,
-        "disp": True,
-    }
-)
-sys.stdout.flush()
-
-save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path, True)
+solver = moola.SteepestDescent(problem, h_moola, 
+options={
+"maxiter": 10,
+'line_search': "fixed", 
+"line_search_options": {"start_stp": 2.5}})
+#"line_search_options": {"ftol": 1e-4, "start_stp": 10.0, "stpmin" : 1e-10, "stpmax":10000}
+#})
+sol = solver.solve()
+save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path, False)
 
 #plot_mesh_deformation_from_result(
 #    result_path,

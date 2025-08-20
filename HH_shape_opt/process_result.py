@@ -29,6 +29,7 @@ def save_optimization_result(
             h5f.attributes("/h_opt")["obstacle_stiffness"] = obstacle_stiffness
             h_opt_vec = sol.vector()
     
+    print(sol['control'].data)
     h_min = h_opt_vec.min()
     h_max = h_opt_vec.max()
     h_mean_abs = np.mean(np.abs(h_opt_vec.get_local()))
