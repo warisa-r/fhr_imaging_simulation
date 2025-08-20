@@ -32,7 +32,7 @@ os.chdir(script_dir)
 msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
-result_path = "outputs_SD/result_sin_10_fixed2.5.h5"
+result_path = "outputs_ipopt/result_sin_25.h5"
 
 frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
 
@@ -84,9 +84,24 @@ Jhat = ReducedFunctional(
     #, derivative_cb_post=derivative_cb
 )
 
+problem = MinimizationProblem(Jhat)
+
+parameters = {
+    "tol": 1e-8,
+    "acceptable_tol": 1e-8,
+    "max_iter": 25,
+    "linear_solver": "ma97",
+    "hsllib": 'libcoinhsl.so',
+    "print_level" : 5
+}
+solver = IPOPTSolver(problem, parameters=parameters)
+sol = solver.solve()
+save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path, True)
 #dJdh = Jhat.derivative()
 #plot(dJdh, title=f"Gradient of J with respect to h")
 #savefig("outputs_sweep_scipy/gradient_sin.png")
+
+"""
 problem = MoolaOptimizationProblem(Jhat)
 h_moola = moola.DolfinPrimalVector(h)
 
@@ -109,3 +124,4 @@ save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result
 #    bottom_wall_marker,
 #    "outputs/mesh_deformation_sym_exp_100.png"
 #)
+"""
