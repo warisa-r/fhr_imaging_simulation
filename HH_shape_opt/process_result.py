@@ -66,9 +66,9 @@ def plot_mesh_deformation_from_result(
     with HDF5File(MPI.comm_world, h5_file_path, "r") as h5f:
         h = Function(S_b, name="Design")
         h5f.read(h, "/h_opt")
-        h_opt_vec = h.vector()
-        h_mean_abs = np.mean(np.abs(h_opt_vec.get_local()))
-        print("h_mean_abs:", h_mean_abs)
+        #h_opt_vec = h.vector()
+        #h_mean_abs = np.mean(np.abs(h_opt_vec.get_local()))
+        #print("h_mean_abs:", h_mean_abs)
         try:
             final_residual = h5f.attributes("/h_opt")["objective"]
         except Exception:

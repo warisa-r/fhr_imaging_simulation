@@ -44,8 +44,8 @@ class HelmholtzSetup:
             def value_shape(self):
                 return ()
 
-        self.u_inc_re = IncidentReal()
-        self.u_inc_im = IncidentImag()
+        self.u_inc_re = IncidentReal(degree = 2)
+        self.u_inc_im = IncidentImag(degree = 2)
 
 def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker, obstacle_stiffness):
     # Create scalar function space for material properties
@@ -129,25 +129,23 @@ def preprocess_reference_data(V_DG0, forward_sim_result_file_path, frequency = N
     tree = mesh.bounding_box_tree()
     dofmap = V_DG0.dofmap()
     
-    tolerance = 1e-6
     cell_value_map = {}
     
     for (x, y), val in zip(points, values):
         point = Point(x, y)
         try:
-            cell_id, distance = tree.compute_closest_entity(point)
+            cell_id = tree.compute_first_entity_collision(point)
             
-            # Only assign if point is close enough and cell exists in this partition
-            if distance < tolerance and cell_id < mesh.num_cells():
+            # Only assign if a valid cell is found in this partition
+            if cell_id < mesh.num_cells():
                 if cell_id not in cell_value_map:
                     dof_idx = dofmap.cell_dofs(cell_id)[0]
                     cell_value_map[dof_idx] = val
                 else:
                     # This case should ideally not happen with DG0 and well-defined data
                     pass
-            # Skip points that are too far away (not in this partition)
         except:
-            # Point not in this rank's partition, skip
+            # Point not found in this rank's mesh partition, skip
             pass
             
     return cell_value_map

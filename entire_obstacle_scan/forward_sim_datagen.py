@@ -18,7 +18,7 @@ import pandas as pd
 want_plot = True
 AMP = 1
 
-msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
+msh_file_path = "meshes/square_with_half_sin_perturbed_rect_obstacle.msh"
 
 all_results = []
 
@@ -61,4 +61,4 @@ for angle in angles:
 
 # Save all results to a single CSV
 df = pd.DataFrame(all_results)
-df.to_csv("forward_sim_data.csv", index=False)
+df.to_csv("forward_sim_data_half.csv", index=False)
