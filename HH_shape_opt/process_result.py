@@ -104,6 +104,8 @@ def plot_mesh_deformation_from_result(
     plot(mesh_goal, color="r", linewidth=0.5)
     plt.title(subplot_titles[1])
     plt.axis("equal")
+#    final_residual = 1.1493058221501000e+00
+#    num_iterations = 10
 
     plt.subplot(1, 3, 3)
     plot(mesh_copy, color="r", linewidth=0.5)

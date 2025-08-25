@@ -32,7 +32,7 @@ os.chdir(script_dir)
 msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
-result_path = "outputs_ipopt/result_sin_25.h5"
+result_path = "outputs_ipopt/result_sin_sweep_50.h5"
 
 frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
 
@@ -41,7 +41,7 @@ V_DG0_initial = FunctionSpace(mesh, "DG", 0)
 reference_data_maps = []
 
 iteration_counter = [0]
-frequencies = [frequencies[-1]]
+#frequencies = [frequencies[-1]]
 
 for frequency in frequencies:
     reference_data_map = preprocess_reference_data(V_DG0_initial, forward_sim_result_file_path, frequency)
@@ -87,9 +87,8 @@ Jhat = ReducedFunctional(
 problem = MinimizationProblem(Jhat)
 
 parameters = {
-    "tol": 1e-8,
-    "acceptable_tol": 1e-8,
-    "max_iter": 25,
+    "acceptable_tol": 1e-3,
+    "max_iter": 50,
     "linear_solver": "ma97",
     "hsllib": 'libcoinhsl.so',
     "print_level" : 5
