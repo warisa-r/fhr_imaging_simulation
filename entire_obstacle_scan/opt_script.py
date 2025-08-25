@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from HH_shape_opt.helmholtz_solve import HelmholtzSetup, plane_wave, helmholtz_solve, preprocess_reference_data, assign_reference_data
+from HH_shape_opt.helmholtz_solve import HelmholtzSetup, plane_wave_angle, helmholtz_solve, preprocess_reference_data, assign_reference_data
 from HH_shape_opt.initialize_opt import initialize_opt_xdmf
 from HH_shape_opt.process_result import save_optimization_result, plot_mesh_deformation_from_result
 
@@ -31,8 +31,8 @@ os.chdir(script_dir)
 #msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
 msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
-forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
-result_path = "outputs_ipopt/result_sin_coarse_25.h5"
+forward_sim_result_file_path = "forward_sim_data.csv"
+result_path = "outputs/result_sin_25.h5"
 
 frequency = 5e9
 
@@ -43,27 +43,26 @@ reference_data_maps = []
 angles = [0, 90, 180, 270]
 
 for angle in angles:
-    #TODO: Make this compatible with different angles but still work with frequency
-    reference_data_map = preprocess_reference_data(V_DG0_initial, forward_sim_result_file_path, None)
+    reference_data_map = preprocess_reference_data(V_DG0_initial, forward_sim_result_file_path, None, angle)
     reference_data_maps.append(reference_data_map)
 
 for i, angle in enumerate(angles):
-    incident_field_func = plane_wave
+    incident_field_func = plane_wave_angle(angle)
     hh_setup = HelmholtzSetup(frequency, incident_field_func, 50)
 
     # Initialization by copying the mesh we want to perform the forward sim on and
     # get the first initial guesses of h (all zero by default)
 
     # Solve the forward problem
-    u_tot_mag_dg0, ds_bottom, V_DG0 = helmholtz_solve(mesh, markers, h, hh_setup,
-                                                    obstacle_marker, side_wall_marker, bottom_wall_marker)
+    u_tot_mag_dg0, ds, V_DG0 = helmholtz_solve(mesh, markers, h, hh_setup,
+                                                    obstacle_marker, side_wall_marker, bottom_wall_marker, True)
     # Load reference data
     u_ref_dg0 = assign_reference_data(V_DG0, reference_data_maps[i])
 
     if i ==0:
-        J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
+        J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds))
     else:
-        J += assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
+        J += assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds))
 
 def derivative_cb(j, dj, m):
     iteration_counter[0] += 1
@@ -86,12 +85,12 @@ Jhat = ReducedFunctional(
 
 #dJdh = Jhat.derivative()
 #plot(dJdh, title=f"Gradient of J with respect to h")
-#savefig("outputs_ipopt/gradient_sin_coarse.png")
+#savefig("outputs/gradient_sin.png")
 
 problem = MinimizationProblem(Jhat)
 
 parameters = {
-    "acceptable_tol": 1e-3,
+    "acceptable_tol": 1e-4,
     "max_iter": 25,
     "linear_solver": "ma97",
     "hsllib": 'libcoinhsl.so',

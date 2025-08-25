@@ -10,23 +10,13 @@ import matplotlib.pyplot as plt
 
 from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from HH_shape_opt.helmholtz_solve import HelmholtzSetup, plane_wave, helmholtz_solve
+from HH_shape_opt.helmholtz_solve import HelmholtzSetup, plane_wave_angle, helmholtz_solve
 from HH_shape_opt.initialize_opt import initialize_opt_xml, initialize_opt_xdmf
 
 import pandas as pd
 
 want_plot = True
 AMP = 1
-
-def plane_wave_angle(angle_deg):
-    angle_rad = np.deg2rad(angle_deg)
-    direction_x = np.cos(angle_rad)
-    direction_y = np.sin(angle_rad)
-
-    def wave_func(x, k_background):
-        return AMP * np.exp(1j * k_background * (x[0] * direction_x + x[1] * direction_y))
-    
-    return wave_func
 
 msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
 

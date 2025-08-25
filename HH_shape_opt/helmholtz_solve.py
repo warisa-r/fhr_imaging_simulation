@@ -11,6 +11,16 @@ AMP = 1
 def plane_wave(x, k_background):
     return AMP * np.exp(1j * k_background * x[1])
 
+def plane_wave_angle(angle_deg):
+    angle_rad = np.deg2rad(angle_deg)
+    direction_x = np.cos(angle_rad)
+    direction_y = np.sin(angle_rad)
+
+    def wave_func(x, k_background):
+        return AMP * np.exp(1j * k_background * (x[0] * direction_x + x[1] * direction_y))
+    
+    return wave_func
+
 class HelmholtzSetup:
     def __init__(self, frequency, incident_field_func, obstacle_stiffness = 50):
         self.frequency = frequency
@@ -105,10 +115,12 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
 
     return s
 
-def preprocess_reference_data(V_DG0, forward_sim_result_file_path, frequency = None):
+def preprocess_reference_data(V_DG0, forward_sim_result_file_path, frequency = None, angle = None):
     df = pd.read_csv(forward_sim_result_file_path)
     if frequency is not None:
         df = df.loc[df['frequency'] == frequency]
+    if angle is not None:
+        df = df.loc[df['angle'] == angle]
 
     points = df[["x", "y"]].values
     values = df["u"].values
@@ -155,7 +167,7 @@ def load_forward_simulation_data_bottomwall(V_DG0, forward_sim_result_file_path,
     df = pd.read_csv(forward_sim_result_file_path)
 
 def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup, 
-                   obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker = None):
+                   obstacle_marker, side_wall_marker, bottom_wall_marker, data_all_side = False, obstacle_opt_marker = None):
 
     # Perform mesh deformation
     h_vol = transfer_from_boundary(h_control, mesh_copy)
@@ -226,6 +238,14 @@ def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup,
     
     # Create measure for bottom boundary with appropriate quadrature
     ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, 
-                       subdomain_id=bottom_wall_marker, metadata={"quadrature_degree": 0})
+                    subdomain_id=bottom_wall_marker, metadata={"quadrature_degree": 0})
     
-    return u_tot_mag_dg0, ds_bottom, V_DG0
+    if data_all_side == True:
+        ds_side_wall = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, 
+                    subdomain_id=side_wall_marker, metadata={"quadrature_degree": 0})
+        ds = ds_bottom + ds_side_wall
+    else:
+        # Normally (for the simple non entire object scan, the data is available at ds_bottom)
+        ds = ds_bottom
+    
+    return u_tot_mag_dg0, ds, V_DG0
