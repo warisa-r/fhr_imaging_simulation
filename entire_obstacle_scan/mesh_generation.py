@@ -132,6 +132,9 @@ def generate_square_with_rect_obstacle_mesh(
 
     # Use TransfiniteCurve for bottom wall discretization
     gmsh.model.geo.mesh.setTransfiniteCurve(l1, n_points_bottom)
+    gmsh.model.geo.mesh.setTransfiniteCurve(l2, n_points_bottom)
+    gmsh.model.geo.mesh.setTransfiniteCurve(l3, n_points_bottom)
+    gmsh.model.geo.mesh.setTransfiniteCurve(l4, n_points_bottom)
 
     # Rectangle obstacle center
     cx, cy = width/2, height/2
@@ -215,6 +218,9 @@ def generate_square_with_sin_perturbed_rect_obstacle_mesh(
 
     # Use TransfiniteCurve for bottom wall discretization
     gmsh.model.geo.mesh.setTransfiniteCurve(l1, n_points_bottom)
+    gmsh.model.geo.mesh.setTransfiniteCurve(l2, n_points_bottom)
+    gmsh.model.geo.mesh.setTransfiniteCurve(l3, n_points_bottom)
+    gmsh.model.geo.mesh.setTransfiniteCurve(l4, n_points_bottom)
 
     # Rectangle obstacle center
     cx, cy = width/2, height/2

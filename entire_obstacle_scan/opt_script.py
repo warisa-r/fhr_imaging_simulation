@@ -28,26 +28,26 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
 
-msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
-#msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
+#msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
+msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
 result_path = "outputs_ipopt/result_sin_coarse_25.h5"
 
-frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
+frequency = 5e9
 
 h, mesh, markers = initialize_opt_xdmf(msh_file_path)
 V_DG0_initial = FunctionSpace(mesh, "DG", 0)
 reference_data_maps = []
 
-iteration_counter = [0]
-#frequencies = [frequencies[-1]]
+angles = [0, 90, 180, 270]
 
-for frequency in frequencies:
-    reference_data_map = preprocess_reference_data(V_DG0_initial, forward_sim_result_file_path, frequency)
+for angle in angles:
+    #TODO: Make this compatible with different angles but still work with frequency
+    reference_data_map = preprocess_reference_data(V_DG0_initial, forward_sim_result_file_path, None)
     reference_data_maps.append(reference_data_map)
 
-for i, frequency in enumerate(frequencies):
+for i, angle in enumerate(angles):
     incident_field_func = plane_wave
     hh_setup = HelmholtzSetup(frequency, incident_field_func, 50)
 
@@ -100,29 +100,3 @@ parameters = {
 solver = IPOPTSolver(problem, parameters=parameters)
 sol = solver.solve()
 save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path, True)
-
-
-"""
-problem = MoolaOptimizationProblem(Jhat)
-h_moola = moola.DolfinPrimalVector(h)
-
-solver = moola.SteepestDescent(problem, h_moola, 
-options={
-"maxiter": 10,
-'line_search': "fixed", 
-"line_search_options": {"start_stp": 2.5}})
-#"line_search_options": {"ftol": 1e-4, "start_stp": 10.0, "stpmin" : 1e-10, "stpmax":10000}
-#})
-sol = solver.solve()
-save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path, False)
-
-#plot_mesh_deformation_from_result(
-#    result_path,
-#    msh_file_path,
-#    goal_geometry_msh_path,
-#    obstacle_marker,
-#    side_wall_marker,
-#    bottom_wall_marker,
-#    "outputs/mesh_deformation_sym_exp_100.png"
-#)
-"""
