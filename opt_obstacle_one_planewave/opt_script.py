@@ -30,8 +30,8 @@ os.chdir(script_dir)
 #msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
 msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
-forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
-result_path = "outputs_ipopt/result_sin_full_446.h5"
+forward_sim_result_file_path = "forward_sim_data_bottom_sweep_halfsin.csv"
+result_path = "outputs/result_halfsin_scaled_500.h5"
 
 frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
 
@@ -85,17 +85,19 @@ Jhat = ReducedFunctional(
 
 #dJdh = Jhat.derivative()
 #plot(dJdh, title=f"Gradient of J with respect to h")
-#savefig("outputs_ipopt/gradient_sin_coarse.png")
+#savefig("outputs/gradient_halfsin_scaled.png")
 
 problem = MoolaOptimizationProblem(Jhat)
 h_moola = moola.DolfinPrimalVector(h)
 
 solver = moola.BFGS(problem, h_moola, 
 options={
-"maxiter": 446,
-"jtol" : 1e-7
+"maxiter": 500,
+"jtol" : 1e-7,
+"gtol" : 1e-7,
+"line_search_options": {"ignore_warnings": True}
 })
-#"line_search_options": {"ftol": 1e-4, "start_stp": 10.0, "stpmin" : 1e-10, "stpmax":10000}
+
 #})
 sol = solver.solve()
 save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path, False)
