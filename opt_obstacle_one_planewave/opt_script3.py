@@ -31,7 +31,7 @@ os.chdir(script_dir)
 msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom_sweep_halfsin.csv"
-result_path = "outputs_SD/result_halfsin_scaled_1000.h5"
+result_path = "outputs/result_halfsin_scaled_restrart_1000.h5"
 
 frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
 
@@ -87,35 +87,72 @@ Jhat = ReducedFunctional(
 #plot(dJdh, title=f"Gradient of J with respect to h")
 #savefig("outputs/gradient_halfsin_scaled.png")
 
-# Define alphas to test
-alphas = [0.01, 0.1, 1.0, 10.0]
+problem = MoolaOptimizationProblem(Jhat)
+h_moola = moola.DolfinPrimalVector(h)
 
-# Get gradient of J w.r.t. h
-dJdh = Jhat.derivative()
+objective_tol = 1e-4
+max_outer_loops = 10
+current_obj = np.inf
+outer_iter = 0
+current_iter = 0
 
-# Store results
-derivatives = {}
-for frequency in frequencies:
-    reference_data_map = preprocess_reference_data(V_DG0_initial, forward_sim_result_file_path, frequency)
-    reference_data_maps.append(reference_data_map)
+while current_obj > objective_tol and outer_iter < max_outer_loops:
+    # --- BFGS Step ---
+    try:
+        solver_bfgs = moola.BFGS(problem, h_moola,
+            options={
+                "maxiter": 1000,
+                "jtol": 1e-9,
+                "gtol": 1e-7,
+                "mem_lim": 2,
+                "line_search_options": {"ignore_warnings": True}
+            }
+        )
+        sol = solver_bfgs.solve()
+        h_moola = sol['control']
+        current_obj = sol['objective']
+        current_iter = current_iter + sol['iteration']
+        print(f"[BFGS] Iteration {outer_iter}, objective: {current_obj:.3e}")
+    except RuntimeError as e:
+        print(f"[BFGS] RuntimeError caught: {e}")
+        print("[BFGS] Switching to Steepest Descent for 5 steps.")
+        solver_sd = moola.SteepestDescent(problem, h_moola,
+            options={
+                "maxiter": 50,
+                "jtol": 1e-10,
+                "gtol": 1e-7,
+                "line_search_options": {"ignore_warnings": True}
+            }
+        )
+        sol = solver_sd.solve()
+        h_moola = sol['control']
+        current_obj = sol['objective']
+        current_iter = current_iter + sol['iteration']
+        print(f"[SD] Iteration {outer_iter}, objective: {current_obj:.3e}")
 
-for i, frequency in enumerate(frequencies):
-    incident_field_func = plane_wave
-    hh_setup = HelmholtzSetup(frequency, incident_field_func, 50)
+    if current_obj <= objective_tol:
+        break
 
-    # Initialization by copying the mesh we want to perform the forward sim on and
-    # get the first initial guesses of h (all zero by default)
+    # --- Steepest Descent Step (5 steps) ---
+    solver_sd = moola.SteepestDescent(problem, h_moola,
+        options={
+            "maxiter": 50,
+            "jtol": 1e-10,
+            "gtol": 1e-7,
+            "line_search_options": {"ignore_warnings": True}
+        }
+    )
+    sol = solver_sd.solve()
+    h_moola = sol['control']
+    current_obj = sol['objective']
+    current_iter = current_iter + sol['iteration']
+    print(f"[SD] Iteration {outer_iter}, objective: {current_obj:.3e}")
 
-    # Solve the forward problem
-    u_tot_mag_dg0, ds_bottom, V_DG0 = helmholtz_solve(mesh, markers, h, hh_setup,
-                                                    obstacle_marker, side_wall_marker, bottom_wall_marker)
-    # Load reference data
-    u_ref_dg0 = assign_reference_data(V_DG0, reference_data_maps[i])
+    outer_iter += 1
 
-    if i ==0:
-        J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
-    else:
-        J += assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
+# Save the final result
+sol['iteration'] = current_iter
+save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path, False)
 """
 
 problem = MinimizationProblem(Jhat)

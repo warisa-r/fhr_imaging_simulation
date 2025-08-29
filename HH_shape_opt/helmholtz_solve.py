@@ -98,7 +98,7 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
 
     # Elastic variational problem
     a_el = inner(σ(u_vec), grad(v_vec)) * dx
-    L_el = 10 * inner(h_vol, v_vec) * dObs
+    L_el = 50 * inner(h_vol, v_vec) * dObs
 
     # Boundary conditions: fix bottom and side walls
     bc_el = [
