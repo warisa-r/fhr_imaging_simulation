@@ -27,23 +27,23 @@ set_log_level(LogLevel.ERROR)
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
-#msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
+#msh_file_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
 msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
-forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
-result_path = "outputs_ipopt/result_sin_full_100.h5"
+forward_sim_result_file_path = "forward_sim_data_bottom_sweep_halfsin.csv"
+result_path = "outputs/result_halfsin_15.h5"
 
 frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
 
 h, mesh, markers = initialize_opt_xdmf(msh_file_path)
-V_DG0_initial = FunctionSpace(mesh, "DG", 0)
+V_initial = FunctionSpace(mesh, "CG", 5)
 reference_data_maps = []
 
 iteration_counter = [0]
 frequencies = [frequencies[-1]]
 
 for frequency in frequencies:
-    reference_data_map = preprocess_reference_data(V_DG0_initial, forward_sim_result_file_path, frequency)
+    reference_data_map = preprocess_reference_data(V_initial, forward_sim_result_file_path, frequency)
     reference_data_maps.append(reference_data_map)
 
 for i, frequency in enumerate(frequencies):
@@ -54,138 +54,41 @@ for i, frequency in enumerate(frequencies):
     # get the first initial guesses of h (all zero by default)
 
     # Solve the forward problem
-    u_tot_mag_dg0, ds_bottom, V_DG0 = helmholtz_solve(mesh, markers, h, hh_setup,
+    u_tot_mag, ds_bottom, V_CG5 = helmholtz_solve(mesh, markers, h, hh_setup,
                                                     obstacle_marker, side_wall_marker, bottom_wall_marker)
     # Load reference data
-    u_ref_dg0 = assign_reference_data(V_DG0, reference_data_maps[i])
+    u_ref = assign_reference_data(V_CG5, reference_data_maps[i])
 
     if i ==0:
-        J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
+        J = assemble((inner(u_tot_mag - u_ref, u_tot_mag - u_ref)* ds_bottom))
     else:
-        J += assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
-
-def derivative_cb(j, dj, m):
-    iteration_counter[0] += 1
-    print(
-        "iter %d j = %f, ||dj||_2 = %f, ||h||_2 = %f." % (
-            iteration_counter[0],
-            j,
-            norm(dj[0], 'l2'),
-            norm(m[0], 'l2')
-        ),
-        flush=True
-    )
-    return dj
+        J += assemble((inner(u_tot_mag - u_ref, u_tot_mag - u_ref)* ds_bottom))
 
 Jhat = ReducedFunctional(
     J,
     Control(h)
-    #, derivative_cb_post=derivative_cb
 )
 
-#dJdh = Jhat.derivative()
-#plot(dJdh, title=f"Gradient of J with respect to h")
-#savefig("outputs_ipopt/gradient_sin_coarse.png")
-import h5py
-import json
-from dolfin import *
-from dolfin_adjoint import * 
-import scipy
-import numpy as np
-from matplotlib.pyplot import show, savefig, close, figure
+#dJ = Jhat.derivative()
+#plot(dJ, title = "derivative of J with respect to h")
+#savefig("djdh.png")
 
-import moola
-import subprocess
-import os
-import sys
-import gmsh
-import matplotlib.pyplot as plt
 
-from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from HH_shape_opt.helmholtz_solve import HelmholtzSetup, plane_wave, helmholtz_solve, preprocess_reference_data, assign_reference_data
-from HH_shape_opt.initialize_opt import initialize_opt_xdmf
-from HH_shape_opt.process_result import save_optimization_result, plot_mesh_deformation_from_result
-
-set_log_level(LogLevel.ERROR)
-
-######################################
-
-script_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_dir)
-
-#msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
-msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
-#goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
-forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
-result_path = "outputs_ipopt/result_sin_full_100.h5"
-
-frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
-
-h, mesh, markers = initialize_opt_xdmf(msh_file_path)
-V_DG0_initial = FunctionSpace(mesh, "DG", 0)
-reference_data_maps = []
-
-iteration_counter = [0]
-frequencies = [frequencies[-1]]
-
-for frequency in frequencies:
-    reference_data_map = preprocess_reference_data(V_DG0_initial, forward_sim_result_file_path, frequency)
-    reference_data_maps.append(reference_data_map)
-
-for i, frequency in enumerate(frequencies):
-    incident_field_func = plane_wave
-    hh_setup = HelmholtzSetup(frequency, incident_field_func, 50)
-
-    # Initialization by copying the mesh we want to perform the forward sim on and
-    # get the first initial guesses of h (all zero by default)
-
-    # Solve the forward problem
-    u_tot_mag_dg0, ds_bottom, V_DG0 = helmholtz_solve(mesh, markers, h, hh_setup,
-                                                    obstacle_marker, side_wall_marker, bottom_wall_marker)
-    # Load reference data
-    u_ref_dg0 = assign_reference_data(V_DG0, reference_data_maps[i])
-
-    if i ==0:
-        J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
-    else:
-        J += assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
-
-def derivative_cb(j, dj, m):
-    iteration_counter[0] += 1
-    print(
-        "iter %d j = %f, ||dj||_2 = %f, ||h||_2 = %f." % (
-            iteration_counter[0],
-            j,
-            norm(dj[0], 'l2'),
-            norm(m[0], 'l2')
-        ),
-        flush=True
-    )
-    return dj
-
-Jhat = ReducedFunctional(
-    J,
-    Control(h)
-    #, derivative_cb_post=derivative_cb
-)
+problem = MoolaOptimizationProblem(Jhat)
+h_moola = moola.DolfinPrimalVector(h)
 
 alpha = 1.0
-
-solver = moola.SteepestDescent(problem, h_moola, 
+solver = moola.BFGS(problem, h_moola, 
     options={
-    "maxiter": 1,
-    "line_search": "fixed",
-    "line_search_options": {"start_stp": alpha}
+    "maxiter": 15,
+    "mem_lim": 1
     })
 
 #"line_search_options": {"ftol": 1e-4, "start_stp": 10.0, "stpmin" : 1e-10, "stpmax":10000}
 #})
 sol = solver.solve()
-objective_values.append(sol["objective"])
 
-#save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path, False)
+save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path, False)
 
 """
 

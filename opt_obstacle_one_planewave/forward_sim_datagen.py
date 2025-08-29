@@ -25,33 +25,50 @@ for frequency in frequencies:
     incident_field_func = plane_wave
     hh_setup = HelmholtzSetup(frequency, incident_field_func)
     h, mesh, markers = initialize_opt_xdmf(msh_file_path)
-    u_tot_mag_dg0, _, V_DG0 = helmholtz_solve(
+    
+    # Get the solution from helmholtz_solve
+    u_tot_mag, ds_bottom, V_CG5 = helmholtz_solve(
         mesh, markers, h, hh_setup,
         obstacle_marker, side_wall_marker, bottom_wall_marker
     )
+    
+    # Project u_tot_mag to CG5 space to get a Function
+    u_tot_mag_func = project(u_tot_mag, V_CG5)
+    
+    # Get DOF coordinates and values
+    dof_coordinates = V_CG5.tabulate_dof_coordinates()
+    u_values = u_tot_mag_func.vector().get_local()
+    
+    # Simply record all DOF positions and values on bottom boundary (y ≈ 0)
+    tolerance = 1e-10
+    for dof_idx, coord in enumerate(dof_coordinates):
+        if abs(coord[1]) < tolerance:  # Bottom boundary
+            all_results.append({
+                "x": coord[0],
+                "y": coord[1],
+                "u": u_values[dof_idx],
+                "frequency": frequency
+            })
 
-    for facet in SubsetIterator(markers, bottom_wall_marker):
-        cell = Cell(mesh, facet.entities(2)[0])  # cell adjacent to facet
-        dof_idx = V_DG0.dofmap().cell_dofs(cell.index())[0]
-        u_val = u_tot_mag_dg0.vector()[dof_idx]
-
-        midpoint = facet.midpoint()
-        all_results.append({
-            "x": midpoint.x(),
-            "y": midpoint.y(),
-            "u": u_val,
-            "frequency": frequency
-        })
-
-# Save all results to a single CSV
+# Save all results to CSV
 df = pd.DataFrame(all_results)
 df.to_csv("forward_sim_data_bottom_sweep_halfsin.csv", index=False)
 
-# Optionally, plot for the last frequency
-plt.figure()
-p = plot(u_tot_mag_dg0, title=f"Magnitude of total field (u_inc + u_sol) at {frequency/1e9} GHz", cmap="hot")
+print(f"Generated data for {len(frequencies)} frequencies")
+print(f"Total data points: {len(all_results)}")
+
+# Plot for the last frequency
+plt.figure(figsize=(10, 8))
+p = plot(u_tot_mag_func, title=f"Magnitude of total field at {frequency/1e9:.1f} GHz", cmap="hot")
 plt.colorbar(p)
 plt.xlabel("x")
 plt.ylabel("y")
+
+# Mark the boundary DOF points
+boundary_points_last = df[df['frequency'] == frequency]
+plt.scatter(boundary_points_last['x'], boundary_points_last['y'], 
+           c='blue', s=20, marker='o', alpha=0.7, label='Boundary DOFs')
+plt.legend()
 plt.axis("equal")
-plt.savefig("picwave_last.png")
+plt.savefig("forward_sim_with_boundary_dofs.png", dpi=300, bbox_inches='tight')
+plt.show()

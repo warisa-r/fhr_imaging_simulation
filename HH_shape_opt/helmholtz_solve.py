@@ -115,7 +115,7 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
 
     return s
 
-def preprocess_reference_data(V_DG0, forward_sim_result_file_path, frequency = None, angle = None):
+def preprocess_reference_data(V_CG5, forward_sim_result_file_path, frequency = None, angle = None):
     df = pd.read_csv(forward_sim_result_file_path)
     if frequency is not None:
         df = df.loc[df['frequency'] == frequency]
@@ -125,44 +125,54 @@ def preprocess_reference_data(V_DG0, forward_sim_result_file_path, frequency = N
     points = df[["x", "y"]].values
     values = df["u"].values
 
-    mesh = V_DG0.mesh()
+    mesh = V_CG5.mesh()
     tree = mesh.bounding_box_tree()
-    dofmap = V_DG0.dofmap()
     
-    cell_value_map = {}
+    point_value_map = {}
+    tolerance = 1e-10  # Tolerance for point matching
     
     for (x, y), val in zip(points, values):
         point = Point(x, y)
         try:
+            # Find the cell containing this point
             cell_id = tree.compute_first_entity_collision(point)
             
-            # Only assign if a valid cell is found in this partition
             if cell_id < mesh.num_cells():
-                if cell_id not in cell_value_map:
-                    dof_idx = dofmap.cell_dofs(cell_id)[0]
-                    cell_value_map[dof_idx] = val
-                else:
-                    # This case should ideally not happen with DG0 and well-defined data
-                    pass
+                # Find the closest DOF to this point
+                dofs_coords = V_CG5.tabulate_dof_coordinates()
+                
+                # Find DOFs that are very close to our point
+                distances = np.sqrt((dofs_coords[:, 0] - x)**2 + (dofs_coords[:, 1] - y)**2)
+                closest_dofs = np.where(distances < tolerance)[0]
+                
+                # If we found a close DOF, assign the value
+                if len(closest_dofs) > 0:
+                    dof_idx = closest_dofs[0]  # Take the first if multiple
+                    point_value_map[dof_idx] = val
+                    
         except:
             # Point not found in this rank's mesh partition, skip
             pass
             
-    return cell_value_map
+    return point_value_map
 
-def assign_reference_data(V_DG0, cell_value_map):
-    u_ref_dg0 = Function(V_DG0)
-    u_vec = u_ref_dg0.vector().get_local()
+def assign_reference_data(V_CG5, point_value_map):
+    u_ref = Function(V_CG5)
     
-    for dof_idx, value in cell_value_map.items():
-        u_vec[dof_idx] = value
-        
-    u_ref_dg0.vector().set_local(u_vec)
-    u_ref_dg0.vector().apply("insert")
-    return u_ref_dg0
-
-def load_forward_simulation_data_bottomwall(V_DG0, forward_sim_result_file_path, angle=None):
-    df = pd.read_csv(forward_sim_result_file_path)
+    if len(point_value_map) == 0:
+        return u_ref  # Return zero function if no data
+    
+    # Get local vector and assign known values
+    u_vec = u_ref.vector().get_local()
+    for dof_idx, value in point_value_map.items():
+        if dof_idx < len(u_vec):  # Safety check
+            u_vec[dof_idx] = value
+    
+    # Update the function
+    u_ref.vector().set_local(u_vec)
+    u_ref.vector().apply("insert")
+    
+    return u_ref
 
 def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup, 
                    obstacle_marker, side_wall_marker, bottom_wall_marker, data_all_side = False, obstacle_opt_marker = None):
@@ -230,20 +240,16 @@ def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup,
     # Compute magnitude
     u_tot_mag = sqrt(u_tot_re**2 + u_tot_im**2)
 
-    # Project to DG0 for easier integration
-    V_DG0 = FunctionSpace(mesh_copy, "DG", 0)
-    u_tot_mag_dg0 = project(u_tot_mag, V_DG0)
-    
     # Create measure for bottom boundary with appropriate quadrature
     ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, 
-                    subdomain_id=bottom_wall_marker, metadata={"quadrature_degree": 0})
+                    subdomain_id=bottom_wall_marker)
     
     if data_all_side == True:
         ds_side_wall = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, 
-                    subdomain_id=side_wall_marker, metadata={"quadrature_degree": 0})
+                    subdomain_id=side_wall_marker)
         ds = ds_bottom + ds_side_wall
     else:
         # Normally (for the simple non entire object scan, the data is available at ds_bottom)
         ds = ds_bottom
     
-    return u_tot_mag_dg0, ds, V_DG0
+    return u_tot_mag, ds, V
