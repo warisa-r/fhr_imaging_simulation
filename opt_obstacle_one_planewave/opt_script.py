@@ -20,17 +20,17 @@ from HH_shape_opt.helmholtz_solve import HelmholtzSetup, plane_wave, helmholtz_s
 from HH_shape_opt.initialize_opt import initialize_opt_xdmf
 from HH_shape_opt.process_result import save_optimization_result, plot_mesh_deformation_from_result
 
-set_log_level(LogLevel.ERROR)
+set_log_level(LogLevel.PROGRESS)
 
 ######################################
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
-msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
+msh_file_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
 #msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
-forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
+forward_sim_result_file_path = "forward_sim_data_bottom_sweep_halfsin.csv"
 result_path = "outputs/result_sin_15.h5"
 
 frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
@@ -88,7 +88,7 @@ solver = moola.BFGS(problem, h_moola,
 #})
 sol = solver.solve()
 
-save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path, False)
+#save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path, False)
 
 """
 

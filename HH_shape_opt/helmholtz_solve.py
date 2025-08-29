@@ -116,42 +116,46 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
     return s
 
 def preprocess_reference_data(V_CG5, forward_sim_result_file_path, frequency = None, angle = None):
-    df = pd.read_csv(forward_sim_result_file_path)
-    if frequency is not None:
-        df = df.loc[df['frequency'] == frequency]
-    if angle is not None:
-        df = df.loc[df['angle'] == angle]
-
-    points = df[["x", "y"]].values
-    values = df["u"].values
+    
+    # Only rank 0 reads the CSV file
+    if MPI.comm_world.rank == 0:
+        df = pd.read_csv(forward_sim_result_file_path)
+        if frequency is not None:
+            df = df.loc[df['frequency'] == frequency]
+        if angle is not None:
+            df = df.loc[df['angle'] == angle]
+        points = df[["x", "y"]].values
+        values = df["u"].values
+    else:
+        points = None
+        values = None
+    
+    # Broadcast data to all processes
+    points = MPI.comm_world.bcast(points, root=0)
+    values = MPI.comm_world.bcast(values, root=0)
 
     mesh = V_CG5.mesh()
     tree = mesh.bounding_box_tree()
     
     point_value_map = {}
-    tolerance = 1e-10  # Tolerance for point matching
+    tolerance = 1e-10
     
     for (x, y), val in zip(points, values):
         point = Point(x, y)
         try:
-            # Find the cell containing this point
             cell_id = tree.compute_first_entity_collision(point)
             
             if cell_id < mesh.num_cells():
-                # Find the closest DOF to this point
                 dofs_coords = V_CG5.tabulate_dof_coordinates()
-                
-                # Find DOFs that are very close to our point
                 distances = np.sqrt((dofs_coords[:, 0] - x)**2 + (dofs_coords[:, 1] - y)**2)
                 closest_dofs = np.where(distances < tolerance)[0]
                 
-                # If we found a close DOF, assign the value
                 if len(closest_dofs) > 0:
-                    dof_idx = closest_dofs[0]  # Take the first if multiple
+                    dof_idx = closest_dofs[0]
                     point_value_map[dof_idx] = val
                     
-        except:
-            # Point not found in this rank's mesh partition, skip
+        except RuntimeError:
+            # Point not found in this rank's mesh partition, skip silently
             pass
             
     return point_value_map
@@ -159,21 +163,23 @@ def preprocess_reference_data(V_CG5, forward_sim_result_file_path, frequency = N
 def assign_reference_data(V_CG5, point_value_map):
     u_ref = Function(V_CG5)
     
+    # Handle the case where this process has no data points
     if len(point_value_map) == 0:
-        return u_ref  # Return zero function if no data
+        # Still need to participate in collective operations
+        u_ref.vector().apply("insert")
+        return u_ref
     
     # Get local vector and assign known values
     u_vec = u_ref.vector().get_local()
     for dof_idx, value in point_value_map.items():
-        if dof_idx < len(u_vec):  # Safety check
+        if dof_idx < len(u_vec):
             u_vec[dof_idx] = value
     
-    # Update the function
+    # Update the function - this is a collective operation
     u_ref.vector().set_local(u_vec)
     u_ref.vector().apply("insert")
     
     return u_ref
-
 def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup, 
                    obstacle_marker, side_wall_marker, bottom_wall_marker, data_all_side = False, obstacle_opt_marker = None):
 
