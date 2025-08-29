@@ -29,8 +29,7 @@ def main(alpha_value=1.0):
     #msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
     msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
     #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
-    forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
-    result_path = "outputs_ipopt/result_sin_full_100.h5"
+    forward_sim_result_file_path = "forward_sim_data_bottom_sweep_halfsin.csv"
 
     frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
 

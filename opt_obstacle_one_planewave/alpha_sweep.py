@@ -4,11 +4,12 @@ import matplotlib.pyplot as plt
 import json
 import os
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_dir)
 def run_with_alpha(alpha):
-    """Run plot_objective.py with specific alpha and return objective value."""
     try:
         result = subprocess.run(
-            ['python3', 'plot_objective.py', str(alpha)],
+            ['mpirun', '-n', '8', 'python', 'get_objective.py', str(alpha)],
             capture_output=True,
             text=True,
             timeout=300,  # 5 minute timeout per run
@@ -35,7 +36,7 @@ def run_with_alpha(alpha):
 
 def main():
     # Define alpha values to test
-    alphas = np.linspace(0.1, 10.0, 4)  # 20 points from 0.1 to 10.0
+    alphas = np.linspace(1, 10.0, 50)  # 20 points from 0.1 to 10.0
     
     objectives = []
     successful_alphas = []
