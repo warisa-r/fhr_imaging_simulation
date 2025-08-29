@@ -27,8 +27,8 @@ set_log_level(LogLevel.ERROR)
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
-#msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
-msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
+msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
+#msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
 result_path = "outputs/result_sin_15.h5"

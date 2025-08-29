@@ -129,7 +129,7 @@ def preprocess_reference_data(V_CG5, forward_sim_result_file_path, frequency = N
     tree = mesh.bounding_box_tree()
     
     point_value_map = {}
-    tolerance = 1e-12  # Tolerance for point matching
+    tolerance = 1e-10  # Tolerance for point matching
     
     for (x, y), val in zip(points, values):
         point = Point(x, y)
@@ -242,14 +242,16 @@ def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup,
 
     # Create measure for bottom boundary with appropriate quadrature
     ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, 
-                    subdomain_id=bottom_wall_marker, metadata = {"quadrature_degree": 10})
+                    subdomain_id=bottom_wall_marker)
     
     if data_all_side == True:
         ds_side_wall = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, 
-                    subdomain_id=side_wall_marker, metadata = {"quadrature_degree": 10})
+                    subdomain_id=side_wall_marker)
         ds = ds_bottom + ds_side_wall
     else:
         # Normally (for the simple non entire object scan, the data is available at ds_bottom)
         ds = ds_bottom
+
+    u_tot_mag_projected = project(u_tot_mag, V)
     
-    return u_tot_mag, ds, V
+    return u_tot_mag_projected, ds, V
