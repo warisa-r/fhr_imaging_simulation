@@ -119,7 +119,7 @@ os.chdir(script_dir)
 msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
-result_path = "outputs_SD/result_sin_40_alpha.h5"
+result_path = "outputs_SD/result_halfsin_400_alpha.h5"
 
 frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
 
@@ -171,7 +171,7 @@ Jhat = ReducedFunctional(
     #, derivative_cb_post=derivative_cb
 )
 
-alpha = 40
+alpha = 400
 
 problem = MoolaOptimizationProblem(Jhat)
 h_moola = moola.DolfinPrimalVector(h)
