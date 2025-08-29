@@ -119,7 +119,7 @@ os.chdir(script_dir)
 msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
 #goal_geometry_msh_path = "meshes/square_with_sym_exp_perturbed_rect.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
-result_path = "outputs_ipopt/result_sin_full_100.h5"
+result_path = "outputs_SD/result_sin_40_alpha.h5"
 
 frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
 
@@ -171,7 +171,11 @@ Jhat = ReducedFunctional(
     #, derivative_cb_post=derivative_cb
 )
 
-alpha = 1.0
+alpha = 40
+
+problem = MoolaOptimizationProblem(Jhat)
+h_moola = moola.DolfinPrimalVector(h)
+
 
 solver = moola.SteepestDescent(problem, h_moola, 
     options={
@@ -182,10 +186,9 @@ solver = moola.SteepestDescent(problem, h_moola,
 
 #"line_search_options": {"ftol": 1e-4, "start_stp": 10.0, "stpmin" : 1e-10, "stpmax":10000}
 #})
-sol = solver.solve()
-objective_values.append(sol["objective"])
 
-#save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path, False)
+sol = solver.solve()
+save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path, False)
 
 """
 

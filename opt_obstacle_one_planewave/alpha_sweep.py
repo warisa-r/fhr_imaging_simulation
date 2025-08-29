@@ -36,7 +36,7 @@ def run_with_alpha(alpha):
 
 def main():
     # Define alpha values to test
-    alphas = np.linspace(1, 10.0, 50)  # 20 points from 0.1 to 10.0
+    alphas = np.linspace(1, 100, 100)
     
     objectives = []
     successful_alphas = []
@@ -67,9 +67,9 @@ def main():
         'objectives': objectives
     }
     
-    with open('alpha_sweep_results.json', 'w') as f:
+    with open('alpha_sweep_results_2.json', 'w') as f:
         json.dump(results, f, indent=2)
-    print("Results saved to: alpha_sweep_results.json")
+    print("Results saved to: alpha_sweep_results_2.json")
     
     # Create and save plot
     plt.figure(figsize=(12, 8))
@@ -91,7 +91,7 @@ def main():
     plt.tight_layout()
     
     # Save plot
-    plot_filename = 'alpha_sweep_analysis.png'
+    plot_filename = 'alpha_sweep_analysis2.png'
     plt.savefig(plot_filename, dpi=300, bbox_inches='tight')
     print(f"Plot saved as: {plot_filename}")
     
