@@ -244,7 +244,8 @@ def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup,
     u_tot_im = u_inc_im + u_sol_im
 
     # Compute magnitude
-    u_tot_mag = sqrt(u_tot_re**2 + u_tot_im**2)
+    #TODO: change this to square instead and square the signal we got
+    u_tot_mag = sqrt(u_tot_re**2 + u_tot_im**2) # sqrt is problematic for Hessian cal
 
     # Create measure for bottom boundary with appropriate quadrature
     ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, 
