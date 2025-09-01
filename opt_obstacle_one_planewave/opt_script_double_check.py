@@ -30,13 +30,32 @@ os.chdir(script_dir)
 
 #goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
 #msh_file_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
-msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
+#msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom_sweep_halfsin.csv"
-result_path = "outputs/result_halfsin_sq_200.h5"
+
 
 frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
 
-h, mesh, markers = initialize_opt_xdmf(msh_file_path)
+xdmf_path = "goal_mesh.xdmf"
+facet_xdmf_path = "goal_mesh_facet.xdmf"
+
+# Load mesh and markers from .xdmf files
+mesh = Mesh()
+with XDMFFile(xdmf_path) as infile:
+    infile.read(mesh)
+
+# Correctly read the MeshFunction from the XDMF file
+markers = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
+with XDMFFile(facet_xdmf_path) as infile:
+    # The default name for a MeshFunction written to XDMF is "f"
+    infile.read(markers, "f")
+
+# Initialize a zero deformation 'h' for the forward pass
+b_mesh = BoundaryMesh(mesh, "exterior")
+S_b = VectorFunctionSpace(b_mesh, "CG", 1)
+h = Function(S_b, name="Design")
+h.vector()[:] = 0.0
+
 V_initial = FunctionSpace(mesh, "CG", 5)
 reference_data_maps = []
 
@@ -89,23 +108,6 @@ solver = moola.BFGS(problem, h_moola,
 #"line_search_options": {"ftol": 1e-4, "start_stp": 10.0, "stpmin" : 1e-10, "stpmax":10000}
 #})
 sol = solver.solve()
-
-
-save_optimization_result(sol, msh_file_path,
-                         hh_setup.obstacle_stiffness,
-                         result_path, False)
-
-plot_mesh_deformation_from_result(
-    result_path,
-    msh_file_path,
-    goal_geometry_msh_path,
-    obstacle_marker,
-    side_wall_marker,
-    bottom_wall_marker,
-    None,
-    "outputs/mesh_deformation_halfsin_sq_200.png",
-    50
-)
 
 """
 

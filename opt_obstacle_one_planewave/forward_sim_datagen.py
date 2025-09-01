@@ -15,7 +15,7 @@ from HH_shape_opt.initialize_opt import initialize_opt_xml, initialize_opt_xdmf
 
 import pandas as pd
 
-msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
+msh_file_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
 
 all_results = []
 
@@ -29,15 +29,12 @@ for frequency in frequencies:
     # Get the solution from helmholtz_solve
     u_tot_mag, ds_bottom, V_CG5 = helmholtz_solve(
         mesh, markers, h, hh_setup,
-        obstacle_marker, side_wall_marker, bottom_wall_marker
+        obstacle_marker, side_wall_marker, bottom_wall_marker, True
     )
-    
-    # Project u_tot_mag to CG5 space to get a Function
-    u_tot_mag_func = project(u_tot_mag, V_CG5)
     
     # Get DOF coordinates and values
     dof_coordinates = V_CG5.tabulate_dof_coordinates()
-    u_values = u_tot_mag_func.vector().get_local()
+    u_values = u_tot_mag.vector().get_local()
     
     # Simply record all DOF positions and values on bottom boundary (y ≈ 0)
     tolerance = 1e-10
@@ -52,14 +49,14 @@ for frequency in frequencies:
 
 # Save all results to CSV
 df = pd.DataFrame(all_results)
-df.to_csv("forward_sim_data_bottom_sweep_sin.csv", index=False)
+df.to_csv("forward_sim_data_bottom_sweep_halfsin.csv", index=False)
 
 print(f"Generated data for {len(frequencies)} frequencies")
 print(f"Total data points: {len(all_results)}")
 
 # Plot for the last frequency
 plt.figure(figsize=(10, 8))
-p = plot(u_tot_mag_func, title=f"Magnitude of total field at {frequency/1e9:.1f} GHz", cmap="hot")
+p = plot(u_tot_mag, title=f"Magnitude of total field at {frequency/1e9:.1f} GHz", cmap="hot")
 plt.colorbar(p)
 plt.xlabel("x")
 plt.ylabel("y")

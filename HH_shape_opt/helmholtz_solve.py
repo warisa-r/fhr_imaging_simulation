@@ -181,7 +181,10 @@ def assign_reference_data(V_CG5, point_value_map):
     
     return u_ref
 def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup, 
-                   obstacle_marker, side_wall_marker, bottom_wall_marker, data_all_side = False, obstacle_opt_marker = None):
+                   obstacle_marker, side_wall_marker, bottom_wall_marker, 
+                   is_forward = False,
+                   data_all_side = False, obstacle_opt_marker = None,
+                   projection_degree = 5):
 
     # Perform mesh deformation
     h_vol = transfer_from_boundary(h_control, mesh_copy)
@@ -243,9 +246,7 @@ def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup,
     u_tot_re = u_inc_re + u_sol_re
     u_tot_im = u_inc_im + u_sol_im
 
-    # Compute magnitude
-    #TODO: change this to square instead and square the signal we got
-    u_tot_mag = sqrt(u_tot_re**2 + u_tot_im**2) # sqrt is problematic for Hessian cal
+    u_tot = sqrt(u_tot_re**2 + u_tot_im**2) # Magnitude square
 
     # Create measure for bottom boundary with appropriate quadrature
     ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, 
@@ -258,7 +259,15 @@ def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup,
     else:
         # Normally (for the simple non entire object scan, the data is available at ds_bottom)
         ds = ds_bottom
-
-    u_tot_mag_projected = project(u_tot_mag, V)
     
-    return u_tot_mag_projected, ds, V
+    if projection_degree == 5:
+        V_project = V
+    elif projection_degree == 0:
+        V_project = FunctionSpace(mesh_copy, "DG", 0)
+    else:
+        V_project = FunctionSpace(mesh_copy, "CG", projection_degree)
+
+    # Project the magnitude of the u_tot_mag
+    u_tot_projected = project(u_tot, V_project)
+    
+    return u_tot_projected, ds, V_project
