@@ -109,7 +109,7 @@ def generate_square_with_exp_perturbed_rect_mesh(
 def generate_square_with_rect_obstacle_mesh(
     width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=0.05,
     output_name="square_with_rect_obstacle",
-    n_points_bottom=100, n_points_rect_bottom=40,
+    n_points_bottom=100, n_points_rect_bottom=None,
     use_opt_marker=True
 ):
     import gmsh
@@ -156,7 +156,8 @@ def generate_square_with_rect_obstacle_mesh(
     rect_bottom_line = [rl1]
     rect_other_lines = [rl2, rl3, rl4]
     
-    gmsh.model.geo.mesh.setTransfiniteCurve(rl1, n_points_rect_bottom)
+    if n_points_rect_bottom != None:
+        gmsh.model.geo.mesh.setTransfiniteCurve(rl1, n_points_rect_bottom)
 
     # Curve loops
     outer_loop = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4])
@@ -636,11 +637,11 @@ if __name__ == "__main__":
     """
 
     
-    mesh_file = generate_square_with_sin_perturbed_rect_obstacle_mesh(
+    mesh_file = generate_square_with_rect_obstacle_mesh(
     width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=mesh_size,
-    output_name="meshes/square_with_halfsin_perturbed_rect_obstacle",
-    n_points_bottom=100, n_points_rect_bottom=100,
-    perturb_amplitude=0.02, perturb_frequency=0.5)
+    output_name="meshes/square_with_rect_obstacle",
+    n_points_bottom=100, n_points_rect_bottom=None,
+    use_opt_marker=False)
 
     
     fig, ax = plt.subplots(figsize=(6, 6))

@@ -28,11 +28,11 @@ set_log_level(LogLevel.ERROR)
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
-#goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
+goal_geometry_msh_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
 #msh_file_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
 msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
-forward_sim_result_file_path = "forward_sim_data_bottom_sweep_halfsin.csv"
-result_path = "outputs/result_halfsin_sq_200.h5"
+forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
+result_path = "outputs/result_sin_hybrid_50.h5"
 
 frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
 
@@ -72,18 +72,19 @@ Jhat = ReducedFunctional(
 
 #dJ = Jhat.derivative()
 #plot(dJ, title = "derivative of J with respect to h")
-#savefig("djdh.png")
+#savefig("djdh_coarse.png")
 
 
 problem = MoolaOptimizationProblem(Jhat)
 h_moola = moola.DolfinPrimalVector(h)
 
-solver = moola.BFGS(problem, h_moola, 
+solver = moola.HybridCG(problem, h_moola, 
     options={
-    "maxiter": 200,
-    "jtol":1e-9,
+    "maxiter": 50,
     "gtol":1e-7,
+    "jtol":1e-6,
     "mem_lim": 1,
+    "line_search_options": {"xtol": 1e-5, "ignore_warnings": True}
     })
 
 #"line_search_options": {"ftol": 1e-4, "start_stp": 10.0, "stpmin" : 1e-10, "stpmax":10000}
@@ -103,7 +104,7 @@ plot_mesh_deformation_from_result(
     side_wall_marker,
     bottom_wall_marker,
     None,
-    "outputs/mesh_deformation_halfsin_sq_200.png",
+    "outputs/mesh_deformation_sin_hybrid_50.png",
     50
 )
 
