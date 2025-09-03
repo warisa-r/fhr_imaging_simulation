@@ -126,16 +126,6 @@ def plot_mesh_deformation_from_result(
     # Load goal geometry mesh
     _, mesh_goal, markers_goal = initialize_opt_xdmf(goal_geometry_msh_path)
 
-    """
-    # Save the goal mesh and its markers to separate XDMF files
-    goal_mesh_filename = "goal_mesh.xdmf"
-    with XDMFFile(MPI.comm_world, goal_mesh_filename) as xdmf:
-        xdmf.write(mesh_goal)
-    """
-    goal_facet_filename = "goal_mesh_facet.xdmf"
-    with XDMFFile(MPI.comm_world, goal_facet_filename) as xdmf:
-        xdmf.write(markers_goal)
-
     plt.figure(figsize=(18, 6))
 
     ax1 = plt.subplot(1, 3, 1)
