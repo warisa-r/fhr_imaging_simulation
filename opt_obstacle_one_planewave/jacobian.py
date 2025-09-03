@@ -31,7 +31,7 @@ os.chdir(script_dir)
 goal_geometry_msh_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
 #msh_file_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
 msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
-forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
+forward_sim_result_file_path = "forward_sim_data_bottom_sweep_halfsin.csv"
 result_path = "outputs/result_sin_hybrid_75.h5"
 
 frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
@@ -70,79 +70,29 @@ Jhat = ReducedFunctional(
     Control(h)
 )
 
-#dJ = Jhat.derivative()
-#plot(dJ, title = "derivative of J with respect to h")
-#savefig("djdh_coarse.png")
+############# Compute the jacobian #################
+dJ = Jhat.derivative()
+V_h = h.function_space()
 
+# dJ is a dolfin-adjoint UFL form, so project to the same space as h
+dJ_projected = project(dJ, V_h)
 
-problem = MoolaOptimizationProblem(Jhat)
-h_moola = moola.DolfinPrimalVector(h)
+# Extract coefficient vector
+dJ_values = dJ_projected.vector().get_local()
 
-solver = moola.HybridCG(problem, h_moola, 
-    options={
-    "maxiter": 75,
-    "gtol":1e-7,
-    "jtol":1e-6,
-    "mem_lim": 1,
-    "line_search_options": {"xtol": 1e-5, "ignore_warnings": True}
-    })
+import numpy as np
 
-#"line_search_options": {"ftol": 1e-4, "start_stp": 10.0, "stpmin" : 1e-10, "stpmax":10000}
-#})
-sol = solver.solve()
+b_mesh = BoundaryMesh(mesh, "exterior")
+S_b = VectorFunctionSpace(b_mesh, "CG", 1)
 
+hx, hy = dJ_projected.split()
+hx_vertex = hx.compute_vertex_values(b_mesh)
+hy_vertex = hy.compute_vertex_values(b_mesh)
 
-save_optimization_result(sol, msh_file_path,
-                         hh_setup.obstacle_stiffness,
-                         result_path, False)
+dJ_vertices = np.vstack((hx_vertex, hy_vertex))  # shape (2, n_vertices)
+#print(dJ_vertices)
 
-plot_mesh_deformation_from_result(
-    result_path,
-    msh_file_path,
-    goal_geometry_msh_path,
-    obstacle_marker,
-    side_wall_marker,
-    bottom_wall_marker,
-    None,
-    "outputs/mesh_deformation_sin_hybrid_75.png",
-    50
-)
+_, s, _ = np.linalg.svd(dJ_vertices)
 
-"""
-
-problem = MinimizationProblem(Jhat)
-
-parameters = {
-    "acceptable_tol": 1e-3,
-    "max_iter": 100,
-    "linear_solver": "ma97",
-    "hsllib": 'libcoinhsl.so',
-    "print_level" : 5
-}
-solver = IPOPTSolver(problem, parameters=parameters)
-sol = solver.solve()
-#save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path, True)
-
-problem = MoolaOptimizationProblem(Jhat)
-h_moola = moola.DolfinPrimalVector(h)
-
-solver = moola.SteepestDescent(problem, h_moola, 
-options={
-"maxiter": 10,
-'line_search': "fixed", 
-"line_search_options": {"start_stp": 2.5}})
-#"line_search_options": {"ftol": 1e-4, "start_stp": 10.0, "stpmin" : 1e-10, "stpmax":10000}
-#})
-sol = solver.solve()
-save_optimization_result(sol, msh_file_path, hh_setup.obstacle_stiffness, result_path, False)
-
-#plot_mesh_deformation_from_result(
-#    result_path,
-#    msh_file_path,
-#    goal_geometry_msh_path,
-#    obstacle_marker,
-#    side_wall_marker,
-#    bottom_wall_marker,
-#    "outputs/mesh_deformation_sym_exp_100.png"
-#)
-"""
+print("s: ", s)
+print("s1/s2", s[0]/s[1])

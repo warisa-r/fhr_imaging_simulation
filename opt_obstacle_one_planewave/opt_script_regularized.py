@@ -28,11 +28,11 @@ set_log_level(LogLevel.ERROR)
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
-goal_geometry_msh_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
+goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
 #msh_file_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
 msh_file_path = "meshes/square_with_rect_obstacle_all.msh"
 forward_sim_result_file_path = "forward_sim_data_bottom_sweep_sin.csv"
-result_path = "outputs/result_sin_hybrid_75.h5"
+result_path = "outputs/result_halfsin_reg_50.h5"
 
 frequencies = np.arange(2.5e9, 5.0e9 + 1, 0.5e9)
 
@@ -65,6 +65,9 @@ for i, frequency in enumerate(frequencies):
     else:
         J += assemble((inner(u_tot_mag - u_ref, u_tot_mag - u_ref)* ds_bottom))
 
+
+J += assemble(1e-4 * inner(h, h) * dx)
+#J += assemble(1e-4 *inner(grad(h), grad(h))*dx)
 Jhat = ReducedFunctional(
     J,
     Control(h)
@@ -80,7 +83,7 @@ h_moola = moola.DolfinPrimalVector(h)
 
 solver = moola.HybridCG(problem, h_moola, 
     options={
-    "maxiter": 75,
+    "maxiter": 50,
     "gtol":1e-7,
     "jtol":1e-6,
     "mem_lim": 1,
@@ -104,7 +107,7 @@ plot_mesh_deformation_from_result(
     side_wall_marker,
     bottom_wall_marker,
     None,
-    "outputs/mesh_deformation_sin_hybrid_75.png",
+    "outputs/mesh_deformation_halfsin_reg_50.png",
     50
 )
 
