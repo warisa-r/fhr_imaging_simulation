@@ -2,6 +2,7 @@ import meshio
 import gmsh
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 side_wall_marker = 1
 bottom_wall_marker = 2
@@ -25,8 +26,41 @@ def plot_mesh(filename, ax, title=""):
     ax.set_xlabel("x")
     ax.set_ylabel("y")
 
+def convert_msh_to_xdmf(msh_file_path):
+    
+    # Define output paths based on the input .msh file
+    base_path, _ = os.path.splitext(msh_file_path)
+    xdmf_path = f"{base_path}.xdmf"
+    facet_xdmf_path = f"{base_path}_facets.xdmf"
+
+    # --- Convert .msh to .xdmf using meshio (only on rank 0) ---
+    print(f"[INFO] Converting {msh_file_path} to XDMF format...")
+    msh = meshio.read(msh_file_path)
+
+    # Extract 2D points from the 3D points read by meshio
+    points_2d = msh.points[:, :2]
+
+    # Create and write the domain mesh (triangles) using 2D points
+    triangle_cells = msh.get_cells_type("triangle")
+    domain_mesh = meshio.Mesh(points=points_2d, cells=[("triangle", triangle_cells)])
+    domain_mesh.write(xdmf_path)
+    print(f"[INFO] Wrote domain mesh to {xdmf_path}")
+
+    # Create and write the facet mesh (lines) using 2D points
+    line_cells = msh.get_cells_type("line")
+    line_data = msh.get_cell_data("gmsh:physical", "line")
+    facet_mesh = meshio.Mesh(
+        points=points_2d,
+        cells=[("line", line_cells)],
+        cell_data={"name_to_read": [line_data]}
+    )
+    facet_mesh.write(facet_xdmf_path)
+    print(f"[INFO] Wrote facet markers to {facet_xdmf_path}")
+    
+    return xdmf_path, facet_xdmf_path
+
 def generate_square_with_circle_hole_mesh(
-    width=1.0, height=1.0, circle_radius=0.2, mesh_size=0.1, output_name="square_with_circle_hole", n_points_rect_bottom = None
+    width=1.0, height=1.0, circle_radius=0.2, mesh_size=0.1, output_name="square_with_circle_hole", n_points_bottom = None
 ):
     gmsh.initialize()
     gmsh.clear()
@@ -44,7 +78,7 @@ def generate_square_with_circle_hole_mesh(
     l3 = gmsh.model.geo.addLine(p3, p4)  # Top
     l4 = gmsh.model.geo.addLine(p4, p1)  # Left
 
-    if n_points_rect_bottom != None:
+    if n_points_bottom != None:
         gmsh.model.geo.mesh.setTransfiniteCurve(l1, n_points_bottom)
 
     # --- 3. Circle center and perimeter points ---
@@ -179,22 +213,27 @@ if __name__ == "__main__":
     wavelength = c / freq_max  # Physical wavelength
     mesh_size = wavelength / 4
     
+    
     mesh_file = generate_square_with_circle_hole_mesh(
-        width=2, height=2, circle_radius=0.24, mesh_size=mesh_size,
-        output_name="meshes/square_with_circle_hole"
+        width=9, height=9, circle_radius=1.2, mesh_size=mesh_size,
+        output_name="meshes/square_with_circle_obstacle", n_points_bottom = 100
     )
+
+    convert_msh_to_xdmf(mesh_file)
     
 
-    """
+    """    
     mesh_file = generate_square_with_kite_obstacle_mesh(
-        width=10,
-        height=10,
+        width=9,
+        height=9,
         mesh_size=mesh_size,
         output_name="meshes/square_with_kite_obstacle",
-        n_points_bottom=200,
-        n_kite_points=100,
+        n_points_bottom=100,
+        n_kite_points=150,
         scale_factor = 1
     )
+
+    convert_msh_to_xdmf(mesh_file)
     """
     
     
