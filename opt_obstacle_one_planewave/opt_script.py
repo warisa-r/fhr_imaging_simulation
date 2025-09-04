@@ -276,7 +276,7 @@ plot_mesh_deformation_from_result(
     side_wall_marker,
     bottom_wall_marker,
     None,
-    "outputs/meshes_520.png",
+    "outputs/meshes_20.png",
     400
 )
 """

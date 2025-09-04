@@ -21,7 +21,7 @@ all_results = []
 
 frequency = 1e9
 
-angles = [30, 210]
+angles = [30, 120]
 
 for angle in angles:
     incident_field_func = plane_wave_angle(angle)
