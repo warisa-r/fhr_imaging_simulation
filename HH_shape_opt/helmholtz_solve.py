@@ -186,13 +186,6 @@ def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup,
                    data_all_side = False, obstacle_opt_marker = None,
                    projection_degree = 5):
 
-    # Perform mesh deformation
-    h_vol = transfer_from_boundary(h_control, mesh_copy)
-    s = mesh_deformation(h_vol, mesh_copy, markers_copy, 
-                        obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker,
-                        obstacle_stiffness=hh_setup.obstacle_stiffness)
-    ALE.move(mesh_copy, s)
-
     # Create function space and project incident fields
     V = FunctionSpace(mesh_copy, "CG", 5)
     u_inc_re = project(hh_setup.u_inc_re, V)
@@ -270,4 +263,4 @@ def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup,
     # Project the magnitude of the u_tot_mag
     u_tot_projected = project(u_tot, V_project)
     
-    return u_tot_projected, ds, V_project
+    return u_tot, ds, V_project

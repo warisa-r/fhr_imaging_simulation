@@ -98,45 +98,6 @@ set_log_level(LogLevel.ERROR)
 # Next, we load the facet marker values used in the mesh, as well as some
 # geometrical quantities mesh-generator file.
 
-
-# The initial (unperturbed) mesh and corresponding facet function from their respective
-# xdmf-files.
-
-mesh = Mesh()
-with XDMFFile("mesh.xdmf") as infile:
-    infile.read(mesh)
-
-mvc = MeshValueCollection("size_t", mesh, 1)
-with XDMFFile("mf.xdmf") as infile:
-    infile.read(mvc, "name_to_read")
-    mf = cpp.mesh.MeshFunctionSizet(mesh, mvc)
-
-# We compute the initial volume of the obstacle
-
-one = Constant(1)
-Vol0 = L * H - assemble(one * dx(domain=mesh))
-
-# We create a Boundary-mesh and function space for our control :math:`h`
-
-b_mesh = BoundaryMesh(mesh, "exterior")
-S_b = VectorFunctionSpace(b_mesh, "CG", 1)
-h = Function(S_b, name="Design")
-
-zero = Constant([0] * mesh.geometric_dimension())
-
-# We create a corresponding function space on :math:`\Omega`, and
-# transfer the corresponding boundary values to the function
-# :math:`h_V`. This call is needed to be able to represent
-# :math:`h` in the variational form of :math:`s`.
-
-S = VectorFunctionSpace(mesh, "CG", 1)
-s = Function(S, name="Mesh perturbation field")
-h_V = transfer_from_boundary(h, mesh)
-h_V.rename("Volume extension of h", "")
-
-# We can now transfer our mesh according to :eq:`deformation`.
-
-
 def mesh_deformation(h):
     # Compute variable μ
     V = FunctionSpace(mesh, "CG", 1)
@@ -185,6 +146,46 @@ def mesh_deformation(h):
     solver.solve()
     
     return s
+
+# The initial (unperturbed) mesh and corresponding facet function from their respective
+# xdmf-files.
+
+mesh = Mesh()
+with XDMFFile("mesh.xdmf") as infile:
+    infile.read(mesh)
+
+mvc = MeshValueCollection("size_t", mesh, 1)
+with XDMFFile("mf.xdmf") as infile:
+    infile.read(mvc, "name_to_read")
+    mf = cpp.mesh.MeshFunctionSizet(mesh, mvc)
+
+# We compute the initial volume of the obstacle
+
+one = Constant(1)
+Vol0 = L * H - assemble(one * dx(domain=mesh))
+
+# We create a Boundary-mesh and function space for our control :math:`h`
+
+b_mesh = BoundaryMesh(mesh, "exterior")
+S_b = VectorFunctionSpace(b_mesh, "CG", 1)
+h = Function(S_b, name="Design")
+
+zero = Constant([0] * mesh.geometric_dimension())
+
+# We create a corresponding function space on :math:`\Omega`, and
+# transfer the corresponding boundary values to the function
+# :math:`h_V`. This call is needed to be able to represent
+# :math:`h` in the variational form of :math:`s`.
+
+S = VectorFunctionSpace(mesh, "CG", 1)
+s = Function(S, name="Mesh perturbation field")
+h_V = transfer_from_boundary(h, mesh)
+h_V.rename("Volume extension of h", "")
+
+# We can now transfer our mesh according to :eq:`deformation`.
+
+
+
 
 # We compute the mesh deformation with the volume extension of the control
 # variable :math:`h` and move the domain.

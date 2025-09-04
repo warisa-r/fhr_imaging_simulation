@@ -15,7 +15,7 @@ from HH_shape_opt.initialize_opt import initialize_opt_xml, initialize_opt_xdmf
 
 import pandas as pd
 
-msh_file_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
+msh_file_path = "square_with_kite_obstacle.msh"
 
 all_results = []
 
