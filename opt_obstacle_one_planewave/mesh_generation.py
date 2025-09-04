@@ -173,29 +173,30 @@ if __name__ == "__main__":
     print("Generating square with hole mesh...")
 
     c = 299792458
-    freq_max = 5e9 # 5GHz
+    freq_max = 1e9 # 5GHz
     
     # Parameters
     wavelength = c / freq_max  # Physical wavelength
-    mesh_size = wavelength / 3
+    mesh_size = wavelength / 4
     
-    """
     mesh_file = generate_square_with_circle_hole_mesh(
-        width=4, height=4, circle_radius=1, mesh_size=mesh_size,
+        width=2, height=2, circle_radius=0.24, mesh_size=mesh_size,
         output_name="meshes/square_with_circle_hole"
     )
-    """
+    
 
+    """
     mesh_file = generate_square_with_kite_obstacle_mesh(
-        width=5.0,
-        height=5.0,
+        width=10,
+        height=10,
         mesh_size=mesh_size,
-        output_name="square_with_kite_obstacle",
-        n_points_bottom=400,
-        n_kite_points=400,
+        output_name="meshes/square_with_kite_obstacle",
+        n_points_bottom=200,
+        n_kite_points=100,
         scale_factor = 1
     )
-
+    """
+    
     
     fig, ax = plt.subplots(figsize=(6, 6))
     plot_mesh(mesh_file, ax, title="Mesh")

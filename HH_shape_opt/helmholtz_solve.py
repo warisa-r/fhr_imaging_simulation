@@ -263,4 +263,4 @@ def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup,
     # Project the magnitude of the u_tot_mag
     u_tot_projected = project(u_tot, V_project)
     
-    return u_tot, ds, V_project
+    return u_tot_projected, ds, V_project

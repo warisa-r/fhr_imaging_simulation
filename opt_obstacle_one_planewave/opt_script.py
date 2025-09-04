@@ -66,12 +66,12 @@ def mesh_deformation(h):
 
 mesh = Mesh()
 # meshes/square_with_sin_perturbed_rect_obstacle.xdmf
-with XDMFFile("meshes/square_with_sin_perturbed_rect_obstacle.xdmf") as infile:
+with XDMFFile("meshes/square_with_kite_obstacle.xdmf") as infile:
 #with XDMFFile("meshes/square_with_rect_obstacle_all.xdmf") as infile:
     infile.read(mesh)
 # meshes/square_with_sin_perturbed_rect_obstacle_facets.xdmf
 mvc = MeshValueCollection("size_t", mesh, 1)
-with XDMFFile("meshes/square_with_sin_perturbed_rect_obstacle_facets.xdmf") as infile:
+with XDMFFile("meshes/square_with_kite_obstacle_facets.xdmf") as infile:
 #with XDMFFile("meshes/square_with_rect_obstacle_all_facets.xdmf") as infile:
     infile.read(mvc, "name_to_read")
     mf = cpp.mesh.MeshFunctionSizet(mesh, mvc)
@@ -170,7 +170,7 @@ u_ref = Function(V_sub0, name="u")
 u_ref.vector()[:] = 0.0
 
 
-reference_data_path = "forward_sim_data_bottom_sweep_halfsin.csv"
+reference_data_path = "forward_sim_data_bottom_sweep_kite.csv"
 # Only rank 0 reads the CSV file
 if MPI.comm_world.rank == 0:
     df = pd.read_csv(reference_data_path)
