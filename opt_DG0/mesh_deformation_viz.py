@@ -71,8 +71,14 @@ def mesh_deformation(h, mesh_local, markers_local):
 
     return s
 
-# Load the perturbed mesh
-mesh_perturbed = Mesh("meshes/square_with_perturbed_rect_obstacle.xml")
+mesh_perturbed = Mesh()
+# meshes/square_with_sin_perturbed_rect_obstacle.xdmf
+with XDMFFile("meshes/square_with_halfsin_rect_obstacle.xdmf") as infile:
+    infile.read(mesh_perturbed)
+mvc = MeshValueCollection("size_t", mesh_perturbed, 1)
+with XDMFFile("meshes/square_with_halfsin_rect_obstacle_facets.xdmf") as infile:
+    infile.read(mvc, "name_to_read")
+    boundary_markers = cpp.mesh.MeshFunctionSizet(mesh_perturbed, mvc)
 
 # Make a copy of the mesh for deformation
 mesh_copy = Mesh(mesh)
@@ -100,5 +106,5 @@ plt.title(f"Deformed mesh")
 plt.axis("equal")
 
 plt.tight_layout()
-plt.savefig("result.png")
+plt.savefig("outputs/result_halfsin.png")
 plt.show()

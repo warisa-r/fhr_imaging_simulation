@@ -59,132 +59,6 @@ def convert_msh_to_xdmf(msh_file_path):
     
     return xdmf_path, facet_xdmf_path
 
-def generate_square_with_hole_mesh(
-    width=1.0, height=1.0, hole_radius=0.2, mesh_size=0.05, output_name="square_with_hole",
-    n_circle=40, n_points_bottom=100
-):
-    import gmsh
-
-    gmsh.initialize()
-    gmsh.clear()
-    gmsh.model.add("square_with_hole")
-
-    # Outer square points
-    p1 = gmsh.model.geo.addPoint(0, 0, 0, mesh_size)         # Bottom-left
-    p2 = gmsh.model.geo.addPoint(width, 0, 0, mesh_size)     # Bottom-right
-    p3 = gmsh.model.geo.addPoint(width, height, 0, mesh_size)# Top-right
-    p4 = gmsh.model.geo.addPoint(0, height, 0, mesh_size)    # Top-left
-
-    # Outer square lines
-    l1 = gmsh.model.geo.addLine(p1, p2)  # Bottom
-    l2 = gmsh.model.geo.addLine(p2, p3)  # Right
-    l3 = gmsh.model.geo.addLine(p3, p4)  # Top
-    l4 = gmsh.model.geo.addLine(p4, p1)  # Left
-
-    # Use TransfiniteCurve for bottom wall discretization
-    gmsh.model.geo.mesh.setTransfiniteCurve(l1, n_points_bottom)
-
-    # Circle (hole) center
-    cx, cy = width/2, height/2
-
-    # Circle boundary (hole)
-    hole_points = []
-    for i in range(n_circle):
-        angle = 2 * np.pi * i / n_circle
-        x = cx + hole_radius * np.cos(angle)
-        y = cy + hole_radius * np.sin(angle)
-        hole_points.append(gmsh.model.geo.addPoint(x, y, 0, mesh_size))
-    hole_lines = []
-    for i in range(n_circle):
-        p_start = hole_points[i]
-        p_end = hole_points[(i + 1) % n_circle]
-        line = gmsh.model.geo.addLine(p_start, p_end)
-        gmsh.model.geo.mesh.setTransfiniteCurve(line, 2)  # 2 = 1 segment
-        hole_lines.append(line)
-
-    # Curve loops
-    outer_loop = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4])
-    hole_loop = gmsh.model.geo.addCurveLoop(hole_lines)
-
-    # Plane surface with hole
-    surface = gmsh.model.geo.addPlaneSurface([outer_loop, hole_loop])
-
-    gmsh.model.geo.synchronize()
-
-    # Physical groups
-    gmsh.model.addPhysicalGroup(1, [l1], bottom_wall_marker, "bottom_wall")
-    gmsh.model.addPhysicalGroup(1, [l2, l3, l4], side_wall_marker, "outer_walls")
-    gmsh.model.addPhysicalGroup(1, hole_lines, obstacle_marker, "hole_boundary")
-    gmsh.model.addPhysicalGroup(2, [surface], domain_marker, "domain")
-
-    # Generate mesh
-    gmsh.model.mesh.generate(2)
-    gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
-    gmsh.write(f"{output_name}.msh")
-    gmsh.finalize()
-    return f"{output_name}.msh"
-
-def generate_square_with_eccentric_hole_mesh(
-    width=1.0, height=1.0, hole_radius=0.2, mesh_size=0.05,
-    output_name="square_with_eccentric_hole",
-    n_circle=40, n_points_bottom=100,
-    eccentricity_x=1.2, eccentricity_y=0.8
-):
-    import gmsh
-
-    gmsh.initialize()
-    gmsh.clear()
-    gmsh.model.add("square_with_eccentric_hole")
-
-    # Outer square points
-    p1 = gmsh.model.geo.addPoint(0, 0, 0, mesh_size)         # Bottom-left
-    p2 = gmsh.model.geo.addPoint(width, 0, 0, mesh_size)     # Bottom-right
-    p3 = gmsh.model.geo.addPoint(width, height, 0, mesh_size)# Top-right
-    p4 = gmsh.model.geo.addPoint(0, height, 0, mesh_size)    # Top-left
-
-    # Outer square lines
-    l1 = gmsh.model.geo.addLine(p1, p2)  # Bottom
-    l2 = gmsh.model.geo.addLine(p2, p3)  # Right
-    l3 = gmsh.model.geo.addLine(p3, p4)  # Top
-    l4 = gmsh.model.geo.addLine(p4, p1)  # Left
-
-    # Use TransfiniteCurve for bottom wall discretization
-    gmsh.model.geo.mesh.setTransfiniteCurve(l1, n_points_bottom)
-
-    # Eccentric (elliptical) hole
-    cx, cy = width/2, height/2
-    hole_points = []
-    for i in range(n_circle):
-        angle = 2 * np.pi * i / n_circle
-        x = cx + hole_radius * eccentricity_x * np.cos(angle)
-        y = cy + hole_radius * eccentricity_y * np.sin(angle)
-        hole_points.append(gmsh.model.geo.addPoint(x, y, 0, mesh_size))
-    hole_lines = []
-    for i in range(n_circle):
-        hole_lines.append(gmsh.model.geo.addLine(hole_points[i], hole_points[(i+1)%n_circle]))
-
-    # Curve loops
-    outer_loop = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4])
-    hole_loop = gmsh.model.geo.addCurveLoop(hole_lines)
-
-    # Plane surface with eccentric hole
-    surface = gmsh.model.geo.addPlaneSurface([outer_loop, hole_loop])
-
-    gmsh.model.geo.synchronize()
-
-    # Physical groups (same as original)
-    gmsh.model.addPhysicalGroup(1, [l1], bottom_wall_marker, "bottom_wall")
-    gmsh.model.addPhysicalGroup(1, [l2, l3, l4], side_wall_marker, "outer_walls")
-    gmsh.model.addPhysicalGroup(1, hole_lines, obstacle_marker, "hole_boundary")
-    gmsh.model.addPhysicalGroup(2, [surface], domain_marker, "domain")
-
-    # Generate mesh
-    gmsh.model.mesh.generate(2)
-    gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
-    gmsh.write(f"{output_name}.msh")
-    gmsh.finalize()
-    return f"{output_name}.msh"
-
 def generate_square_with_rect_obstacle_mesh(
     width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=0.05,
     output_name="square_with_rect_obstacle",
@@ -255,9 +129,9 @@ def generate_square_with_rect_obstacle_mesh(
     gmsh.finalize()
     return f"{output_name}.msh"
 
-def generate_square_with_perturbed_rect_obstacle_mesh(
+def generate_square_with_cos_perturbed_rect_obstacle_mesh(
     width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=0.05,
-    output_name="square_with_perturbed_rect_obstacle",
+    output_name="square_with_cos_perturbed_rect_obstacle",
     n_points_bottom=100, n_points_rect_bottom=40,
     perturb_amplitude=0.03, perturb_frequency=3
 ):
@@ -294,7 +168,7 @@ def generate_square_with_perturbed_rect_obstacle_mesh(
     for i in range(n_points_rect_bottom):
         t = i / (n_points_rect_bottom - 1)
         x = rx1 + t * (rx2 - rx1)
-        y = ry1 + perturb_amplitude * np.cos(perturb_frequency * np.pi * t)
+        y = ry1 + perturb_amplitude * np.cos(2 * perturb_frequency * np.pi * t)
         rect_bottom_points.append(gmsh.model.geo.addPoint(x, y, 0, mesh_size))
 
     # Other rectangle points (no perturbation)
@@ -335,17 +209,17 @@ def generate_square_with_perturbed_rect_obstacle_mesh(
     gmsh.finalize()
     return f"{output_name}.msh"
 
-def generate_square_with_flattened_circle_mesh(
-    width=1.0, height=1.0, hole_radius=0.2, mesh_size=0.05,
-    output_name="square_with_flattened_circle",
-    n_circle=100, n_points_bottom=100,
-    flatten_y=None  # If None, flatten at the lowest point of the circle
+def generate_square_with_sin_perturbed_rect_obstacle_mesh(
+    width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=0.05,
+    output_name="square_with_sin_perturbed_rect_obstacle",
+    n_points_bottom=100, n_points_rect_bottom=40,
+    perturb_amplitude=0.03, perturb_frequency=3
 ):
     import gmsh
 
     gmsh.initialize()
     gmsh.clear()
-    gmsh.model.add("square_with_flattened_circle")
+    gmsh.model.add("square_with_perturbed_rect_obstacle")
 
     # Outer square points
     p1 = gmsh.model.geo.addPoint(0, 0, 0, mesh_size)
@@ -362,107 +236,50 @@ def generate_square_with_flattened_circle_mesh(
     # Use TransfiniteCurve for bottom wall discretization
     gmsh.model.geo.mesh.setTransfiniteCurve(l1, n_points_bottom)
 
-    # Circle (hole) center
+    # Rectangle obstacle center
     cx, cy = width/2, height/2
+    rx1 = cx - rect_w/2
+    rx2 = cx + rect_w/2
+    ry1 = cy - rect_h/2
+    ry2 = cy + rect_h/2
 
-    # Determine flatten_y if not provided (default: lowest point of circle)
-    if flatten_y is None:
-        flatten_y = cy - hole_radius
+    # Perturbed bottom edge of rectangle
+    rect_bottom_points = []
+    for i in range(n_points_rect_bottom):
+        t = i / (n_points_rect_bottom - 1)
+        x = rx1 + t * (rx2 - rx1)
+        y = ry1 + perturb_amplitude * np.sin(2 * perturb_frequency * np.pi * t)
+        rect_bottom_points.append(gmsh.model.geo.addPoint(x, y, 0, mesh_size))
 
-    # Circle boundary (flattened bottom)
-    hole_points = []
-    for i in range(n_circle):
-        angle = 2 * np.pi * i / n_circle
-        x = cx + hole_radius * np.cos(angle)
-        y = cy + hole_radius * np.sin(angle)
-        # Flatten if below flatten_y
-        if y < flatten_y:
-            y = flatten_y
-        hole_points.append(gmsh.model.geo.addPoint(x, y, 0, mesh_size))
-    hole_lines = []
-    for i in range(n_circle):
-        hole_lines.append(gmsh.model.geo.addLine(hole_points[i], hole_points[(i+1)%n_circle]))
+    # Other rectangle points (no perturbation)
+    rp2 = gmsh.model.geo.addPoint(rx2, ry1, 0, mesh_size)
+    rp3 = gmsh.model.geo.addPoint(rx2, ry2, 0, mesh_size)
+    rp4 = gmsh.model.geo.addPoint(rx1, ry2, 0, mesh_size)
+
+    # Rectangle lines
+    rect_lines = []
+    # Bottom (perturbed)
+    for i in range(n_points_rect_bottom - 1):
+        rect_lines.append(gmsh.model.geo.addLine(rect_bottom_points[i], rect_bottom_points[i+1]))
+    # Right
+    rect_lines.append(gmsh.model.geo.addLine(rect_bottom_points[-1], rp3))
+    rect_lines.append(gmsh.model.geo.addLine(rp3, rp4))
+    # Left
+    rect_lines.append(gmsh.model.geo.addLine(rp4, rect_bottom_points[0]))
 
     # Curve loops
     outer_loop = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4])
-    hole_loop = gmsh.model.geo.addCurveLoop(hole_lines)
+    rect_loop = gmsh.model.geo.addCurveLoop(rect_lines)
 
-    # Plane surface with flattened circle
-    surface = gmsh.model.geo.addPlaneSurface([outer_loop, hole_loop])
+    # Plane surface with perturbed rectangle obstacle
+    surface = gmsh.model.geo.addPlaneSurface([outer_loop, rect_loop])
 
     gmsh.model.geo.synchronize()
 
     # Physical groups
     gmsh.model.addPhysicalGroup(1, [l1], bottom_wall_marker, "bottom_wall")
     gmsh.model.addPhysicalGroup(1, [l2, l3, l4], side_wall_marker, "outer_walls")
-    gmsh.model.addPhysicalGroup(1, hole_lines, obstacle_marker, "flattened_circle_boundary")
-    gmsh.model.addPhysicalGroup(2, [surface], domain_marker, "domain")
-
-    # Generate mesh
-    gmsh.model.mesh.generate(2)
-    gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
-    gmsh.write(f"{output_name}.msh")
-    gmsh.finalize()
-    return f"{output_name}.msh"
-
-def generate_square_with_sin_perturbed_circle_mesh(
-    width=1.0, height=1.0, hole_radius=0.2, mesh_size=0.05,
-    output_name="square_with_sin_perturbed_circle",
-    n_circle=100, n_points_bottom=100,
-    perturb_amplitude=0.02, perturb_frequency=3
-):
-    import gmsh
-
-    gmsh.initialize()
-    gmsh.clear()
-    gmsh.model.add("square_with_sin_perturbed_circle")
-
-    # Outer square points
-    p1 = gmsh.model.geo.addPoint(0, 0, 0, mesh_size)
-    p2 = gmsh.model.geo.addPoint(width, 0, 0, mesh_size)
-    p3 = gmsh.model.geo.addPoint(width, height, 0, mesh_size)
-    p4 = gmsh.model.geo.addPoint(0, height, 0, mesh_size)
-
-    # Outer square lines
-    l1 = gmsh.model.geo.addLine(p1, p2)  # Bottom
-    l2 = gmsh.model.geo.addLine(p2, p3)  # Right
-    l3 = gmsh.model.geo.addLine(p3, p4)  # Top
-    l4 = gmsh.model.geo.addLine(p4, p1)  # Left
-
-    # Use TransfiniteCurve for bottom wall discretization
-    gmsh.model.geo.mesh.setTransfiniteCurve(l1, n_points_bottom)
-
-    # Circle (hole) center
-    cx, cy = width/2, height/2
-
-    # Circle boundary (perturbed bottom)
-    hole_points = []
-    for i in range(n_circle):
-        angle = 2 * np.pi * i / n_circle
-        x = cx + hole_radius * np.cos(angle)
-        y = cy + hole_radius * np.sin(angle)
-        # Perturb only the bottom (y < cy)
-        if y < cy:
-            t = (x - (cx - hole_radius)) / (2 * hole_radius)  # Normalize x along bottom
-            y += perturb_amplitude * np.sin(perturb_frequency * np.pi * t)
-        hole_points.append(gmsh.model.geo.addPoint(x, y, 0, mesh_size))
-    hole_lines = []
-    for i in range(n_circle):
-        hole_lines.append(gmsh.model.geo.addLine(hole_points[i], hole_points[(i+1)%n_circle]))
-
-    # Curve loops
-    outer_loop = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4])
-    hole_loop = gmsh.model.geo.addCurveLoop(hole_lines)
-
-    # Plane surface with perturbed circle
-    surface = gmsh.model.geo.addPlaneSurface([outer_loop, hole_loop])
-
-    gmsh.model.geo.synchronize()
-
-    # Physical groups
-    gmsh.model.addPhysicalGroup(1, [l1], bottom_wall_marker, "bottom_wall")
-    gmsh.model.addPhysicalGroup(1, [l2, l3, l4], side_wall_marker, "outer_walls")
-    gmsh.model.addPhysicalGroup(1, hole_lines, obstacle_marker, "sin_perturbed_circle_boundary")
+    gmsh.model.addPhysicalGroup(1, rect_lines, obstacle_marker, "perturbed_rect_obstacle_boundary")
     gmsh.model.addPhysicalGroup(2, [surface], domain_marker, "domain")
 
     # Generate mesh
@@ -482,7 +299,21 @@ if __name__ == "__main__":
     wavelength = c / freq_max  # Physical wavelength
     mesh_size = wavelength / 5
     
+    """
+    mesh_file = generate_square_with_cos_perturbed_rect_obstacle_mesh(
+        width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=mesh_size,
+        output_name="meshes/square_with_perturbed_rect_obstacle",
+        n_points_bottom=100, n_points_rect_bottom=100,
+        perturb_amplitude=0.01, perturb_frequency=1.5
+    )
+    """
+
+    mesh_file = generate_square_with_sin_perturbed_rect_obstacle_mesh(
+        width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=mesh_size,
+        output_name="meshes/square_with_halfsin_perturbed_rect_obstacle",
+        n_points_bottom=100, n_points_rect_bottom=100,
+        perturb_amplitude=0.01, perturb_frequency=0.5
+    )
     
-    mesh_file = "meshes/square_with_rect_obstacle.msh"
 
     convert_msh_to_xdmf(mesh_file)

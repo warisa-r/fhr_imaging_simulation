@@ -12,7 +12,13 @@ import os
 import gmsh
 import matplotlib.pyplot as plt
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from HH_shape_opt.process_result import save_optimization_result, plot_mesh_deformation_from_result
+
 from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
+
+set_log_level(LogLevel.ERROR)
+
 k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
 incident_wave_amp = 1
 
@@ -192,11 +198,6 @@ def forward_solve(h_control):
 
 # Initial guess
 import os
-checkpoint_file = "h_checkpoint.h5"
-iteration = 0
-print("No checkpoint found, starting from zero initial guess")
-
-num_iterations = 100
 # Solve the forward problem
 u_tot_mag_dg0, ds_bottom, V_DG0 = forward_solve(h)
 
@@ -215,19 +216,36 @@ h_moola = moola.DolfinPrimalVector(h)
 
 solver = moola.BFGS(problem, h_moola,
     options={
-        "maxiter": 1,
+        "maxiter": 50,
         "gtol": 1e-7,
     })
 
 sol = solver.solve()
 h_opt = sol['control'].data
-# Save the current checkpoint
-iteration += num_iterations
 
-with HDF5File(MPI.comm_world, checkpoint_file, "w") as h5f:
-    h5f.write(h_opt, "/h_opt")
-    h5f.attributes("/h_opt")["iteration"] = iteration
-print(f"Checkpoint saved to h_checkpoint.h5 (iteration {iteration})")
+msh_file_path = "meshes/square_with_rect_obstacle.msh"
+result_path = "outputs/result_sin_0.5.h5"
+goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
+
+save_optimization_result(
+    sol,
+    msh_file_path,
+    25,
+    result_file = result_path,
+    use_scipy = False
+)
+
+plot_mesh_deformation_from_result(
+    result_path,
+    msh_file_path,
+    goal_geometry_msh_path,
+    obstacle_marker,
+    side_wall_marker,
+    bottom_wall_marker,
+    None,
+    plot_file_name="mesh_deformation_sin_0.5.png",
+    obstacle_stiffness = 25,
+)
 
 # Print optimization summary
 print("\n=== Optimization Summary ===")
