@@ -13,7 +13,6 @@ import gmsh
 import matplotlib.pyplot as plt
 
 from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
-
 k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
 incident_wave_amp = 1
 
@@ -54,8 +53,6 @@ def load_forward_simulation_data_bottomwall(V_DG0):
             assigned[cell_id] = True
         elif cell_id < mesh.num_cells() and assigned[cell_id]:
             print(f"Warning: cell {cell_id} already assigned, skipping duplicate point.")
-        else:
-            print(f"Warning: No cell found containing point ({x}, {y})")
 
     # Push the updated values into the Function
     u_ref_dg0.vector().set_local(u_vec)
@@ -63,21 +60,24 @@ def load_forward_simulation_data_bottomwall(V_DG0):
 
     return u_ref_dg0
 
-# Try to convert the mesh 
-print(f"Converting square_with_rect_obstacle to XML format...")
-result = subprocess.run([
-    "dolfin-convert", 
-    f"meshes/square_with_rect_obstacle.msh", 
-    f"meshes/square_with_rect_obstacle.xml"
-], capture_output=True, text=True)
 
-mesh = Mesh(f"meshes/square_with_rect_obstacle.xml")
-boundary_markers = MeshFunction("size_t", mesh, f"meshes/square_with_rect_obstacle_facet_region.xml")
+forward_sim_result_file_path = "forward_sim_data_bottom.csv"
+
+mesh = Mesh()
+# meshes/square_with_sin_perturbed_rect_obstacle.xdmf
+with XDMFFile("meshes/square_with_rect_obstacle.xdmf") as infile:
+    infile.read(mesh)
+mvc = MeshValueCollection("size_t", mesh, 1)
+with XDMFFile("meshes/square_with_rect_obstacle_facets.xdmf") as infile:
+    infile.read(mvc, "name_to_read")
+    boundary_markers = cpp.mesh.MeshFunctionSizet(mesh, mvc)
 
 # Create boundary mesh and design variables
 b_mesh = BoundaryMesh(mesh, "exterior")
 S_b = VectorFunctionSpace(b_mesh, "CG", 1)
 h = Function(S_b, name="Design")
+h.vector()[:] = 0.0
+h.vector().apply("insert")
 
 zero = Constant([0] * mesh.geometric_dimension())
 
@@ -85,6 +85,9 @@ S = VectorFunctionSpace(mesh, "CG", 1)
 s = Function(S, name="Mesh perturbation field")
 h_V = transfer_from_boundary(h, mesh)
 h_V.rename("Volume extension of h", "")
+
+V_DG0 = FunctionSpace(mesh, "DG", 0)
+u_ref_dg0 = load_forward_simulation_data_bottomwall(V_DG0)
 
 def mesh_deformation(h, mesh_local, markers_local):
 
@@ -125,7 +128,10 @@ def mesh_deformation(h, mesh_local, markers_local):
 def forward_solve(h_control):
     # Copy the “master” mesh and its facet markers
     mesh_copy = Mesh(mesh)
-    markers_copy = MeshFunction("size_t", mesh_copy, f"meshes/square_with_rect_obstacle_facet_region.xml")
+    mvc_copy = MeshValueCollection("size_t", mesh, 1)
+    with XDMFFile("meshes/square_with_rect_obstacle_facets.xdmf") as infile:
+        infile.read(mvc_copy, "name_to_read")
+        markers_copy = cpp.mesh.MeshFunctionSizet(mesh_copy, mvc_copy)
 
     # Transfer h → volume and deform the copy since we want to preserve always the original
     h_vol = transfer_from_boundary(h_control, mesh_copy)
@@ -186,25 +192,18 @@ def forward_solve(h_control):
 
 # Initial guess
 import os
-from dolfin import HDF5File, MPI
 checkpoint_file = "h_checkpoint.h5"
 iteration = 0
-
-h_vec = h.vector().get_local()
-h_vec[:] = 0.0
-h.vector()[:] = h_vec
 print("No checkpoint found, starting from zero initial guess")
 
 num_iterations = 100
 # Solve the forward problem
 u_tot_mag_dg0, ds_bottom, V_DG0 = forward_solve(h)
 
-# Load reference data
-u_ref_dg0 = load_forward_simulation_data_bottomwall(V_DG0)
-
 J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
 Jhat = ReducedFunctional(J, Control(h))
 
+"""
 with HDF5File(MPI.comm_world, checkpoint_file, "r") as h5f:
     h_temp = Function(S_b, name="Design")
     h5f.read(h_temp, "/h_opt")
@@ -216,7 +215,7 @@ h_moola = moola.DolfinPrimalVector(h)
 
 solver = moola.BFGS(problem, h_moola,
     options={
-        "maxiter": 100,
+        "maxiter": 1,
         "gtol": 1e-7,
     })
 
@@ -235,4 +234,3 @@ print("\n=== Optimization Summary ===")
 print(f"Initial design: all zeros")
 print(f"Optimal design range: [{np.min(h_opt.vector().get_local()):.6e}, {np.max(h_opt.vector().get_local()):.6e}]")
 print(f"Max displacement: {np.max(np.abs(h_opt.vector().get_local())):.6e}")
-"""

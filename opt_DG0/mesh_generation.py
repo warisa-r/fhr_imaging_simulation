@@ -1,6 +1,7 @@
 import meshio
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 side_wall_marker = 1
 bottom_wall_marker = 2
@@ -24,6 +25,39 @@ def plot_mesh(filename, ax, title=""):
     ax.set_title(title)
     ax.set_xlabel("x")
     ax.set_ylabel("y")
+
+def convert_msh_to_xdmf(msh_file_path):
+    
+    # Define output paths based on the input .msh file
+    base_path, _ = os.path.splitext(msh_file_path)
+    xdmf_path = f"{base_path}.xdmf"
+    facet_xdmf_path = f"{base_path}_facets.xdmf"
+
+    # --- Convert .msh to .xdmf using meshio (only on rank 0) ---
+    print(f"[INFO] Converting {msh_file_path} to XDMF format...")
+    msh = meshio.read(msh_file_path)
+
+    # Extract 2D points from the 3D points read by meshio
+    points_2d = msh.points[:, :2]
+
+    # Create and write the domain mesh (triangles) using 2D points
+    triangle_cells = msh.get_cells_type("triangle")
+    domain_mesh = meshio.Mesh(points=points_2d, cells=[("triangle", triangle_cells)])
+    domain_mesh.write(xdmf_path)
+    print(f"[INFO] Wrote domain mesh to {xdmf_path}")
+
+    # Create and write the facet mesh (lines) using 2D points
+    line_cells = msh.get_cells_type("line")
+    line_data = msh.get_cell_data("gmsh:physical", "line")
+    facet_mesh = meshio.Mesh(
+        points=points_2d,
+        cells=[("line", line_cells)],
+        cell_data={"name_to_read": [line_data]}
+    )
+    facet_mesh.write(facet_xdmf_path)
+    print(f"[INFO] Wrote facet markers to {facet_xdmf_path}")
+    
+    return xdmf_path, facet_xdmf_path
 
 def generate_square_with_hole_mesh(
     width=1.0, height=1.0, hole_radius=0.2, mesh_size=0.05, output_name="square_with_hole",
@@ -437,3 +471,18 @@ def generate_square_with_sin_perturbed_circle_mesh(
     gmsh.write(f"{output_name}.msh")
     gmsh.finalize()
     return f"{output_name}.msh"
+
+if __name__ == "__main__":
+    print("Generating square with hole mesh...")
+
+    c = 299792458
+    freq_max = 5e9 # 5GHz
+    
+    # Parameters
+    wavelength = c / freq_max  # Physical wavelength
+    mesh_size = wavelength / 5
+    
+    
+    mesh_file = "meshes/square_with_rect_obstacle.msh"
+
+    convert_msh_to_xdmf(mesh_file)
