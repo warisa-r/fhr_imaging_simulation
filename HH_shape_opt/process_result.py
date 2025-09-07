@@ -2,6 +2,7 @@ from dolfin import *
 from dolfin_adjoint import *
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.tri as mtri
 
 from .initialize_opt import msh2xml_path, initialize_opt_xdmf
 from .helmholtz_solve import mesh_deformation
@@ -34,6 +35,37 @@ def save_optimization_result(
     h_mean_abs = np.mean(np.abs(h_opt_vec.get_local()))
     print(f"h_opt min: {h_min}, h_opt max: {h_max}, mean|h_opt|: {h_mean_abs}")
     print(f"Optimization result saved to {result_file}")
+
+
+def gather_and_plot_mesh(mesh, ax, color="k", linewidth=0.3, title=None):
+    comm = MPI.comm_world
+
+    coords = mesh.coordinates()
+    cells = mesh.cells()
+
+    # Gather coordinates and cells
+    all_coords = comm.gather(coords, root=0)
+    all_cells = comm.gather(cells, root=0)
+
+    if comm.rank == 0:
+        # Offset each partition's cell indices so they refer to the global coords array
+        global_coords = []
+        global_cells = []
+        offset = 0
+        for coords_part, cells_part in zip(all_coords, all_cells):
+            global_coords.append(coords_part)
+            global_cells.append(cells_part + offset)
+            offset += coords_part.shape[0]
+
+        global_coords = np.vstack(global_coords)
+        global_cells = np.vstack(global_cells)
+
+        # Build triangulation
+        triang = mtri.Triangulation(global_coords[:, 0], global_coords[:, 1], global_cells)
+        ax.triplot(triang, color=color, linewidth=linewidth)
+        if title:
+            ax.set_title(title)
+        ax.set_aspect("equal")
 
 def plot_mesh_deformation_from_result(
     h5_file_path,
@@ -92,30 +124,68 @@ def plot_mesh_deformation_from_result(
     ALE.move(mesh_copy, s_final)
 
     # Load goal geometry mesh
-    _, mesh_goal, _ = initialize_opt_xdmf(goal_geometry_msh_path)
+    _, mesh_goal, markers_goal = initialize_opt_xdmf(goal_geometry_msh_path)
 
     plt.figure(figsize=(18, 6))
-    plt.subplot(1, 3, 1)
-    plot(mesh, color="b", linewidth=0.5)
-    plt.title(subplot_titles[0])
-    plt.axis("equal")
 
-    plt.subplot(1, 3, 2)
-    plot(mesh_goal, color="r", linewidth=0.5)
-    plt.title(subplot_titles[1])
-    plt.axis("equal")
-#    final_residual = 1.1493058221501000e+00
-#    num_iterations = 10
+    ax1 = plt.subplot(1, 3, 1)
+    gather_and_plot_mesh(mesh, ax1, color="b", linewidth=0.5, title=subplot_titles[0])
 
-    plt.subplot(1, 3, 3)
-    plot(mesh_copy, color="r", linewidth=0.5)
+    ax2 = plt.subplot(1, 3, 2)
+    gather_and_plot_mesh(mesh_goal, ax2, color="r", linewidth=0.5, title=subplot_titles[1])
+
+    ax3 = plt.subplot(1, 3, 3)
     title = subplot_titles[2]
     if num_iterations is not None or final_residual is not None:
         title += f"\n(iters={num_iterations}, residual={final_residual:.2e})"
-    plt.title(title)
-    plt.axis("equal")
+    gather_and_plot_mesh(mesh_copy, ax3, color="r", linewidth=0.5, title=title)
 
     plt.tight_layout()
-    plt.savefig(plot_file_name)
-    plt.close()
-    print(f"Mesh deformation plot saved to {plot_file_name}")
+
+    if MPI.comm_world.rank == 0:
+        plt.savefig(plot_file_name)
+        plt.close()
+        print(f"Mesh deformation plot saved to {plot_file_name}")
+
+def plot_comparison(dolfin_csv_path, matlab_csv_path, output_image_path):
+    # Load data
+    df_dolfin = pd.read_csv(dolfin_csv_path)
+    df_matlab = pd.read_csv(matlab_csv_path)
+
+    # Check data alignment. Round x values to avoid floating point precision issues
+    df_dolfin['x_rounded'] = df_dolfin['x'].round(10)
+    df_dolfin = df_dolfin.sort_values(by='x_rounded')
+    df_matlab['x_rounded'] = df_matlab['x'].round(10)
+
+    # Merge on rounded x values
+    df_merged = pd.merge(df_dolfin, df_matlab, on="x_rounded", suffixes=('_dolfin', '_matlab'))
+
+    print(f"Dolfin data points: {len(df_dolfin)}")
+    print(f"Matlab data points: {len(df_matlab)}")
+    print(f"Merged data points: {len(df_merged)}")
+
+    # Calculate statistics about the differences
+
+    if len(df_merged) > 0:
+        differences = df_merged["u_dolfin"] - df_merged["u_matlab"]
+        print(f"\n--- Difference Statistics ---")
+        print(f"Mean difference: {differences.mean():.6f}")
+        print(f"Max difference: {differences.max():.6f}")
+        print(f"Min difference: {differences.min():.6f}")
+        print(f"Std difference: {differences.std():.6f}")
+        print(f"---------------------------\n")
+
+    # Plot u vs x for both datasets
+    plt.figure(figsize=(10, 8))
+
+    plt.plot(df_dolfin["x"].to_numpy(), df_dolfin["u"].to_numpy(), label="Dolfin", marker='o', markersize=2, linestyle='-', alpha=0.7)
+    plt.plot(df_matlab["x"].to_numpy(), df_matlab["u"].to_numpy(), label="Matlab", marker='x', markersize=2, linestyle='--', alpha=0.7)
+    plt.xlabel("x")
+    plt.ylabel("u")
+    plt.title("Comparison of Dolfin and Matlab results")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+
+    plt.savefig(output_image_path, dpi=300, bbox_inches='tight')
+    print(f"Plot saved to {output_image_path}")
+    plt.show()

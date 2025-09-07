@@ -115,64 +115,76 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
 
     return s
 
-def preprocess_reference_data(V_DG0, forward_sim_result_file_path, frequency = None, angle = None):
-    df = pd.read_csv(forward_sim_result_file_path)
-    if frequency is not None:
-        df = df.loc[df['frequency'] == frequency]
-    if angle is not None:
-        df = df.loc[df['angle'] == angle]
-
-    points = df[["x", "y"]].values
-    values = df["u"].values
-
-    mesh = V_DG0.mesh()
-    tree = mesh.bounding_box_tree()
-    dofmap = V_DG0.dofmap()
+def preprocess_reference_data(V_CG5, forward_sim_result_file_path, frequency = None, angle = None):
     
-    cell_value_map = {}
+    # Only rank 0 reads the CSV file
+    if MPI.comm_world.rank == 0:
+        df = pd.read_csv(forward_sim_result_file_path)
+        if frequency is not None:
+            df = df.loc[df['frequency'] == frequency]
+        if angle is not None:
+            df = df.loc[df['angle'] == angle]
+        points = df[["x", "y"]].values
+        values = df["u"].values
+    else:
+        points = None
+        values = None
+    
+    # Broadcast data to all processes
+    points = MPI.comm_world.bcast(points, root=0)
+    values = MPI.comm_world.bcast(values, root=0)
+
+    mesh = V_CG5.mesh()
+    tree = mesh.bounding_box_tree()
+    
+    point_value_map = {}
+    tolerance = 1e-10
     
     for (x, y), val in zip(points, values):
         point = Point(x, y)
         try:
             cell_id = tree.compute_first_entity_collision(point)
             
-            # Only assign if a valid cell is found in this partition
             if cell_id < mesh.num_cells():
-                if cell_id not in cell_value_map:
-                    dof_idx = dofmap.cell_dofs(cell_id)[0]
-                    cell_value_map[dof_idx] = val
-                else:
-                    # This case should ideally not happen with DG0 and well-defined data
-                    pass
-        except:
-            # Point not found in this rank's mesh partition, skip
+                dofs_coords = V_CG5.tabulate_dof_coordinates()
+                distances = np.sqrt((dofs_coords[:, 0] - x)**2 + (dofs_coords[:, 1] - y)**2)
+                closest_dofs = np.where(distances < tolerance)[0]
+                
+                if len(closest_dofs) > 0:
+                    dof_idx = closest_dofs[0]
+                    point_value_map[dof_idx] = val
+                    
+        except RuntimeError:
+            # Point not found in this rank's mesh partition, skip silently
             pass
             
-    return cell_value_map
+    return point_value_map
 
-def assign_reference_data(V_DG0, cell_value_map):
-    u_ref_dg0 = Function(V_DG0)
-    u_vec = u_ref_dg0.vector().get_local()
+def assign_reference_data(V_CG5, point_value_map):
+    u_ref = Function(V_CG5)
     
-    for dof_idx, value in cell_value_map.items():
-        u_vec[dof_idx] = value
-        
-    u_ref_dg0.vector().set_local(u_vec)
-    u_ref_dg0.vector().apply("insert")
-    return u_ref_dg0
-
-def load_forward_simulation_data_bottomwall(V_DG0, forward_sim_result_file_path, angle=None):
-    df = pd.read_csv(forward_sim_result_file_path)
-
+    # Handle the case where this process has no data points
+    if len(point_value_map) == 0:
+        # Still need to participate in collective operations
+        u_ref.vector().apply("insert")
+        return u_ref
+    
+    # Get local vector and assign known values
+    u_vec = u_ref.vector().get_local()
+    for dof_idx, value in point_value_map.items():
+        if dof_idx < len(u_vec):
+            u_vec[dof_idx] = value
+    
+    # Update the function - this is a collective operation
+    u_ref.vector().set_local(u_vec)
+    u_ref.vector().apply("insert")
+    
+    return u_ref
 def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup, 
-                   obstacle_marker, side_wall_marker, bottom_wall_marker, data_all_side = False, obstacle_opt_marker = None):
-
-    # Perform mesh deformation
-    h_vol = transfer_from_boundary(h_control, mesh_copy)
-    s = mesh_deformation(h_vol, mesh_copy, markers_copy, 
-                        obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker,
-                        obstacle_stiffness=hh_setup.obstacle_stiffness)
-    ALE.move(mesh_copy, s)
+                   obstacle_marker, side_wall_marker, bottom_wall_marker, 
+                   is_forward = False,
+                   data_all_side = False, obstacle_opt_marker = None,
+                   projection_degree = 5):
 
     # Create function space and project incident fields
     V = FunctionSpace(mesh_copy, "CG", 5)
@@ -227,23 +239,28 @@ def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup,
     u_tot_re = u_inc_re + u_sol_re
     u_tot_im = u_inc_im + u_sol_im
 
-    # Compute magnitude
-    u_tot_mag = sqrt(u_tot_re**2 + u_tot_im**2)
+    u_tot = sqrt(u_tot_re**2 + u_tot_im**2) # Magnitude square
 
-    # Project to DG0 for easier integration
-    V_DG0 = FunctionSpace(mesh_copy, "DG", 0)
-    u_tot_mag_dg0 = project(u_tot_mag, V_DG0)
-    
     # Create measure for bottom boundary with appropriate quadrature
     ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, 
-                    subdomain_id=bottom_wall_marker, metadata={"quadrature_degree": 0})
+                    subdomain_id=bottom_wall_marker)
     
     if data_all_side == True:
         ds_side_wall = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, 
-                    subdomain_id=side_wall_marker, metadata={"quadrature_degree": 0})
+                    subdomain_id=side_wall_marker)
         ds = ds_bottom + ds_side_wall
     else:
         # Normally (for the simple non entire object scan, the data is available at ds_bottom)
         ds = ds_bottom
     
-    return u_tot_mag_dg0, ds, V_DG0
+    if projection_degree == 5:
+        V_project = V
+    elif projection_degree == 0:
+        V_project = FunctionSpace(mesh_copy, "DG", 0)
+    else:
+        V_project = FunctionSpace(mesh_copy, "CG", projection_degree)
+
+    # Project the magnitude of the u_tot_mag
+    u_tot_projected = project(u_tot, V_project)
+    
+    return u_tot_projected, ds, V_project

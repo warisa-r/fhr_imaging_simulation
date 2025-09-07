@@ -159,10 +159,10 @@ with XDMFFile("mf.xdmf") as infile:
     infile.read(mvc, "name_to_read")
     mf = cpp.mesh.MeshFunctionSizet(mesh, mvc)
 
+ds_bottom = Measure("ds", domain=mesh, subdomain_data=mf, subdomain_id=wall_marker)
+ds_sides = Measure("ds", domain=mesh, subdomain_data=mf, subdomain_id=inflow_marker)
+ds_outer = ds_bottom +ds_sides
 # We compute the initial volume of the obstacle
-
-one = Constant(1)
-Vol0 = L * H - assemble(one * dx(domain=mesh))
 
 # We create a Boundary-mesh and function space for our control :math:`h`
 
@@ -184,9 +184,6 @@ h_V.rename("Volume extension of h", "")
 
 # We can now transfer our mesh according to :eq:`deformation`.
 
-
-
-
 # We compute the mesh deformation with the volume extension of the control
 # variable :math:`h` and move the domain.
 
@@ -196,30 +193,44 @@ ALE.move(mesh, s)
 # The next step is to set up :eq:`state`. We start by defining the
 # stable Taylor-Hood finite element space.
 
-V2 = VectorElement("CG", mesh.ufl_cell(), 2)
-S1 = FiniteElement("CG", mesh.ufl_cell(), 1)
-VQ = FunctionSpace(mesh, V2 * S1)
+V1 = FiniteElement("CG", mesh.ufl_cell(), 5)
+V2 = FiniteElement("CG", mesh.ufl_cell(), 5)
+W = FunctionSpace(mesh, V1 * V2)
 
 # Then, we define the test and trial functions, as well as the variational form
 
-(u, p) = TrialFunctions(VQ)
-(v, q) = TestFunctions(VQ)
-a = inner(grad(u), grad(v)) * dx - div(u) * q * dx - div(v) * p * dx
-l = inner(zero, v) * dx
+(u_re, u_im) = TrialFunctions(W)
+(v_re, v_im) = TestFunctions(W)
+
+a = (inner(grad(u_re), grad(v_re)) - 5**2*u_re*v_re)*dx \
+    + 5*u_im*v_re*ds_outer \
+    + (inner(grad(u_im), grad(v_im)) - 5**2*u_im*v_im)*dx \
+    - 5*u_re*v_im*ds_outer
+
+l = Constant(0.0)*(v_re + v_im)*dx
 
 # The Dirichlet boundary conditions on :math:`\Gamma` is defined as follows
 
-(x, y) = SpatialCoordinate(mesh)
-g = Expression(("sin(pi*x[1])", "0"), degree=2)
-bc_inlet = DirichletBC(VQ.sub(0), g, mf, inflow_marker)
-bc_obstacle = DirichletBC(VQ.sub(0), zero, mf, obstacle_marker)
-bc_walls = DirichletBC(VQ.sub(0), zero, mf, wall_marker)
-bcs = [bc_inlet, bc_obstacle, bc_walls]
+AMP = 1.0
+k_background = 5.0
+
+uinc_re_neg = Expression("AMP * cos(k_background * x[1])",
+                         AMP=AMP, k_background=k_background,
+                         degree=3)
+
+uinc_im_neg = Expression("AMP * sin(k_background * x[1])",
+                         AMP=AMP, k_background=k_background,
+                         degree=3)
+
+bcs = [
+    DirichletBC(W.sub(0), uinc_re_neg, mf, obstacle_marker),
+    DirichletBC(W.sub(1), uinc_im_neg, mf, obstacle_marker),
+]
 
 # We solve the mixed equations and split the solution into the velocity-field
 # :math:`u` and pressure-field :math:`p`.
 
-w = Function(VQ, name="Mixed State Solution")
+w = Function(W, name="Mixed State Solution")
 problem = LinearVariationalProblem(a, l, w, bcs)
 solver = LinearVariationalSolver(problem)
 solver.solve()
@@ -227,7 +238,7 @@ solver.solve()
 u, p = w.split()
 
 # Plotting the initial velocity and pressure
-
+"""
 plt.figure()
 plt.subplot(1, 2, 1)
 plot(mesh, color="k", linewidth=0.2, zorder=0)
@@ -237,28 +248,9 @@ plt.subplot(1, 2, 2)
 plot(p, zorder=1)
 plt.axis("off")
 plt.savefig("intial.png", dpi=800, bbox_inches="tight", pad_inches=0)
+"""
 
-# We compute the dissipated energy in the fluid volume,
-# :math:`\int_{\Omega(s)} \sum_{i,j=1}^2 \left(\frac{\partial u_i}{\partial x_j}\right)^2~\mathrm{d} x`
-
-J = assemble(inner(grad(u), grad(u)) * dx)
-
-# Then, we add a weak enforcement of the volume contraint,
-# :math:`\alpha\big(\mathrm{Vol}(\Omega(s))-\mathrm{Vol}(\Omega_0)\big)^2`.
-
-alpha = 1e4
-Vol = assemble(one * dx(domain=mesh))
-J += alpha * ((L * H - Vol) - Vol0)**2
-
-# Similarly, we add a weak enforcement of the barycenter contraint,
-# :math:`\beta\big(\mathrm{Bc}_j(\Omega(s))-\mathrm{Bc}_j(\Omega_0)\big)^2`.
-
-Bc1 = (L**2 * H / 2 - assemble(x * dx(domain=mesh))) / (L * H - Vol)
-Bc2 = (L * H**2 / 2 - assemble(y * dx(domain=mesh))) / (L * H - Vol)
-beta = 1e4
-J += beta * ((Bc1 - c_x)**2 + (Bc2 - c_y)**2)
-
-# We define the reduced functional, where :math:`h` is the design parameter# and use scipy to minimize the objective.
+J = assemble(inner((u), (u)) * ds_bottom)
 
 Jhat = ReducedFunctional(J, Control(h))
 s_opt = minimize(Jhat, tol=1e-6, options={"gtol": 1e-6, "maxiter": 50, "disp": True})
