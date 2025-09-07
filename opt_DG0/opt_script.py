@@ -1,12 +1,10 @@
 import h5py
-import json
 from dolfin import *
 from dolfin_adjoint import * 
 import numpy as np
 import moola
 import pandas as pd
 
-from scipy.special import hankel1
 import subprocess
 import os
 import gmsh
@@ -36,38 +34,58 @@ class IncidentImag(UserExpression):
     def value_shape(self):
         return ()
 
-def load_forward_simulation_data_bottomwall(V_DG0):
-    df = pd.read_csv("forward_sim_data_bottom.csv")
+def load_forward_simulation_data_bottomwall(V_ref, projection_degree=0):
+    df = pd.read_csv("matlab_measurements.csv")
     points = df[["x", "y"]].values
     values = df["u"].values
 
     # Set up the assignment
-    u_ref_dg0 = Function(V_DG0)
+    u_ref = Function(V_ref)
+    mesh = V_ref.mesh()
     tree = mesh.bounding_box_tree()
-    dofmap = V_DG0.dofmap()
-    u_vec = u_ref_dg0.vector().get_local()
+    dofmap = V_ref.dofmap()
+    u_vec = u_ref.vector().get_local()
 
-    # For tracking which cells we've already assigned (to avoid duplicates)
-    assigned = np.zeros(mesh.num_cells(), dtype=bool)
+    if projection_degree == 0:
+        # Logic for DG0: one DOF per cell.
+        assigned = np.zeros(mesh.num_cells(), dtype=bool)
+        for (x, y), val in zip(points, values):
+            point = Point(x, y)
+            cell_id = tree.compute_first_entity_collision(point)
+            if cell_id < mesh.num_cells() and not assigned[cell_id]:
+                dof_idx = dofmap.cell_dofs(cell_id)[0]
+                u_vec[dof_idx] = val
+                assigned[cell_id] = True
+            elif cell_id < mesh.num_cells() and assigned[cell_id]:
+                print(f"Warning: cell {cell_id} already assigned, skipping duplicate point.")
+    else:
+        # Logic for CG > 0 or DG > 0: find the closest DOF within the cell.
+        dof_coords = V_ref.tabulate_dof_coordinates()
+        assigned_dofs = set()
+        for (x, y), val in zip(points, values):
+            point = Point(x, y)
+            cell_id = tree.compute_first_entity_collision(point)
+            if cell_id < mesh.num_cells():
+                cell_dofs = dofmap.cell_dofs(cell_id)
+                cell_dof_coords = dof_coords[cell_dofs]
+                
+                # Find the closest DOF in this cell to the point
+                distances = np.linalg.norm(cell_dof_coords - np.array([x, y]), axis=1)
+                closest_local_dof_idx = np.argmin(distances)
+                closest_global_dof = cell_dofs[closest_local_dof_idx]
 
-    for (x, y), val in zip(points, values):
-        point = Point(x, y)
-        cell_id = tree.compute_first_entity_collision(point)
-        if cell_id < mesh.num_cells() and not assigned[cell_id]:
-            dof_idx = dofmap.cell_dofs(cell_id)[0]
-            u_vec[dof_idx] = val
-            assigned[cell_id] = True
-        elif cell_id < mesh.num_cells() and assigned[cell_id]:
-            print(f"Warning: cell {cell_id} already assigned, skipping duplicate point.")
+                if closest_global_dof not in assigned_dofs:
+                    u_vec[closest_global_dof] = val
+                    assigned_dofs.add(closest_global_dof)
+                else:
+                    # This can happen if a DOF is shared by multiple cells that contain points
+                    pass
 
     # Push the updated values into the Function
-    u_ref_dg0.vector().set_local(u_vec)
-    u_ref_dg0.vector().apply("insert")
+    u_ref.vector().set_local(u_vec)
+    u_ref.vector().apply("insert")
 
-    return u_ref_dg0
-
-
-forward_sim_result_file_path = "forward_sim_data_bottom.csv"
+    return u_ref
 
 mesh = Mesh()
 # meshes/square_with_sin_perturbed_rect_obstacle.xdmf
@@ -224,7 +242,7 @@ sol = solver.solve()
 h_opt = sol['control'].data
 
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
-result_path = "outputs/result_sin_0.5.h5"
+result_path = "outputs/result_sin_0.5_DG0_matlab.h5"
 goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
 
 save_optimization_result(
@@ -243,7 +261,7 @@ plot_mesh_deformation_from_result(
     side_wall_marker,
     bottom_wall_marker,
     None,
-    plot_file_name="mesh_deformation_sin_0.5.png",
+    plot_file_name="outputs/mesh_deformation_sin_0.5_DG0_matlab.png",
     obstacle_stiffness = 25,
 )
 

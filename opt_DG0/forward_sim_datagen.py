@@ -95,26 +95,45 @@ u_tot_mag.vector()[:] = np.sqrt(u_tot_re.vector().get_local()**2 + u_tot_im.vect
 
 ### Save the data ###
 
-# We have to project the data as a constant on every grid point in order to make it a
-# correct approximation of the value of u
 import pandas as pd
 
-V_DG0 = FunctionSpace(mesh, "DG", 0)
-u_tot_mag_dg0 = project(u_tot_mag, V_DG0)
+projection_degree = 0
+if projection_degree == 0:
+    V_DG0 = FunctionSpace(mesh, "DG", 0)
+    u_tot_mag_dg0 = project(u_tot_mag, V_DG0)
 
-u_vals_bottom = []
-x_vals = []
-y_vals = []
+    u_vals_bottom = []
+    x_vals = []
+    y_vals = []
 
-for facet in SubsetIterator(boundary_markers, bottom_wall_marker):
-    cell = Cell(mesh, facet.entities(2)[0])  # cell adjacent to facet
-    dof_idx = V_DG0.dofmap().cell_dofs(cell.index())[0]
-    u_val = u_tot_mag_dg0.vector()[dof_idx]
+    for facet in SubsetIterator(boundary_markers, bottom_wall_marker):
+        cell = Cell(mesh, facet.entities(2)[0])  # cell adjacent to facet
+        dof_idx = V_DG0.dofmap().cell_dofs(cell.index())[0]
+        u_val = u_tot_mag_dg0.vector()[dof_idx]
 
-    midpoint = facet.midpoint()
-    x_vals.append(midpoint.x())
-    y_vals.append(midpoint.y())
-    u_vals_bottom.append(u_val)
+        midpoint = facet.midpoint()
+        x_vals.append(midpoint.x())
+        y_vals.append(midpoint.y())
+        u_vals_bottom.append(u_val)
+elif projection_degree == 1:
+    V_CG1 = FunctionSpace(mesh, "CG", 1)
+    u_tot_mag_cg1 = project(u_tot_mag, V_CG1)
+
+    # Get coordinates and values for all DOFs in the CG1 space
+    dof_coords = V_CG1.tabulate_dof_coordinates()
+    u_values = u_tot_mag_cg1.vector().get_local()
+
+    u_vals_bottom = []
+    x_vals = []
+    y_vals = []
+
+    # Iterate through all DOFs and select those on the bottom boundary (y=0)
+    for i in range(len(dof_coords)):
+        # Check if the y-coordinate is close to zero
+        if abs(dof_coords[i][1]) < 1e-12:
+            x_vals.append(dof_coords[i][0])
+            y_vals.append(dof_coords[i][1])
+            u_vals_bottom.append(u_values[i])
 
 df = pd.DataFrame({
     "x": x_vals,
