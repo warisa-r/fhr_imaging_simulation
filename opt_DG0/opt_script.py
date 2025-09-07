@@ -35,7 +35,7 @@ class IncidentImag(UserExpression):
         return ()
 
 def load_forward_simulation_data_bottomwall(V_ref, projection_degree=0):
-    df = pd.read_csv("matlab_measurements.csv")
+    df = pd.read_csv("forward_sim_data_bottom.csv")
     points = df[["x", "y"]].values
     values = df["u"].values
 
@@ -242,8 +242,8 @@ sol = solver.solve()
 h_opt = sol['control'].data
 
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
-result_path = "outputs/result_sin_0.5_DG0_matlab.h5"
-goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
+result_path = "outputs/result_cos_1.5_DG0.h5"
+goal_geometry_msh_path = "meshes/square_with_perturbed_rect_obstacle.msh"
 
 save_optimization_result(
     sol,
@@ -261,7 +261,7 @@ plot_mesh_deformation_from_result(
     side_wall_marker,
     bottom_wall_marker,
     None,
-    plot_file_name="outputs/mesh_deformation_sin_0.5_DG0_matlab.png",
+    plot_file_name="outputs/mesh_deformation_cos_1.5_DG0.png",
     obstacle_stiffness = 25,
 )
 

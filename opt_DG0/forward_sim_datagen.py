@@ -28,10 +28,10 @@ class IncidentImag(UserExpression):
 
 mesh = Mesh()
 # meshes/square_with_sin_perturbed_rect_obstacle.xdmf
-with XDMFFile("meshes/square_with_halfsin_perturbed_rect_obstacle.xdmf") as infile:
+with XDMFFile("meshes/square_with_perturbed_rect_obstacle.xdmf") as infile:
     infile.read(mesh)
 mvc = MeshValueCollection("size_t", mesh, 1)
-with XDMFFile("meshes/square_with_halfsin_perturbed_rect_obstacle_facets.xdmf") as infile:
+with XDMFFile("meshes/square_with_perturbed_rect_obstacle_facets.xdmf") as infile:
     infile.read(mvc, "name_to_read")
     boundary_markers = cpp.mesh.MeshFunctionSizet(mesh, mvc)
 
