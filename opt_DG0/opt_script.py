@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from HH_shape_opt.process_result import save_optimization_result, plot_mesh_deformation_from_result
+from HH_shape_opt.helmholtz_solve import mesh_deformation
 
 from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
 
@@ -34,8 +35,8 @@ class IncidentImag(UserExpression):
     def value_shape(self):
         return ()
 
-def load_forward_simulation_data_bottomwall(V_ref, projection_degree=0):
-    df = pd.read_csv("forward_sim_data_bottom.csv")
+def load_forward_simulation_data_bottomwall(measurement_data_file_path, V_ref, projection_degree=0):
+    df = pd.read_csv(measurement_data_file_path)
     points = df[["x", "y"]].values
     values = df["u"].values
 
@@ -87,6 +88,7 @@ def load_forward_simulation_data_bottomwall(V_ref, projection_degree=0):
 
     return u_ref
 
+measurement_data_file_path = "forward_sim_data_bottom.csv"
 mesh = Mesh()
 # meshes/square_with_sin_perturbed_rect_obstacle.xdmf
 with XDMFFile("meshes/square_with_rect_obstacle.xdmf") as infile:
@@ -111,43 +113,7 @@ h_V = transfer_from_boundary(h, mesh)
 h_V.rename("Volume extension of h", "")
 
 V_DG0 = FunctionSpace(mesh, "DG", 0)
-u_ref_dg0 = load_forward_simulation_data_bottomwall(V_DG0)
-
-def mesh_deformation(h, mesh_local, markers_local):
-
-    V = FunctionSpace(mesh_local, "CG", 1)
-    u, v = TrialFunction(V), TestFunction(V)
-    a  = inner(grad(u), grad(v)) * dx
-    L0 = Constant(0.0) * v * dx
-    bcs0 = [
-        DirichletBC(V, Constant(1.0), markers_local, side_wall_marker),
-        DirichletBC(V, Constant(1.0), markers_local, bottom_wall_marker),
-        DirichletBC(V, Constant(25), markers_local, obstacle_marker),
-    ]
-    mu = Function(V, name="mu")
-    LinearVariationalSolver(LinearVariationalProblem(a, L0, mu, bcs0)).solve()
-
-    S = VectorFunctionSpace(mesh_local, "CG", 1)
-    u_vec, v_vec = TrialFunction(S), TestFunction(S)
-    dObs = Measure("ds",
-        domain=mesh_local,
-        subdomain_data=markers_local,
-        subdomain_id=obstacle_marker
-    )
-
-    def ε(w):    return sym(grad(w))
-    def σ(w):    return 2 * mu * ε(w)
-
-    a_el = inner(σ(u_vec), grad(v_vec)) * dx
-    L_el = inner(h, v_vec) * dObs
-
-    bc_el = [ DirichletBC(S, Constant((0.0, 0.0)), markers_local, bottom_wall_marker),
-              DirichletBC(S, Constant((0.0, 0.0)), markers_local, side_wall_marker)
-     ]
-    s = Function(S, name="deformation")
-    LinearVariationalSolver(LinearVariationalProblem(a_el, L_el, s, bc_el)).solve()
-
-    return s
+u_ref_dg0 = load_forward_simulation_data_bottomwall(measurement_data_file_path, V_DG0)
 
 def forward_solve(h_control):
     # Copy the “master” mesh and its facet markers
@@ -159,7 +125,7 @@ def forward_solve(h_control):
 
     # Transfer h → volume and deform the copy since we want to preserve always the original
     h_vol = transfer_from_boundary(h_control, mesh_copy)
-    s    = mesh_deformation(h_vol, mesh_copy, markers_copy)
+    s = mesh_deformation(h_vol, mesh_copy, markers_copy, obstacle_marker, side_wall_marker, bottom_wall_marker, None, 25)
     ALE.move(mesh_copy, s)
 
     V = FunctionSpace(mesh_copy, "CG", 5)
@@ -242,8 +208,8 @@ sol = solver.solve()
 h_opt = sol['control'].data
 
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
-result_path = "outputs/result_cos_1.5_DG0.h5"
-goal_geometry_msh_path = "meshes/square_with_perturbed_rect_obstacle.msh"
+result_path = "outputs/result_sin_0.5_DG0.h5"
+goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
 
 save_optimization_result(
     sol,
@@ -261,7 +227,7 @@ plot_mesh_deformation_from_result(
     side_wall_marker,
     bottom_wall_marker,
     None,
-    plot_file_name="outputs/mesh_deformation_cos_1.5_DG0.png",
+    plot_file_name="outputs/mesh_deformation_sin_0.5_DG0.png",
     obstacle_stiffness = 25,
 )
 

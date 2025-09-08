@@ -1,5 +1,6 @@
 from dolfin import *
 import numpy as np
+import pandas as pd
 from scipy.special import hankel1
 import subprocess
 import os
@@ -28,10 +29,10 @@ class IncidentImag(UserExpression):
 
 mesh = Mesh()
 # meshes/square_with_sin_perturbed_rect_obstacle.xdmf
-with XDMFFile("meshes/square_with_perturbed_rect_obstacle.xdmf") as infile:
+with XDMFFile("meshes/square_with_halfsin_perturbed_rect_obstacle.xdmf") as infile:
     infile.read(mesh)
 mvc = MeshValueCollection("size_t", mesh, 1)
-with XDMFFile("meshes/square_with_perturbed_rect_obstacle_facets.xdmf") as infile:
+with XDMFFile("meshes/square_with_halfsin_perturbed_rect_obstacle_facets.xdmf") as infile:
     infile.read(mvc, "name_to_read")
     boundary_markers = cpp.mesh.MeshFunctionSizet(mesh, mvc)
 
@@ -94,9 +95,6 @@ u_tot_mag = Function(V)
 u_tot_mag.vector()[:] = np.sqrt(u_tot_re.vector().get_local()**2 + u_tot_im.vector().get_local()**2)
 
 ### Save the data ###
-
-import pandas as pd
-
 projection_degree = 0
 if projection_degree == 0:
     V_DG0 = FunctionSpace(mesh, "DG", 0)

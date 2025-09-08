@@ -7,6 +7,7 @@ side_wall_marker = 1
 bottom_wall_marker = 2
 obstacle_marker = 3
 domain_marker = 4
+obstacle_opt_marker
 
 
 def plot_mesh(filename, ax, title=""):
@@ -62,7 +63,8 @@ def convert_msh_to_xdmf(msh_file_path):
 def generate_square_with_rect_obstacle_mesh(
     width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=0.05,
     output_name="square_with_rect_obstacle",
-    n_points_bottom=100, n_points_rect_bottom=40
+    n_points_bottom=100, n_points_rect_bottom=40,
+    use_opt_marker = False
 ):
     import gmsh
 
@@ -119,7 +121,14 @@ def generate_square_with_rect_obstacle_mesh(
     # Physical groups
     gmsh.model.addPhysicalGroup(1, [l1], bottom_wall_marker, "bottom_wall")
     gmsh.model.addPhysicalGroup(1, [l2, l3, l4], side_wall_marker, "outer_walls")
-    gmsh.model.addPhysicalGroup(1, rect_lines, obstacle_marker, "rect_obstacle_boundary")
+    if use_opt_marker:
+        # Mark the bottom of the obstacle separately for optimization
+        gmsh.model.addPhysicalGroup(1, [rl1], obstacle_opt_marker, "obstacle_opt_boundary")
+        # Mark the rest of the obstacle
+        gmsh.model.addPhysicalGroup(1, [rl2, rl3, rl4], obstacle_marker, "rect_obstacle_boundary")
+    else:
+        # Mark the entire obstacle with one marker
+        gmsh.model.addPhysicalGroup(1, rect_lines, obstacle_marker, "rect_obstacle_boundary")
     gmsh.model.addPhysicalGroup(2, [surface], domain_marker, "domain")
 
     # Generate mesh
