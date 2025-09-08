@@ -23,16 +23,18 @@ jobs:
       - name: Pull Dolfin-adjoint image
         run: docker pull ghcr.io/dolfin-adjoint/dolfin-adjoint:latest
 
-      - name: Install Python dependencies inside container
+      - name: Build custom image with dependencies
         run: |
-          docker run --rm \
-            -v ${{ github.workspace }}:/workspace \
-            ghcr.io/dolfin-adjoint/dolfin-adjoint:latest \
-            bash -c "pip install pandas meshio matplotlib gmsh"
+          # Give the running container a name so we can reference it later
+          docker run --name installer ghcr.io/dolfin-adjoint/dolfin-adjoint:latest \
+            bash -c "pip install 'numpy==1.24.4' pandas meshio matplotlib python-gmsh"
+          
+          # Commit the container with the new packages into a new image named 'custom-image'
+          docker commit installer custom-image:latest
 
-      - name: Run Python script inside container
+      - name: Run Python script inside custom container
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
-            ghcr.io/dolfin-adjoint/dolfin-adjoint:latest \
+            custom-image:latest \
             bash -c "mkdir -p /tmp/run && cp -r /workspace/* /tmp/run/ && cd /tmp/run && python3 opt_DG0/opt_script.py"
