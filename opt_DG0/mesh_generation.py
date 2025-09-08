@@ -6,9 +6,8 @@ import os
 side_wall_marker = 1
 bottom_wall_marker = 2
 obstacle_marker = 3
-domain_marker = 4
-obstacle_opt_marker
-
+obstacle_opt_marker = 4
+domain_marker = 5
 
 def plot_mesh(filename, ax, title=""):
     mesh = meshio.read(filename)
@@ -317,12 +316,25 @@ if __name__ == "__main__":
     )
     """
 
+    
     mesh_file = generate_square_with_sin_perturbed_rect_obstacle_mesh(
         width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=mesh_size,
-        output_name="meshes/square_with_halfsin_perturbed_rect_obstacle",
+        output_name="meshes/square_with_sin_perturbed_rect_obstacle",
         n_points_bottom=100, n_points_rect_bottom=100,
-        perturb_amplitude=0.01, perturb_frequency=0.5
+        perturb_amplitude=0.01, perturb_frequency=1.0
     )
+    
+    
+
+    """
+    mesh_file =  generate_square_with_rect_obstacle_mesh(
+    width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=mesh_size,
+    output_name="meshes/square_with_rect_obstacle_opt",
+    n_points_bottom=100, n_points_rect_bottom=100,
+    use_opt_marker = True
+    )
+    """
+
     
 
     convert_msh_to_xdmf(mesh_file)

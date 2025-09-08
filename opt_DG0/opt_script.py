@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from HH_shape_opt.process_result import save_optimization_result, plot_mesh_deformation_from_result
 from HH_shape_opt.helmholtz_solve import mesh_deformation
 
-from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
+from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker
 
 set_log_level(LogLevel.ERROR)
 
@@ -115,7 +115,7 @@ h_V.rename("Volume extension of h", "")
 V_DG0 = FunctionSpace(mesh, "DG", 0)
 u_ref_dg0 = load_forward_simulation_data_bottomwall(measurement_data_file_path, V_DG0)
 
-def forward_solve(h_control):
+def forward_solve(h_control, obstacle_opt_marker = None):
     # Copy the “master” mesh and its facet markers
     mesh_copy = Mesh(mesh)
     mvc_copy = MeshValueCollection("size_t", mesh, 1)
@@ -125,7 +125,7 @@ def forward_solve(h_control):
 
     # Transfer h → volume and deform the copy since we want to preserve always the original
     h_vol = transfer_from_boundary(h_control, mesh_copy)
-    s = mesh_deformation(h_vol, mesh_copy, markers_copy, obstacle_marker, side_wall_marker, bottom_wall_marker, None, 25)
+    s = mesh_deformation(h_vol, mesh_copy, markers_copy, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker, 25)
     ALE.move(mesh_copy, s)
 
     V = FunctionSpace(mesh_copy, "CG", 5)
@@ -135,6 +135,11 @@ def forward_solve(h_control):
     ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=bottom_wall_marker)
     ds_sides = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=side_wall_marker)
     ds_obstacle = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=obstacle_marker)
+
+    if obstacle_opt_marker != None:
+        # Since obstacle_marker excludes the to-be-optimized outline of the obstacle
+        # we need to add the to-be-optimized outline to ds_obstacle
+        ds_obstacle = ds_obstacle + Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=obstacle_opt_marker)
 
     ds_outer = ds_bottom + ds_sides
 
@@ -156,7 +161,15 @@ def forward_solve(h_control):
     bcs = [
       DirichletBC(W.sub(0), uinc_re_neg, markers_copy, obstacle_marker),
       DirichletBC(W.sub(1), uinc_im_neg, markers_copy, obstacle_marker),
+      
     ]
+
+    if obstacle_opt_marker != None:
+        # Since obstacle_marker excludes the to-be-optimized outline of the obstacle
+        # we need to add the to-be-optimized outline to ds_obstacle
+        bcs.append(DirichletBC(W.sub(0), uinc_re_neg, markers_copy, obstacle_opt_marker))
+        bcs.append(DirichletBC(W.sub(1), uinc_im_neg, markers_copy, obstacle_opt_marker))
+
 
     w = Function(W)
     solve(a == L, w, bcs)
@@ -188,12 +201,6 @@ u_tot_mag_dg0, ds_bottom, V_DG0 = forward_solve(h)
 J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
 Jhat = ReducedFunctional(J, Control(h))
 
-"""
-with HDF5File(MPI.comm_world, checkpoint_file, "r") as h5f:
-    h_temp = Function(S_b, name="Design")
-    h5f.read(h_temp, "/h_opt")
-print(Jhat(h_temp))
-"""
 ## Start optimizing ##
 problem = MoolaOptimizationProblem(Jhat)
 h_moola = moola.DolfinPrimalVector(h)
@@ -208,8 +215,8 @@ sol = solver.solve()
 h_opt = sol['control'].data
 
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
-result_path = "outputs/result_sin_0.5_DG0.h5"
-goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
+result_path = "outputs/result_sin_1.0_DG0_restricted_matlab.h5"
+goal_geometry_msh_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
 
 save_optimization_result(
     sol,
@@ -226,8 +233,8 @@ plot_mesh_deformation_from_result(
     obstacle_marker,
     side_wall_marker,
     bottom_wall_marker,
-    None,
-    plot_file_name="outputs/mesh_deformation_sin_0.5_DG0.png",
+    obstacle_opt_marker,
+    plot_file_name="outputs/mesh_deformation_sin_1.0_DG0_restricted_matlab.png",
     obstacle_stiffness = 25,
 )
 
