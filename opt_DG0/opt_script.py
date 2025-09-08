@@ -17,6 +17,10 @@ from HH_shape_opt.helmholtz_solve import mesh_deformation, load_forward_simulati
 
 from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker
 
+# Ensure this can be run from root dir
+script_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_dir)
+
 set_log_level(LogLevel.ERROR)
 
 frequency = 5e9
@@ -131,7 +135,7 @@ h_moola = moola.DolfinPrimalVector(h)
 
 solver = moola.BFGS(problem, h_moola,
     options={
-        "maxiter": 50,
+        "maxiter": 2,
         "gtol": 1e-7,
     })
 
