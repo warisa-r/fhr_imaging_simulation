@@ -23,6 +23,13 @@ jobs:
       - name: Pull Dolfin-adjoint image
         run: docker pull ghcr.io/dolfin-adjoint/dolfin-adjoint:latest
 
+      - name: Install Python dependencies inside container
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            ghcr.io/dolfin-adjoint/dolfin-adjoint:latest \
+            bash -c "pip install pandas meshio matplotlib python-gmsh"
+
       - name: Run Python script inside container
         run: |
           docker run --rm \

@@ -2,6 +2,7 @@ import meshio
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import gmsh
 
 side_wall_marker = 1
 bottom_wall_marker = 2
@@ -65,7 +66,7 @@ def generate_square_with_rect_obstacle_mesh(
     n_points_bottom=100, n_points_rect_bottom=40,
     use_opt_marker = False
 ):
-    import gmsh
+    
 
     gmsh.initialize()
     gmsh.clear()
@@ -143,7 +144,6 @@ def generate_square_with_cos_perturbed_rect_obstacle_mesh(
     n_points_bottom=100, n_points_rect_bottom=40,
     perturb_amplitude=0.03, perturb_frequency=3
 ):
-    import gmsh
 
     gmsh.initialize()
     gmsh.clear()
@@ -223,7 +223,6 @@ def generate_square_with_sin_perturbed_rect_obstacle_mesh(
     n_points_bottom=100, n_points_rect_bottom=40,
     perturb_amplitude=0.03, perturb_frequency=3
 ):
-    import gmsh
 
     gmsh.initialize()
     gmsh.clear()
