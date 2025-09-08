@@ -22,7 +22,7 @@ def plane_wave_angle(angle_deg):
     return wave_func
 
 class HelmholtzSetup:
-    def __init__(self, frequency, incident_field_func, obstacle_stiffness = 50):
+    def __init__(self, frequency, incident_field_func, obstacle_stiffness = 25):
         self.frequency = frequency
         self.k_background = 2* np.pi * frequency / LIGHT_SPEED
         self.set_incident_field(incident_field_func)
@@ -44,8 +44,8 @@ class HelmholtzSetup:
             def value_shape(self):
                 return ()
 
-        self.u_inc_re = IncidentReal(degree = 2)
-        self.u_inc_im = IncidentImag(degree = 2)
+        self.u_inc_re = IncidentReal()
+        self.u_inc_im = IncidentImag()
 
 def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker, obstacle_stiffness):
     # Create scalar function space for material properties
@@ -115,71 +115,59 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
 
     return s
 
-def preprocess_reference_data(V_CG5, forward_sim_result_file_path, frequency = None, angle = None):
-    
-    # Only rank 0 reads the CSV file
-    if MPI.comm_world.rank == 0:
-        df = pd.read_csv(forward_sim_result_file_path)
-        if frequency is not None:
-            df = df.loc[df['frequency'] == frequency]
-        if angle is not None:
-            df = df.loc[df['angle'] == angle]
-        points = df[["x", "y"]].values
-        values = df["u"].values
-    else:
-        points = None
-        values = None
-    
-    # Broadcast data to all processes
-    points = MPI.comm_world.bcast(points, root=0)
-    values = MPI.comm_world.bcast(values, root=0)
+def load_forward_simulation_data_bottomwall(measurement_data_file_path, V_ref, projection_degree=0):
+    df = pd.read_csv(measurement_data_file_path)
+    points = df[["x", "y"]].values
+    values = df["u"].values
 
-    mesh = V_CG5.mesh()
+    # Set up the assignment
+    u_ref = Function(V_ref)
+    mesh = V_ref.mesh()
     tree = mesh.bounding_box_tree()
-    
-    point_value_map = {}
-    tolerance = 1e-10
-    
-    for (x, y), val in zip(points, values):
-        point = Point(x, y)
-        try:
-            cell_id = tree.compute_first_entity_collision(point)
-            
-            if cell_id < mesh.num_cells():
-                dofs_coords = V_CG5.tabulate_dof_coordinates()
-                distances = np.sqrt((dofs_coords[:, 0] - x)**2 + (dofs_coords[:, 1] - y)**2)
-                closest_dofs = np.where(distances < tolerance)[0]
-                
-                if len(closest_dofs) > 0:
-                    dof_idx = closest_dofs[0]
-                    point_value_map[dof_idx] = val
-                    
-        except RuntimeError:
-            # Point not found in this rank's mesh partition, skip silently
-            pass
-            
-    return point_value_map
-
-def assign_reference_data(V_CG5, point_value_map):
-    u_ref = Function(V_CG5)
-    
-    # Handle the case where this process has no data points
-    if len(point_value_map) == 0:
-        # Still need to participate in collective operations
-        u_ref.vector().apply("insert")
-        return u_ref
-    
-    # Get local vector and assign known values
+    dofmap = V_ref.dofmap()
     u_vec = u_ref.vector().get_local()
-    for dof_idx, value in point_value_map.items():
-        if dof_idx < len(u_vec):
-            u_vec[dof_idx] = value
-    
-    # Update the function - this is a collective operation
+
+    if projection_degree == 0:
+        # Logic for DG0: one DOF per cell.
+        assigned = np.zeros(mesh.num_cells(), dtype=bool)
+        for (x, y), val in zip(points, values):
+            point = Point(x, y)
+            cell_id = tree.compute_first_entity_collision(point)
+            if cell_id < mesh.num_cells() and not assigned[cell_id]:
+                dof_idx = dofmap.cell_dofs(cell_id)[0]
+                u_vec[dof_idx] = val
+                assigned[cell_id] = True
+            elif cell_id < mesh.num_cells() and assigned[cell_id]:
+                print(f"Warning: cell {cell_id} already assigned, skipping duplicate point.")
+    else:
+        # Logic for CG > 0 or DG > 0: find the closest DOF within the cell.
+        dof_coords = V_ref.tabulate_dof_coordinates()
+        assigned_dofs = set()
+        for (x, y), val in zip(points, values):
+            point = Point(x, y)
+            cell_id = tree.compute_first_entity_collision(point)
+            if cell_id < mesh.num_cells():
+                cell_dofs = dofmap.cell_dofs(cell_id)
+                cell_dof_coords = dof_coords[cell_dofs]
+                
+                # Find the closest DOF in this cell to the point
+                distances = np.linalg.norm(cell_dof_coords - np.array([x, y]), axis=1)
+                closest_local_dof_idx = np.argmin(distances)
+                closest_global_dof = cell_dofs[closest_local_dof_idx]
+
+                if closest_global_dof not in assigned_dofs:
+                    u_vec[closest_global_dof] = val
+                    assigned_dofs.add(closest_global_dof)
+                else:
+                    # This can happen if a DOF is shared by multiple cells that contain points
+                    pass
+
+    # Push the updated values into the Function
     u_ref.vector().set_local(u_vec)
     u_ref.vector().apply("insert")
-    
+
     return u_ref
+
 def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup, 
                    obstacle_marker, side_wall_marker, bottom_wall_marker, 
                    is_forward = False,

@@ -11,92 +11,21 @@ import gmsh
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from HH_shape_opt.initialize_opt import MeshUtil
 from HH_shape_opt.process_result import save_optimization_result, plot_mesh_deformation_from_result
-from HH_shape_opt.helmholtz_solve import mesh_deformation
+from HH_shape_opt.helmholtz_solve import mesh_deformation, load_forward_simulation_data_bottomwall, HelmholtzSetup, plane_wave
 
 from mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker
 
 set_log_level(LogLevel.ERROR)
 
-k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
-incident_wave_amp = 1
+frequency = 5e9
+sim_setup = HelmholtzSetup(frequency, plane_wave)
 
-# Define Incident-based incident field (real part)
-class IncidentReal(UserExpression):
-    def eval(self, values, x):
-        values[0] = np.real(incident_wave_amp * np.exp(1j * k_background * x[1]))
-    def value_shape(self):
-        return ()
-
-# Define Incident-based incident field (imaginary part)
-class IncidentImag(UserExpression):
-    def eval(self, values, x):
-        values[0] = np.imag(incident_wave_amp * np.exp(1j * k_background * x[1]))
-    def value_shape(self):
-        return ()
-
-def load_forward_simulation_data_bottomwall(measurement_data_file_path, V_ref, projection_degree=0):
-    df = pd.read_csv(measurement_data_file_path)
-    points = df[["x", "y"]].values
-    values = df["u"].values
-
-    # Set up the assignment
-    u_ref = Function(V_ref)
-    mesh = V_ref.mesh()
-    tree = mesh.bounding_box_tree()
-    dofmap = V_ref.dofmap()
-    u_vec = u_ref.vector().get_local()
-
-    if projection_degree == 0:
-        # Logic for DG0: one DOF per cell.
-        assigned = np.zeros(mesh.num_cells(), dtype=bool)
-        for (x, y), val in zip(points, values):
-            point = Point(x, y)
-            cell_id = tree.compute_first_entity_collision(point)
-            if cell_id < mesh.num_cells() and not assigned[cell_id]:
-                dof_idx = dofmap.cell_dofs(cell_id)[0]
-                u_vec[dof_idx] = val
-                assigned[cell_id] = True
-            elif cell_id < mesh.num_cells() and assigned[cell_id]:
-                print(f"Warning: cell {cell_id} already assigned, skipping duplicate point.")
-    else:
-        # Logic for CG > 0 or DG > 0: find the closest DOF within the cell.
-        dof_coords = V_ref.tabulate_dof_coordinates()
-        assigned_dofs = set()
-        for (x, y), val in zip(points, values):
-            point = Point(x, y)
-            cell_id = tree.compute_first_entity_collision(point)
-            if cell_id < mesh.num_cells():
-                cell_dofs = dofmap.cell_dofs(cell_id)
-                cell_dof_coords = dof_coords[cell_dofs]
-                
-                # Find the closest DOF in this cell to the point
-                distances = np.linalg.norm(cell_dof_coords - np.array([x, y]), axis=1)
-                closest_local_dof_idx = np.argmin(distances)
-                closest_global_dof = cell_dofs[closest_local_dof_idx]
-
-                if closest_global_dof not in assigned_dofs:
-                    u_vec[closest_global_dof] = val
-                    assigned_dofs.add(closest_global_dof)
-                else:
-                    # This can happen if a DOF is shared by multiple cells that contain points
-                    pass
-
-    # Push the updated values into the Function
-    u_ref.vector().set_local(u_vec)
-    u_ref.vector().apply("insert")
-
-    return u_ref
-
-measurement_data_file_path = "forward_sim_data_bottom.csv"
-mesh = Mesh()
-# meshes/square_with_sin_perturbed_rect_obstacle.xdmf
-with XDMFFile("meshes/square_with_rect_obstacle.xdmf") as infile:
-    infile.read(mesh)
-mvc = MeshValueCollection("size_t", mesh, 1)
-with XDMFFile("meshes/square_with_rect_obstacle_facets.xdmf") as infile:
-    infile.read(mvc, "name_to_read")
-    boundary_markers = cpp.mesh.MeshFunctionSizet(mesh, mvc)
+measurement_data_file_path = "matlab_measurements.csv"
+msh_file_path = "meshes/square_with_rect_obstacle_opt.msh"
+initial_guess_mesh_util = MeshUtil(msh_file_path)
+mesh, _ = initial_guess_mesh_util.get_mesh_and_markers()
 
 # Create boundary mesh and design variables
 b_mesh = BoundaryMesh(mesh, "exterior")
@@ -115,22 +44,20 @@ h_V.rename("Volume extension of h", "")
 V_DG0 = FunctionSpace(mesh, "DG", 0)
 u_ref_dg0 = load_forward_simulation_data_bottomwall(measurement_data_file_path, V_DG0)
 
+#TODO: Try to use HHSetup with this forward solve
+#TODO: Move forward solve to modularize
 def forward_solve(h_control, obstacle_opt_marker = None):
     # Copy the “master” mesh and its facet markers
-    mesh_copy = Mesh(mesh)
-    mvc_copy = MeshValueCollection("size_t", mesh, 1)
-    with XDMFFile("meshes/square_with_rect_obstacle_facets.xdmf") as infile:
-        infile.read(mvc_copy, "name_to_read")
-        markers_copy = cpp.mesh.MeshFunctionSizet(mesh_copy, mvc_copy)
+    mesh_copy, markers_copy = initial_guess_mesh_util.get_mesh_and_markers()
 
     # Transfer h → volume and deform the copy since we want to preserve always the original
     h_vol = transfer_from_boundary(h_control, mesh_copy)
-    s = mesh_deformation(h_vol, mesh_copy, markers_copy, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker, 25)
+    s = mesh_deformation(h_vol, mesh_copy, markers_copy, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker, sim_setup.obstacle_stiffness)
     ALE.move(mesh_copy, s)
 
     V = FunctionSpace(mesh_copy, "CG", 5)
-    u_inc_re = project(IncidentReal(degree=2), V)
-    u_inc_im = project(IncidentImag(degree=2), V)
+    u_inc_re = project(sim_setup.u_inc_re, V)
+    u_inc_im = project(sim_setup.u_inc_im, V)
 
     ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=bottom_wall_marker)
     ds_sides = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=side_wall_marker)
@@ -146,6 +73,8 @@ def forward_solve(h_control, obstacle_opt_marker = None):
     W = FunctionSpace(mesh_copy, MixedElement([V.ufl_element(),
                                                V.ufl_element()]))
     (u_re, u_im), (v_re, v_im) = TrialFunctions(W), TestFunctions(W)
+
+    k_background = sim_setup.k_background
 
     a = (inner(grad(u_re), grad(v_re)) - k_background**2*u_re*v_re)*dx \
         + k_background*u_im*v_re*ds_outer \
@@ -181,7 +110,6 @@ def forward_solve(h_control, obstacle_opt_marker = None):
     u_tot_re = u_inc_re + u_sol_re
     u_tot_im = u_inc_im + u_sol_im
 
-    # Magnitude as UFL expression -> autodiffbar hopefully 
     u_tot_mag = sqrt(u_tot_re**2 + u_tot_im**2)
 
     V_DG0 = FunctionSpace(mesh_copy, "DG", 0)
@@ -191,12 +119,8 @@ def forward_solve(h_control, obstacle_opt_marker = None):
                 metadata={"quadrature_degree": 0})
     return u_tot_mag_dg0, ds_bottom, V_DG0
 
-######################################
-
-# Initial guess
-import os
 # Solve the forward problem
-u_tot_mag_dg0, ds_bottom, V_DG0 = forward_solve(h)
+u_tot_mag_dg0, ds_bottom, V_DG0 = forward_solve(h, obstacle_opt_marker)
 
 J = assemble((inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0)* ds_bottom))
 Jhat = ReducedFunctional(J, Control(h))
@@ -214,14 +138,13 @@ solver = moola.BFGS(problem, h_moola,
 sol = solver.solve()
 h_opt = sol['control'].data
 
-msh_file_path = "meshes/square_with_rect_obstacle.msh"
 result_path = "outputs/result_sin_1.0_DG0_restricted_matlab.h5"
 goal_geometry_msh_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
 
 save_optimization_result(
     sol,
     msh_file_path,
-    25,
+    sim_setup.obstacle_stiffness,
     result_file = result_path,
     use_scipy = False
 )
@@ -235,7 +158,7 @@ plot_mesh_deformation_from_result(
     bottom_wall_marker,
     obstacle_opt_marker,
     plot_file_name="outputs/mesh_deformation_sin_1.0_DG0_restricted_matlab.png",
-    obstacle_stiffness = 25,
+    obstacle_stiffness = sim_setup.obstacle_stiffness,
 )
 
 # Print optimization summary
