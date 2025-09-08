@@ -28,7 +28,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
             ghcr.io/dolfin-adjoint/dolfin-adjoint:latest \
-            bash -c "pip install pandas meshio matplotlib python-gmsh"
+            bash -c "pip install pandas meshio matplotlib gmsh"
 
       - name: Run Python script inside container
         run: |
