@@ -49,13 +49,12 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        # Use a login shell to make conda available in subsequent steps
         shell: bash -l {0}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Install System-level MPI
+      - name: Install OpenMPI
         run: |
           sudo apt-get update
           sudo apt-get install -y openmpi-bin libopenmpi-dev
@@ -66,16 +65,22 @@ jobs:
           auto-update-conda: true
           python-version: 3.10
           channels: conda-forge
+          activate-environment: dolfin_adj_fixed
+          environment-file: ""
+          miniforge-variant: Mambaforge
+          mamba-version: "*"
 
-      - name: Create and activate Conda environment
+      - name: Create Conda environment
         run: |
-          conda create -n dolfin_adj_fixed -c conda-forge python=3.10 dolfin-adjoint mpi4py -y
-          echo "conda activate dolfin_adj_fixed" >> $GITHUB_ENV
+          conda install -n dolfin_adj_fixed -c conda-forge python=3.10 dolfin-adjoint mpi4py pytest pip -y
+          conda activate dolfin_adj_fixed
+          conda info
+          conda list
 
       - name: Install local package
         run: |
           pip install .
 
-      - name: Run tests with MPI
+      - name: Run pytest serial
         run: |
-          pytest test
+          pytest -v test
