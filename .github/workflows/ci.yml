@@ -27,7 +27,7 @@ jobs:
         run: |
           # Give the running container a name so we can reference it later
           docker run --name installer ghcr.io/dolfin-adjoint/dolfin-adjoint:latest \
-            bash -c "pip install ."
+            bash -c "pip3 install ."
           
           # Commit the container with the new packages into a new image named 'custom-image'
           docker commit installer custom-image:latest
