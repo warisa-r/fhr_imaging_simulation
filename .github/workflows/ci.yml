@@ -13,9 +13,9 @@ permissions:
   id-token: write
 
 jobs:
-  test:
+  test-docker:
+    name: Test with Docker
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -42,4 +42,40 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
             custom-image:latest \
-            bash -c "mkdir -p /tmp/run && cp -r /workspace/* /tmp/run/ && cd /tmp/run && mpirun -n 2 python3 opt_DG0/opt_script.py"
+            bash -c "mkdir -p /tmp/run && cp -r /workspace/* /tmp/run/ && cd /tmp/run && pytest test"
+
+  test-conda:
+    name: Test with Conda
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        # Use a login shell to make conda available in subsequent steps
+        shell: bash -l {0}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install System-level MPI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openmpi-bin libopenmpi-dev
+
+      - name: Set up Conda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          python-version: 3.10
+          channels: conda-forge
+
+      - name: Create and activate Conda environment
+        run: |
+          conda create -n dolfin_adj_fixed -c conda-forge python=3.10 dolfin-adjoint mpi4py -y
+          echo "conda activate dolfin_adj_fixed" >> $GITHUB_ENV
+
+      - name: Install local package
+        run: |
+          pip install .
+
+      - name: Run tests with MPI
+        run: |
+          pytest test
