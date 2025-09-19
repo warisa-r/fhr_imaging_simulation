@@ -66,7 +66,7 @@ h_moola = moola.DolfinPrimalVector(h)
 
 solver = moola.BFGS(problem, h_moola,
     options={
-        "maxiter": 2,
+        "maxiter": 10,
         "gtol": 1e-7,
     })
 
