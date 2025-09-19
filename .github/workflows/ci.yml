@@ -25,12 +25,17 @@ jobs:
 
       - name: Build custom image with dependencies
         run: |
-          # Give the running container a name so we can reference it later
-          docker run --name installer ghcr.io/dolfin-adjoint/dolfin-adjoint:latest \
-            bash -c "pip3 install ."
-          
-          # Commit the container with the new packages into a new image named 'custom-image'
+          # Run a container with the repo mounted and install the local package inside /workspace
+          docker run --name installer \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            ghcr.io/dolfin-adjoint/dolfin-adjoint:latest \
+            bash -c "pip install ."
+
+          # Commit the container with the installed package into a new image named 'custom-image'
           docker commit installer custom-image:latest
+          # Remove the installer container (if still present)
+          docker rm -f installer || true
 
       - name: Run Python script inside custom container
         run: |
