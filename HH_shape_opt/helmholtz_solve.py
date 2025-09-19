@@ -21,7 +21,7 @@ def plane_wave_angle(angle_deg):
     
     return wave_func
 
-class HelmholtzSetup:
+class IncidentWaveSetup:
     def __init__(self, frequency, incident_field_func, obstacle_stiffness = 25):
         self.frequency = frequency
         self.k_background = 2* np.pi * frequency / LIGHT_SPEED
@@ -168,87 +168,85 @@ def load_forward_simulation_data_bottomwall(measurement_data_file_path, V_ref, p
 
     return u_ref
 
-def helmholtz_solve(mesh_copy, markers_copy, h_control, hh_setup, 
-                   obstacle_marker, side_wall_marker, bottom_wall_marker, 
-                   is_forward = False,
-                   data_all_side = False, obstacle_opt_marker = None,
-                   projection_degree = 5):
+def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, projection_degree = 0):
+    # Get mesh and markers from the MeshUtil object
+    mesh, markers = initial_guess_mesh_util.get_mesh_and_markers()
+    
+    # Extract the number of the marker of each object in the simulation
+    obstacle_marker = initial_guess_mesh_util.markers_dict["obstacle"]
+    side_wall_marker = initial_guess_mesh_util.markers_dict["side_wall"]
+    bottom_wall_marker = initial_guess_mesh_util.markers_dict["bottom_wall"]
+    obstacle_opt_marker = initial_guess_mesh_util.markers_dict["obstacle_opt"]
 
-    # Create function space and project incident fields
-    V = FunctionSpace(mesh_copy, "CG", 5)
-    u_inc_re = project(hh_setup.u_inc_re, V)
-    u_inc_im = project(hh_setup.u_inc_im, V)
+    # Transfer h → volume and deform the copy since we want to preserve always the original
+    h_vol = transfer_from_boundary(h_control, mesh)
+    s = mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker, inc_wave_setup.obstacle_stiffness)
+    ALE.move(mesh, s)
 
-    # Define boundary measures
-    ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=bottom_wall_marker)
-    ds_sides = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=side_wall_marker)
-    if obstacle_opt_marker is not None:
-        ds_obstacle = (Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=obstacle_marker) +
-                        Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=obstacle_opt_marker))
-    else:
-        ds_obstacle = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, subdomain_id=obstacle_marker)
+    V = FunctionSpace(mesh, "CG", 5)
+    u_inc_re = project(inc_wave_setup.u_inc_re, V)
+    u_inc_im = project(inc_wave_setup.u_inc_im, V)
+
+    ds_bottom = Measure("ds", domain=mesh, subdomain_data=markers, subdomain_id=bottom_wall_marker)
+    ds_sides = Measure("ds", domain=mesh, subdomain_data=markers, subdomain_id=side_wall_marker)
+    ds_obstacle = Measure("ds", domain=mesh, subdomain_data=markers, subdomain_id=obstacle_marker)
+
+    if obstacle_opt_marker != None:
+        # Since obstacle_marker excludes the to-be-optimized outline of the obstacle
+        # we need to add the to-be-optimized outline to ds_obstacle
+        ds_obstacle = ds_obstacle + Measure("ds", domain=mesh, subdomain_data=markers, subdomain_id=obstacle_opt_marker)
+
     ds_outer = ds_bottom + ds_sides
 
-    # Create mixed function space for complex-valued problem
-    W = FunctionSpace(mesh_copy, MixedElement([V.ufl_element(), V.ufl_element()]))
+    W = FunctionSpace(mesh, MixedElement([V.ufl_element(),
+                                               V.ufl_element()]))
     (u_re, u_im), (v_re, v_im) = TrialFunctions(W), TestFunctions(W)
 
-    # Define variational form
-    a = (inner(grad(u_re), grad(v_re)) - hh_setup.k_background**2*u_re*v_re)*dx \
-        + hh_setup.k_background*u_im*v_re*ds_outer \
-        + (inner(grad(u_im), grad(v_im)) - hh_setup.k_background**2*u_im*v_im)*dx \
-        - hh_setup.k_background*u_re*v_im*ds_outer
+    k_background = inc_wave_setup.k_background
+
+    a = (inner(grad(u_re), grad(v_re)) - k_background**2*u_re*v_re)*dx \
+        + k_background*u_im*v_re*ds_outer \
+        + (inner(grad(u_im), grad(v_im)) - k_background**2*u_im*v_im)*dx \
+        - k_background*u_re*v_im*ds_outer
 
     L = Constant(0.0)*(v_re + v_im)*dx
 
-    # Boundary conditions: u_scattered = -u_incident on obstacle
-    uinc_re_neg = Function(V)
-    uinc_re_neg.vector()[:] = -u_inc_re.vector()[:]
-    uinc_im_neg = Function(V)
-    uinc_im_neg.vector()[:] = -u_inc_im.vector()[:]
+    # Dirichlet BCs on the obstacle u_s = - u_in on the reflective surface
+    uinc_re_neg = Function(V); uinc_re_neg.vector()[:] = -u_inc_re.vector()[:]
+    uinc_im_neg = Function(V); uinc_im_neg.vector()[:] = -u_inc_im.vector()[:]
 
     bcs = [
-        DirichletBC(W.sub(0), uinc_re_neg, markers_copy, obstacle_marker),
-        DirichletBC(W.sub(1), uinc_im_neg, markers_copy, obstacle_marker),
+      DirichletBC(W.sub(0), uinc_re_neg, markers, obstacle_marker),
+      DirichletBC(W.sub(1), uinc_im_neg, markers, obstacle_marker),
+      
     ]
 
-    if obstacle_opt_marker is not None:
-        bcs.append(DirichletBC(W.sub(0), uinc_re_neg, markers_copy, obstacle_opt_marker))
-        bcs.append(DirichletBC(W.sub(1), uinc_im_neg, markers_copy, obstacle_opt_marker))
+    if obstacle_opt_marker != None:
+        # Since obstacle_marker excludes the to-be-optimized outline of the obstacle
+        # we need to add the to-be-optimized outline to ds_obstacle
+        bcs.append(DirichletBC(W.sub(0), uinc_re_neg, markers, obstacle_opt_marker))
+        bcs.append(DirichletBC(W.sub(1), uinc_im_neg, markers, obstacle_opt_marker))
 
-    # Solve the system
+
     w = Function(W)
     solve(a == L, w, bcs)
     
     # Extract solutions
     u_sol_re, u_sol_im = w.split()
 
-    # Compute total fields
+    # Total field expressions
     u_tot_re = u_inc_re + u_sol_re
     u_tot_im = u_inc_im + u_sol_im
 
-    u_tot = sqrt(u_tot_re**2 + u_tot_im**2) # Magnitude square
+    u_tot_mag = sqrt(u_tot_re**2 + u_tot_im**2)
 
-    # Create measure for bottom boundary with appropriate quadrature
-    ds_bottom = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, 
-                    subdomain_id=bottom_wall_marker)
-    
-    if data_all_side == True:
-        ds_side_wall = Measure("ds", domain=mesh_copy, subdomain_data=markers_copy, 
-                    subdomain_id=side_wall_marker)
-        ds = ds_bottom + ds_side_wall
+    if projection_degree == 0:
+        V_projection = FunctionSpace(mesh, "DG", 0)
     else:
-        # Normally (for the simple non entire object scan, the data is available at ds_bottom)
-        ds = ds_bottom
+        V_projection = FunctionSpace(mesh, "CG", projection_degree)
     
-    if projection_degree == 5:
-        V_project = V
-    elif projection_degree == 0:
-        V_project = FunctionSpace(mesh_copy, "DG", 0)
-    else:
-        V_project = FunctionSpace(mesh_copy, "CG", projection_degree)
+    u_tot_mag_projected = project(u_tot_mag, V_projection)
+    
+    ds_bottom = Measure("ds", domain=mesh, subdomain_data=markers, subdomain_id=bottom_wall_marker)
 
-    # Project the magnitude of the u_tot_mag
-    u_tot_projected = project(u_tot, V_project)
-    
-    return u_tot_projected, ds, V_project
+    return u_tot_mag_projected, ds_bottom, V_projection

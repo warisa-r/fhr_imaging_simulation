@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "HH_shape_opt"
+version = "0.1.0"
+description = "Shape optimization tools for Helmholtz problems"
+authors = [{name = "Warisa Roongaraya"}]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy==1.24.4",
+    "pandas",
+    "meshio",
+    "matplotlib",
+    "gmsh"
+]
+
+[tool.setuptools.packages.find]
+include = ["HH_shape_opt"]
