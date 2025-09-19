@@ -8,7 +8,7 @@ import json
 import gmsh
 import matplotlib.pyplot as plt
 
-from src.mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
+from HH_shape_opt.mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
 
 k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
 

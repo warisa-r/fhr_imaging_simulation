@@ -22,11 +22,10 @@ def plane_wave_angle(angle_deg):
     return wave_func
 
 class IncidentWaveSetup:
-    def __init__(self, frequency, incident_field_func, obstacle_stiffness = 25):
+    def __init__(self, frequency, incident_field_func):
         self.frequency = frequency
         self.k_background = 2* np.pi * frequency / LIGHT_SPEED
         self.set_incident_field(incident_field_func)
-        self.obstacle_stiffness = obstacle_stiffness
 
     def set_incident_field(self, incident_field_func):
         # Any incident field function that works has to take in 2 arguments: x and k_background
@@ -178,9 +177,11 @@ def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, projection
     bottom_wall_marker = initial_guess_mesh_util.markers_dict["bottom_wall"]
     obstacle_opt_marker = initial_guess_mesh_util.markers_dict["obstacle_opt"]
 
+    obstacle_stiffness = initial_guess_mesh_util.obstacle_stiffness
+
     # Transfer h → volume and deform the copy since we want to preserve always the original
     h_vol = transfer_from_boundary(h_control, mesh)
-    s = mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker, inc_wave_setup.obstacle_stiffness)
+    s = mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker, obstacle_stiffness)
     ALE.move(mesh, s)
 
     V = FunctionSpace(mesh, "CG", 5)

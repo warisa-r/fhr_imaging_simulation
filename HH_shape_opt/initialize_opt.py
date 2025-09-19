@@ -22,18 +22,19 @@ def msh2xdmf_path(msh_file_path):
     return xdmf_path, facet_xdmf_path
 
 class MeshUtil():
-    def __init__(self, msh_file_path, markers_dict):
+    def __init__(self, msh_file_path, markers_dict, obstacle_stiffness):
         self.msh_file_path = msh_file_path
         self.mesh_xdmf_file_path, self.mesh_facets_xdmf_file_path = msh2xdmf_path(msh_file_path)
 
         # Check if XDMF files exist, if not, generate them
         if not (os.path.exists(self.mesh_xdmf_file_path) and os.path.exists(self.mesh_facets_xdmf_file_path)):
-            from mesh_generation import convert_msh_to_xdmf
             convert_msh_to_xdmf(msh_file_path)
 
         self.mesh = None
         self.boundary_markers = None
         self.markers_dict = markers_dict
+        self.obstacle_stiffness = obstacle_stiffness
+
     def get_mesh_and_markers(self):
         # Or we can regenerate every time?
         if self.mesh == None or self.boundary_markers == None:
