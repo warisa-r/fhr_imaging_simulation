@@ -42,4 +42,4 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
             custom-image:latest \
-            bash -c "mkdir -p /tmp/run && cp -r /workspace/* /tmp/run/ && cd /tmp/run && python3 opt_DG0/opt_script.py"
+            bash -c "mkdir -p /tmp/run && cp -r /workspace/* /tmp/run/ && cd /tmp/run && mpirun -n 2 python3 opt_DG0/opt_script.py"
