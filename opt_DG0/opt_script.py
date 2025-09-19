@@ -32,10 +32,12 @@ markers_dict = {
     "bottom_wall": bottom_wall_marker,
     "obstacle_opt": obstacle_opt_marker
 }
+obstacle_stiffness = 25
 
-initial_guess_mesh_util = MeshUtil(msh_file_path, markers_dict)
+initial_guess_mesh_util = MeshUtil(msh_file_path, markers_dict, obstacle_stiffness)
 mesh, _ = initial_guess_mesh_util.get_mesh_and_markers()
 
+##### Initialization #####
 # Create boundary mesh and design variables
 b_mesh = BoundaryMesh(mesh, "exterior")
 S_b = VectorFunctionSpace(b_mesh, "CG", 1)
@@ -47,6 +49,7 @@ S = VectorFunctionSpace(mesh, "CG", 1)
 s = Function(S, name="Mesh perturbation field")
 h_V = transfer_from_boundary(h, mesh)
 h_V.rename("Volume extension of h", "")
+##########################
 
 # Solve the forward problem
 u_tot_mag_dg0, ds_bottom, V_DG0 = forward_solve(h, inc_wave_setup, initial_guess_mesh_util)
@@ -63,7 +66,7 @@ h_moola = moola.DolfinPrimalVector(h)
 
 solver = moola.BFGS(problem, h_moola,
     options={
-        "maxiter": 30,
+        "maxiter": 2,
         "gtol": 1e-7,
     })
 
@@ -76,7 +79,7 @@ goal_geometry_msh_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
 save_optimization_result(
     sol,
     msh_file_path,
-    inc_wave_setup.obstacle_stiffness,
+    obstacle_stiffness,
     result_file = result_path,
     use_scipy = False
 )
@@ -90,7 +93,7 @@ plot_mesh_deformation_from_result(
     bottom_wall_marker,
     obstacle_opt_marker,
     plot_file_name="outputs/mesh_deformation_sin_1.0_DG0_restricted_matlab.png",
-    obstacle_stiffness = inc_wave_setup.obstacle_stiffness,
+    obstacle_stiffness = obstacle_stiffness,
 )
 
 # Print optimization summary
