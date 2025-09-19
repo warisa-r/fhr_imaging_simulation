@@ -37,16 +37,16 @@ jobs:
           # Remove the installer container (if still present)
           docker rm -f installer || true
 
+      - name: Run basic test (MPI)
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            custom-image:latest \
+            bash -c "mkdir -p /tmp/run && cp -r /workspace/* /tmp/run/ && cd /tmp/run && mpirun -np 4 python3 pytest -v test"
+
       - name: Run basic test (serial)
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
             custom-image:latest \
             bash -c "mkdir -p /tmp/run && cp -r /workspace/* /tmp/run/ && cd /tmp/run && pytest -v test"
-
-      - name: Run basic test (MPI)
-        run: |
-          docker run --rm \
-            -v ${{ github.workspace }}:/workspace \
-            custom-image:latest \
-            bash -c "mkdir -p /tmp/run && cp -r /workspace/* /tmp/run/ && cd /tmp/run && mpirun --allow-run-as-root -np 2 pytest -v test"
