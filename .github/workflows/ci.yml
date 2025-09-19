@@ -37,50 +37,16 @@ jobs:
           # Remove the installer container (if still present)
           docker rm -f installer || true
 
-      - name: Run Python script inside custom container
+      - name: Run basic test (serial)
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
             custom-image:latest \
-            bash -c "mkdir -p /tmp/run && cp -r /workspace/* /tmp/run/ && cd /tmp/run && pytest test"
+            bash -c "mkdir -p /tmp/run && cp -r /workspace/* /tmp/run/ && cd /tmp/run && pytest -v test"
 
-  test-conda:
-    name: Test with Conda
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -l {0}
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Install OpenMPI
+      - name: Run basic test (MPI)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y openmpi-bin libopenmpi-dev
-
-      - name: Set up Conda
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          auto-update-conda: true
-          python-version: 3.10
-          channels: conda-forge
-          activate-environment: dolfin_adj_fixed
-          environment-file: ""
-          miniforge-variant: Mambaforge
-          mamba-version: "*"
-
-      - name: Create Conda environment
-        run: |
-          conda install -n dolfin_adj_fixed -c conda-forge python=3.10 dolfin-adjoint mpi4py pytest pip -y
-          conda activate dolfin_adj_fixed
-          conda info
-          conda list
-
-      - name: Install local package
-        run: |
-          pip install .
-
-      - name: Run pytest serial
-        run: |
-          pytest -v test
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            custom-image:latest \
+            bash -c "mkdir -p /tmp/run && cp -r /workspace/* /tmp/run/ && cd /tmp/run && mpirun --allow-run-as-root -np 2 pytest -v test
