@@ -42,7 +42,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
             custom-image:latest \
-            bash -c "mkdir -p /tmp/run && cp -r /workspace/* /tmp/run/ && cd /tmp/run && mpirun -np 4 python3 pytest -v test"
+            bash -c "mkdir -p /tmp/run && cp -r /workspace/* /tmp/run/ && cd /tmp/run && mpirun -np 4 pytest -v test"
 
       - name: Run basic test (serial)
         run: |
