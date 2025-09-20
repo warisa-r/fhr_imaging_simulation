@@ -11,7 +11,11 @@ from HH_shape_opt.mesh_generation import obstacle_marker, side_wall_marker, bott
 BASE_DIR = os.path.dirname(__file__)
 
 
-def test_basic_runs_two_iterations_and_zero_residual():
+def test_opt_runs_two_iterations_and_zero_residual():
+    """
+    Test that optimization with only one movable bottom edge of the obstacle works
+    """
+
     # ensure test runs from opt_DG0 so relative paths match the script
     repo_root = os.path.dirname(os.path.dirname(__file__))
     opt_dir = os.path.join(repo_root, "opt_DG0")
@@ -22,16 +26,14 @@ def test_basic_runs_two_iterations_and_zero_residual():
     inc_wave_setup = IncidentWaveSetup(frequency, plane_wave)
 
     measurement_data_file_path = os.path.join(
-        BASE_DIR, "measurements", "matlab_measurements_sin0.5.csv")
+        BASE_DIR, "measurements", "matlab_measurements_sin1.csv")
     msh_file_path = os.path.join(
-        BASE_DIR, "meshes", "square_with_rect_obstacle.msh")
-
-    # Optimize all edges of obstacle
+        BASE_DIR, "meshes", "square_with_rect_obstacle_opt.msh")
     markers_dict = {
         "obstacle": obstacle_marker,
         "side_wall": side_wall_marker,
         "bottom_wall": bottom_wall_marker,
-        "obstacle_opt": None
+        "obstacle_opt": obstacle_opt_marker
     }
     obstacle_stiffness = 25
 
@@ -61,4 +63,4 @@ def test_basic_runs_two_iterations_and_zero_residual():
     solver = moola.BFGS(problem, h_moola, options={"maxiter": 2, "gtol": 1e-7})
     sol = solver.solve()
 
-    assert abs(sol['objective'] - 0.01036023534154777) < 1e-12
+    assert abs(sol['objective'] - 0.027169734053930056) < 1e-12

@@ -10,6 +10,7 @@ obstacle_marker = 3
 obstacle_opt_marker = 4
 domain_marker = 5
 
+
 def plot_mesh(filename, ax, title=""):
     mesh = meshio.read(filename)
     points = mesh.points[:, :2]
@@ -27,8 +28,9 @@ def plot_mesh(filename, ax, title=""):
     ax.set_xlabel("x")
     ax.set_ylabel("y")
 
+
 def convert_msh_to_xdmf(msh_file_path):
-    
+
     # Define output paths based on the input .msh file
     base_path, _ = os.path.splitext(msh_file_path)
     xdmf_path = f"{base_path}.xdmf"
@@ -43,7 +45,8 @@ def convert_msh_to_xdmf(msh_file_path):
 
     # Create and write the domain mesh (triangles) using 2D points
     triangle_cells = msh.get_cells_type("triangle")
-    domain_mesh = meshio.Mesh(points=points_2d, cells=[("triangle", triangle_cells)])
+    domain_mesh = meshio.Mesh(points=points_2d, cells=[
+                              ("triangle", triangle_cells)])
     domain_mesh.write(xdmf_path)
     print(f"[INFO] Wrote domain mesh to {xdmf_path}")
 
@@ -57,16 +60,16 @@ def convert_msh_to_xdmf(msh_file_path):
     )
     facet_mesh.write(facet_xdmf_path)
     print(f"[INFO] Wrote facet markers to {facet_xdmf_path}")
-    
+
     return xdmf_path, facet_xdmf_path
+
 
 def generate_square_with_rect_obstacle_mesh(
     width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=0.05,
     output_name="square_with_rect_obstacle",
     n_points_bottom=100, n_points_rect_bottom=40,
-    use_opt_marker = False
+    use_opt_marker=False
 ):
-    
 
     gmsh.initialize()
     gmsh.clear()
@@ -75,7 +78,7 @@ def generate_square_with_rect_obstacle_mesh(
     # Outer square points
     p1 = gmsh.model.geo.addPoint(0, 0, 0, mesh_size)         # Bottom-left
     p2 = gmsh.model.geo.addPoint(width, 0, 0, mesh_size)     # Bottom-right
-    p3 = gmsh.model.geo.addPoint(width, height, 0, mesh_size)# Top-right
+    p3 = gmsh.model.geo.addPoint(width, height, 0, mesh_size)  # Top-right
     p4 = gmsh.model.geo.addPoint(0, height, 0, mesh_size)    # Top-left
 
     # Outer square lines
@@ -120,15 +123,19 @@ def generate_square_with_rect_obstacle_mesh(
 
     # Physical groups
     gmsh.model.addPhysicalGroup(1, [l1], bottom_wall_marker, "bottom_wall")
-    gmsh.model.addPhysicalGroup(1, [l2, l3, l4], side_wall_marker, "outer_walls")
+    gmsh.model.addPhysicalGroup(
+        1, [l2, l3, l4], side_wall_marker, "outer_walls")
     if use_opt_marker:
         # Mark the bottom of the obstacle separately for optimization
-        gmsh.model.addPhysicalGroup(1, [rl1], obstacle_opt_marker, "obstacle_opt_boundary")
+        gmsh.model.addPhysicalGroup(
+            1, [rl1], obstacle_opt_marker, "obstacle_opt_boundary")
         # Mark the rest of the obstacle
-        gmsh.model.addPhysicalGroup(1, [rl2, rl3, rl4], obstacle_marker, "rect_obstacle_boundary")
+        gmsh.model.addPhysicalGroup(
+            1, [rl2, rl3, rl4], obstacle_marker, "rect_obstacle_boundary")
     else:
         # Mark the entire obstacle with one marker
-        gmsh.model.addPhysicalGroup(1, rect_lines, obstacle_marker, "rect_obstacle_boundary")
+        gmsh.model.addPhysicalGroup(
+            1, rect_lines, obstacle_marker, "rect_obstacle_boundary")
     gmsh.model.addPhysicalGroup(2, [surface], domain_marker, "domain")
 
     # Generate mesh
@@ -137,6 +144,7 @@ def generate_square_with_rect_obstacle_mesh(
     gmsh.write(f"{output_name}.msh")
     gmsh.finalize()
     return f"{output_name}.msh"
+
 
 def generate_square_with_cos_perturbed_rect_obstacle_mesh(
     width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=0.05,
@@ -188,7 +196,8 @@ def generate_square_with_cos_perturbed_rect_obstacle_mesh(
     rect_lines = []
     # Bottom (perturbed)
     for i in range(n_points_rect_bottom - 1):
-        rect_lines.append(gmsh.model.geo.addLine(rect_bottom_points[i], rect_bottom_points[i+1]))
+        rect_lines.append(gmsh.model.geo.addLine(
+            rect_bottom_points[i], rect_bottom_points[i+1]))
     # Right
     rect_lines.append(gmsh.model.geo.addLine(rect_bottom_points[-1], rp3))
     rect_lines.append(gmsh.model.geo.addLine(rp3, rp4))
@@ -206,8 +215,10 @@ def generate_square_with_cos_perturbed_rect_obstacle_mesh(
 
     # Physical groups
     gmsh.model.addPhysicalGroup(1, [l1], bottom_wall_marker, "bottom_wall")
-    gmsh.model.addPhysicalGroup(1, [l2, l3, l4], side_wall_marker, "outer_walls")
-    gmsh.model.addPhysicalGroup(1, rect_lines, obstacle_marker, "perturbed_rect_obstacle_boundary")
+    gmsh.model.addPhysicalGroup(
+        1, [l2, l3, l4], side_wall_marker, "outer_walls")
+    gmsh.model.addPhysicalGroup(
+        1, rect_lines, obstacle_marker, "perturbed_rect_obstacle_boundary")
     gmsh.model.addPhysicalGroup(2, [surface], domain_marker, "domain")
 
     # Generate mesh
@@ -216,6 +227,7 @@ def generate_square_with_cos_perturbed_rect_obstacle_mesh(
     gmsh.write(f"{output_name}.msh")
     gmsh.finalize()
     return f"{output_name}.msh"
+
 
 def generate_square_with_sin_perturbed_rect_obstacle_mesh(
     width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=0.05,
@@ -267,7 +279,8 @@ def generate_square_with_sin_perturbed_rect_obstacle_mesh(
     rect_lines = []
     # Bottom (perturbed)
     for i in range(n_points_rect_bottom - 1):
-        rect_lines.append(gmsh.model.geo.addLine(rect_bottom_points[i], rect_bottom_points[i+1]))
+        rect_lines.append(gmsh.model.geo.addLine(
+            rect_bottom_points[i], rect_bottom_points[i+1]))
     # Right
     rect_lines.append(gmsh.model.geo.addLine(rect_bottom_points[-1], rp3))
     rect_lines.append(gmsh.model.geo.addLine(rp3, rp4))
@@ -285,8 +298,10 @@ def generate_square_with_sin_perturbed_rect_obstacle_mesh(
 
     # Physical groups
     gmsh.model.addPhysicalGroup(1, [l1], bottom_wall_marker, "bottom_wall")
-    gmsh.model.addPhysicalGroup(1, [l2, l3, l4], side_wall_marker, "outer_walls")
-    gmsh.model.addPhysicalGroup(1, rect_lines, obstacle_marker, "perturbed_rect_obstacle_boundary")
+    gmsh.model.addPhysicalGroup(
+        1, [l2, l3, l4], side_wall_marker, "outer_walls")
+    gmsh.model.addPhysicalGroup(
+        1, rect_lines, obstacle_marker, "perturbed_rect_obstacle_boundary")
     gmsh.model.addPhysicalGroup(2, [surface], domain_marker, "domain")
 
     # Generate mesh
@@ -296,16 +311,17 @@ def generate_square_with_sin_perturbed_rect_obstacle_mesh(
     gmsh.finalize()
     return f"{output_name}.msh"
 
+
 if __name__ == "__main__":
     print("Generating square with hole mesh...")
 
     c = 299792458
-    freq_max = 5e9 # 5GHz
-    
+    freq_max = 5e9  # 5GHz
+
     # Parameters
     wavelength = c / freq_max  # Physical wavelength
     mesh_size = wavelength / 5
-    
+
     """
     mesh_file = generate_square_with_cos_perturbed_rect_obstacle_mesh(
         width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=mesh_size,
@@ -315,15 +331,12 @@ if __name__ == "__main__":
     )
     """
 
-    
     mesh_file = generate_square_with_sin_perturbed_rect_obstacle_mesh(
         width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=mesh_size,
         output_name="meshes/square_with_sin_perturbed_rect_obstacle",
         n_points_bottom=100, n_points_rect_bottom=100,
         perturb_amplitude=0.01, perturb_frequency=1.0
     )
-    
-    
 
     """
     mesh_file =  generate_square_with_rect_obstacle_mesh(
@@ -333,7 +346,5 @@ if __name__ == "__main__":
     use_opt_marker = True
     )
     """
-
-    
 
     convert_msh_to_xdmf(mesh_file)

@@ -111,7 +111,8 @@ def create_stokes_mesh(res):
             if len(line_data) == 0:
                 line_data = msh.cell_data_dict["gmsh:physical"][key]
             else:
-                line_data = np.vstack([line_data, msh.cell_data_dict["gmsh:physical"][key]])
+                line_data = np.vstack(
+                    [line_data, msh.cell_data_dict["gmsh:physical"][key]])
         elif key == "triangle":
             triangle_data = msh.cell_data_dict["gmsh:physical"][key]
 

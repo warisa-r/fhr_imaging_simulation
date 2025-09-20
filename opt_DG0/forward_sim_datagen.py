@@ -10,22 +10,31 @@ import matplotlib.pyplot as plt
 
 from HH_shape_opt.mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
 
-k_background = 2* np.pi * 5e9 / 299792458 # 2pi f / c
+k_background = 2 * np.pi * 5e9 / 299792458  # 2pi f / c
 
 incident_wave_amp = 1
 # Define Incident-based incident field (real part)
+
+
 class IncidentReal(UserExpression):
     def eval(self, values, x):
-        values[0] = np.real(incident_wave_amp * np.exp(1j * k_background * x[1]))
+        values[0] = np.real(incident_wave_amp *
+                            np.exp(1j * k_background * x[1]))
+
     def value_shape(self):
         return ()
 
 # Define Incident-based incident field (imaginary part)
+
+
 class IncidentImag(UserExpression):
     def eval(self, values, x):
-        values[0] = np.imag(incident_wave_amp * np.exp(1j * k_background * x[1]))
+        values[0] = np.imag(incident_wave_amp *
+                            np.exp(1j * k_background * x[1]))
+
     def value_shape(self):
         return ()
+
 
 mesh = Mesh()
 # meshes/square_with_sin_perturbed_rect_obstacle.xdmf
@@ -47,9 +56,12 @@ u_inc_im = project(IncidentImag(degree=2), V)
 # Define the outward unit normal vector
 n = FacetNormal(mesh)
 
-ds_bottom = Measure("ds", domain=mesh, subdomain_data=boundary_markers, subdomain_id=bottom_wall_marker)
-ds_sides = Measure("ds", domain=mesh, subdomain_data=boundary_markers, subdomain_id=side_wall_marker)
-ds_obstacle = Measure("ds", domain=mesh, subdomain_data=boundary_markers, subdomain_id=obstacle_marker)
+ds_bottom = Measure("ds", domain=mesh, subdomain_data=boundary_markers,
+                    subdomain_id=bottom_wall_marker)
+ds_sides = Measure("ds", domain=mesh,
+                   subdomain_data=boundary_markers, subdomain_id=side_wall_marker)
+ds_obstacle = Measure(
+    "ds", domain=mesh, subdomain_data=boundary_markers, subdomain_id=obstacle_marker)
 
 ds_outer = ds_bottom + ds_sides
 
@@ -60,7 +72,8 @@ W = FunctionSpace(mesh, V_element * V_element)
 
 # Coupled bilinear form
 a = (inner(grad(u_re), grad(v_re)) - k_background**2 * u_re * v_re) * dx + k_background * u_im * v_re * ds_outer + \
-    (inner(grad(u_im), grad(v_im)) - k_background**2 * u_im * v_im) * dx - k_background * u_re * v_im * ds_outer
+    (inner(grad(u_im), grad(v_im)) - k_background**2 * u_im * v_im) * \
+    dx - k_background * u_re * v_im * ds_outer
 
 # Homogeneous RHS
 L = Constant(0.0) * (v_re + v_im) * dx
@@ -71,8 +84,10 @@ u_inc_im_neg = Function(V)
 u_inc_re_neg.vector()[:] = -u_inc_re.vector()[:]
 u_inc_im_neg.vector()[:] = -u_inc_im.vector()[:]
 
-bc_circle_re = DirichletBC(W.sub(0), u_inc_re_neg, boundary_markers, obstacle_marker)
-bc_circle_im = DirichletBC(W.sub(1), u_inc_im_neg, boundary_markers, obstacle_marker)
+bc_circle_re = DirichletBC(W.sub(0), u_inc_re_neg,
+                           boundary_markers, obstacle_marker)
+bc_circle_im = DirichletBC(W.sub(1), u_inc_im_neg,
+                           boundary_markers, obstacle_marker)
 bcs = [bc_circle_re, bc_circle_im]
 
 # Solve the coupled system
@@ -92,7 +107,8 @@ u_tot_im.vector()[:] = u_inc_im.vector()[:] + u_sol_im_proj.vector()[:]
 
 # Calculate magnitude of total field
 u_tot_mag = Function(V)
-u_tot_mag.vector()[:] = np.sqrt(u_tot_re.vector().get_local()**2 + u_tot_im.vector().get_local()**2)
+u_tot_mag.vector()[:] = np.sqrt(u_tot_re.vector().get_local()
+                                ** 2 + u_tot_im.vector().get_local()**2)
 
 ### Save the data ###
 projection_degree = 0

@@ -12,7 +12,8 @@ df_dolfin = df_dolfin.sort_values(by='x_rounded')
 df_matlab['x_rounded'] = df_matlab['x'].round(10)
 
 # Merge on rounded x values
-df_merged = pd.merge(df_dolfin, df_matlab, on="x_rounded", suffixes=('_dolfin', '_matlab'))
+df_merged = pd.merge(df_dolfin, df_matlab, on="x_rounded",
+                     suffixes=('_dolfin', '_matlab'))
 
 print(f"Dolfin data points: {len(df_dolfin)}")
 print(f"Matlab data points: {len(df_matlab)}")
@@ -29,13 +30,16 @@ if len(df_merged) > 0:
 # Plot u vs x for both datasets
 plt.figure(figsize=(10, 8))
 
-plt.plot(df_dolfin["x"].to_numpy(), df_dolfin["u"].to_numpy(), label="Dolfin", marker='o', markersize=2, linestyle='-', alpha=0.7)
-plt.plot(df_matlab["x"].to_numpy(), df_matlab["u"].to_numpy(), label="Matlab", marker='x', markersize=2, linestyle='--', alpha=0.7)
+plt.plot(df_dolfin["x"].to_numpy(), df_dolfin["u"].to_numpy(
+), label="Dolfin", marker='o', markersize=2, linestyle='-', alpha=0.7)
+plt.plot(df_matlab["x"].to_numpy(), df_matlab["u"].to_numpy(
+), label="Matlab", marker='x', markersize=2, linestyle='--', alpha=0.7)
 plt.xlabel("x")
 plt.ylabel("u")
 plt.title("Comparison of Dolfin and Matlab results")
 plt.legend()
 plt.grid(True, alpha=0.3)
 
-plt.savefig("outputs/difference_dolfin_matlab_sin_1.0.png", dpi=300, bbox_inches='tight')
+plt.savefig("outputs/difference_dolfin_matlab_sin_1.0.png",
+            dpi=300, bbox_inches='tight')
 plt.show()

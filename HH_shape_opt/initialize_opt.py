@@ -9,11 +9,14 @@ from .mesh_generation import convert_msh_to_xdmf
 
 # To get the path of an xml file and its facet region file from msh assuming that
 # dolfin-convert has been called
+
+
 def msh2xml_path(msh_file_path):
     xml_path = msh_file_path.replace('.msh', '.xml')
     base, ext = os.path.splitext(xml_path)
     facet_region_xml_path = f"{base}_facet_region{ext}"
     return xml_path, facet_region_xml_path
+
 
 def msh2xdmf_path(msh_file_path):
     base_path = os.path.splitext(msh_file_path)[0]
@@ -21,10 +24,12 @@ def msh2xdmf_path(msh_file_path):
     facet_xdmf_path = base_path + "_facets.xdmf"
     return xdmf_path, facet_xdmf_path
 
+
 class MeshUtil():
     def __init__(self, msh_file_path, markers_dict, obstacle_stiffness):
         self.msh_file_path = msh_file_path
-        self.mesh_xdmf_file_path, self.mesh_facets_xdmf_file_path = msh2xdmf_path(msh_file_path)
+        self.mesh_xdmf_file_path, self.mesh_facets_xdmf_file_path = msh2xdmf_path(
+            msh_file_path)
 
         # Check if XDMF files exist, if not, generate them
         if not (os.path.exists(self.mesh_xdmf_file_path) and os.path.exists(self.mesh_facets_xdmf_file_path)):
@@ -44,9 +49,11 @@ class MeshUtil():
             mvc = MeshValueCollection("size_t", self.mesh, 1)
             with XDMFFile(self.mesh_facets_xdmf_file_path) as infile:
                 infile.read(mvc, "name_to_read")
-                self.boundary_markers = cpp.mesh.MeshFunctionSizet(self.mesh, mvc)
+                self.boundary_markers = cpp.mesh.MeshFunctionSizet(
+                    self.mesh, mvc)
 
         return self.mesh, self.boundary_markers
+
 
 def initialize_opt_xdmf(msh_file_path):
     comm = MPI.comm_world
@@ -61,7 +68,8 @@ def initialize_opt_xdmf(msh_file_path):
 
         # Create and write the domain mesh (triangles)
         triangle_cells = msh.get_cells_type("triangle")
-        domain_mesh = meshio.Mesh(points=points_2d, cells=[("triangle", triangle_cells)])
+        domain_mesh = meshio.Mesh(points=points_2d, cells=[
+                                  ("triangle", triangle_cells)])
         domain_mesh.write(xdmf_path)
 
         # Create and write the facet mesh (lines)
@@ -73,7 +81,7 @@ def initialize_opt_xdmf(msh_file_path):
             cell_data={"name_to_read": [line_data]}
         )
         facet_mesh.write(facet_xdmf_path)
-    
+
     # All processes wait here until the file conversion is done
     comm.barrier()
 
@@ -81,7 +89,7 @@ def initialize_opt_xdmf(msh_file_path):
     mesh = Mesh()
     with XDMFFile(xdmf_path) as infile:
         infile.read(mesh)
-    
+
     mvc = MeshValueCollection("size_t", mesh, mesh.topology().dim() - 1)
     with XDMFFile(facet_xdmf_path) as infile:
         infile.read(mvc, "name_to_read")

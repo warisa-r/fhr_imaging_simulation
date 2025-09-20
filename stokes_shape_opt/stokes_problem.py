@@ -98,6 +98,7 @@ set_log_level(LogLevel.ERROR)
 # Next, we load the facet marker values used in the mesh, as well as some
 # geometrical quantities mesh-generator file.
 
+
 def mesh_deformation(h):
     # Compute variable μ
     V = FunctionSpace(mesh, "CG", 1)
@@ -114,7 +115,7 @@ def mesh_deformation(h):
     bcs.append(DirichletBC(V, mu_max, mf, obstacle_marker))
 
     mu = Function(V, name="mesh deformation mu")
-    
+
     # Use LinearVariationalProblem instead of solve(a == L, ...)
     problem = LinearVariationalProblem(a, L, mu, bcs)
     solver = LinearVariationalSolver(problem)
@@ -139,16 +140,17 @@ def mesh_deformation(h):
         bcs.append(DirichletBC(S, zero, mf, marker))
 
     s = Function(S, name="mesh deformation")
-    
+
     # Use LinearVariationalProblem instead of solve(a == L, ...)
     problem = LinearVariationalProblem(a, L, s, bcs)
     solver = LinearVariationalSolver(problem)
     solver.solve()
-    
+
     return s
 
 # The initial (unperturbed) mesh and corresponding facet function from their respective
 # xdmf-files.
+
 
 mesh = Mesh()
 with XDMFFile("mesh.xdmf") as infile:
@@ -183,8 +185,6 @@ h_V = transfer_from_boundary(h, mesh)
 h_V.rename("Volume extension of h", "")
 
 # We can now transfer our mesh according to :eq:`deformation`.
-
-
 
 
 # We compute the mesh deformation with the volume extension of the control
@@ -261,7 +261,8 @@ J += beta * ((Bc1 - c_x)**2 + (Bc2 - c_y)**2)
 # We define the reduced functional, where :math:`h` is the design parameter# and use scipy to minimize the objective.
 
 Jhat = ReducedFunctional(J, Control(h))
-s_opt = minimize(Jhat, tol=1e-6, options={"gtol": 1e-6, "maxiter": 50, "disp": True})
+s_opt = minimize(
+    Jhat, tol=1e-6, options={"gtol": 1e-6, "maxiter": 50, "disp": True})
 
 # We evaluate the functional with the optimal solution and plot
 # the initial and final mesh
@@ -285,9 +286,9 @@ plt.savefig("meshes.png", dpi=800, bbox_inches="tight", pad_inches=0)
 perturbation = interpolate(Expression(("-A*x[0]", "A*x[1]"),
                                       A=5000, degree=2), S_b)
 results = taylor_to_dict(Jhat, Function(S_b), perturbation)
-assert(min(results["R0"]["Rate"]) > 0.9)
-assert(min(results["R1"]["Rate"]) > 1.95)
-assert(min(results["R2"]["Rate"]) > 2.95)
+assert (min(results["R0"]["Rate"]) > 0.9)
+assert (min(results["R1"]["Rate"]) > 1.95)
+assert (min(results["R2"]["Rate"]) > 2.95)
 
 # .. bibliography:: /documentation/stokes-shape-opt/stokes-shape-opt.bib
 #    :cited:
