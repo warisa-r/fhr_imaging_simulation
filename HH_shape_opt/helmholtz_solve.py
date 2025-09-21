@@ -128,6 +128,7 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
 def load_forward_simulation_data_bottomwall(measurement_data_file_path, V_ref, projection_degree=0):
     df = pd.read_csv(measurement_data_file_path)
     points = df[["x", "y"]].values
+    num_data_points = len(points)
     values = df["u"].values
 
     # Set up the assignment
@@ -178,12 +179,12 @@ def load_forward_simulation_data_bottomwall(measurement_data_file_path, V_ref, p
     u_ref.vector().set_local(u_vec)
     u_ref.vector().apply("insert")
 
-    return u_ref
+    return u_ref, num_data_points
 
 
 def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, projection_degree=0):
     # Get mesh and markers from the MeshUtil object
-    mesh, markers = initial_guess_mesh_util.get_mesh_and_markers()
+    mesh, markers = initial_guess_mesh_util.get_mesh_and_markers(True)
 
     # Extract the number of the marker of each object in the simulation
     obstacle_marker = initial_guess_mesh_util.markers_dict["obstacle"]
@@ -233,10 +234,8 @@ def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, projection
     L = Constant(0.0)*(v_re + v_im)*dx
 
     # Dirichlet BCs on the obstacle u_s = - u_in on the reflective surface
-    uinc_re_neg = Function(V)
-    uinc_re_neg.vector()[:] = -u_inc_re.vector()[:]
-    uinc_im_neg = Function(V)
-    uinc_im_neg.vector()[:] = -u_inc_im.vector()[:]
+    uinc_re_neg = project(-inc_wave_setup.u_inc_re, V) # VERY IMPORTANT CHANGE
+    uinc_im_neg = project(-inc_wave_setup.u_inc_im, V) #VERY IMPORTANT CHANGE
 
     bcs = [
         DirichletBC(W.sub(0), uinc_re_neg, markers, obstacle_marker),
@@ -271,7 +270,11 @@ def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, projection
 
     u_tot_mag_projected = project(u_tot_mag, V_projection)
 
+    # For phase error calculation
+    u_tot_re_projected = project(u_tot_re, V_projection)
+    u_tot_im_projected = project(u_tot_im, V_projection)
+
     ds_bottom = Measure("ds", domain=mesh, subdomain_data=markers,
                         subdomain_id=bottom_wall_marker)
 
-    return u_tot_mag_projected, ds_bottom, V_projection
+    return u_tot_mag_projected, u_tot_re_projected, u_tot_im_projected, ds_bottom, V_projection

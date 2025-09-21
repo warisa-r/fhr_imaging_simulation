@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Load data
-df_dolfin = pd.read_csv("forward_sim_data_bottom.csv")
-df_matlab = pd.read_csv("matlab_measurements.csv")
+df_dolfin = pd.read_csv("forward_sim_data_opt_bottom.csv")
+df_matlab = pd.read_csv("measurements/matlab_measurements_sin0.5.csv")
 
 # Check data alignment. Round x values to avoid floating point precision issues
 df_dolfin['x_rounded'] = df_dolfin['x'].round(10)
@@ -39,6 +39,13 @@ plt.ylabel("u")
 plt.title("Comparison of Dolfin and Matlab results")
 plt.legend()
 plt.grid(True, alpha=0.3)
+
+if len(df_merged) > 0:
+    differences = df_merged["u_dolfin"] - df_merged["u_matlab"]
+    print(differences)
+    sum_squared_diff = np.sum(differences ** 2)
+    print(f"Sum of squared magnitude differences: {sum_squared_diff:.6f}")
+
 
 plt.savefig("outputs/difference_dolfin_matlab_sin_1.0.png",
             dpi=300, bbox_inches='tight')

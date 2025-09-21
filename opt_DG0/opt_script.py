@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 from HH_shape_opt.mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker
 from HH_shape_opt.initialize_opt import MeshUtil
 from HH_shape_opt.helmholtz_solve import forward_solve, load_forward_simulation_data_bottomwall, IncidentWaveSetup, plane_wave
-from HH_shape_opt.process_result import save_optimization_result
-from HH_shape_opt.visualize import plot_mesh_deformation_from_result
+from HH_shape_opt.process_result import save_optimization_result, calculate_magnitude_and_phase_error
+from HH_shape_opt.visualize import plot_mesh_deformation_from_result, plot_projected_errors
 
 # Ensure this can be run from root dir
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -54,11 +54,11 @@ h_V.rename("Volume extension of h", "")
 ##########################
 
 # Solve the forward problem
-u_tot_mag_dg0, ds_bottom, V_DG0 = forward_solve(
+u_tot_mag_dg0, u_tot_re_projected, u_tot_im_projected, ds_bottom, V_DG0 = forward_solve(
     h, inc_wave_setup, initial_guess_mesh_util)
 
 # Load the reference data in the same function space as the projected result of the forward solve
-u_ref_dg0 = load_forward_simulation_data_bottomwall(
+u_ref_dg0, _ = load_forward_simulation_data_bottomwall(
     measurement_data_file_path, V_DG0)
 
 J = assemble(
@@ -83,8 +83,6 @@ goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh
 
 save_optimization_result(
     sol,
-    msh_file_path,
-    obstacle_stiffness,
     result_file=result_path,
     use_scipy=False
 )
@@ -95,6 +93,12 @@ plot_mesh_deformation_from_result(
     initial_guess_mesh_util,
     plot_file_name="outputs/mesh_deformation_sin_0.5_DG0_matlab.png",
 )
+
+matlab_fullfield_csv_path = "measurements/matlab_measurements_sin0.5.csv"
+results = calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, result_path,
+                                        initial_guess_mesh_util, inc_wave_setup)
+
+plot_projected_errors(results, "error_sin0.5_DG0_matlab.png")
 
 # Print optimization summary
 print("\n=== Optimization Summary ===")

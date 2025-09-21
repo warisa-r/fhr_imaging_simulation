@@ -47,7 +47,7 @@ def test_basic_runs_two_iterations_and_zero_residual():
     h.vector().apply("insert")
 
     # forward solve + build objective
-    u_tot_mag_dg0, ds_bottom, V_DG0 = forward_solve(
+    u_tot_mag_dg0, _, _ ds_bottom, V_DG0 = forward_solve(
         h, inc_wave_setup, initial_guess_mesh_util)
     u_ref_dg0 = load_forward_simulation_data_bottomwall(
         measurement_data_file_path, V_DG0)
