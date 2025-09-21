@@ -178,13 +178,13 @@ def plot_projected_errors(results, error_plot_file, show=False, projection_degre
 
         plt.tight_layout()
 
-        os.makedirs(os.path.dirname(error_plot_file), exist_ok=True)
         plt.savefig(error_plot_file, dpi=200, bbox_inches="tight")
         if show:
             plt.show()
         plt.close(fig)
 
-        print(f"Sum of magnitude error square: {np.sum(mag_err ** 2)}")
+        # TODO: Make this a test
+        print(f"Sum of magnitude error square: {np.sum(mag_err ** 2)}") # If divided by 1/num points-1 i think u can recover the residual
         print(f"Projected error plots saved to {error_plot_file}")
 
 

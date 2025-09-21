@@ -71,8 +71,7 @@ h_moola = moola.DolfinPrimalVector(h)
 
 solver = moola.BFGS(problem, h_moola,
                     options={
-                        "maxiter": 10,
-                        "gtol": 1e-7,
+                        "maxiter": 5
                     })
 
 sol = solver.solve()
@@ -94,11 +93,11 @@ plot_mesh_deformation_from_result(
     plot_file_name="outputs/mesh_deformation_sin_0.5_DG0_matlab.png",
 )
 
-matlab_fullfield_csv_path = "measurements/matlab_measurements_sin0.5.csv"
+matlab_fullfield_csv_path = "measurements/matlab_fullfield_sin0.5.csv"
 results = calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, result_path,
                                         initial_guess_mesh_util, inc_wave_setup)
 
-plot_projected_errors(results, "error_sin0.5_DG0_matlab.png")
+plot_projected_errors(results, "outputs/error_sin0.5_DG0_matlab.png")
 
 # Print optimization summary
 print("\n=== Optimization Summary ===")
