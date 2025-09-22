@@ -93,8 +93,8 @@ def plot_mesh_deformation_from_result(
     if subplot_titles is None:
         subplot_titles = [
             "Original mesh",
-            "Reference/perturbed mesh",
-            "Mesh resulted from the optimization"
+            "Reference/perturbed mesh of amplitude 2cm",
+            ""
         ]
 
     msh_file_path = initial_guess_mesh_util.msh_file_path

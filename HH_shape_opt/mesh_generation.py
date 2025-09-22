@@ -331,12 +331,14 @@ if __name__ == "__main__":
     )
     """
 
+    """
     mesh_file = generate_square_with_sin_perturbed_rect_obstacle_mesh(
         width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=mesh_size,
-        output_name="meshes/square_with_sin_perturbed_rect_obstacle",
+        output_name="square_with_halfsin2_perturbed_rect_obstacle",
         n_points_bottom=100, n_points_rect_bottom=100,
-        perturb_amplitude=0.01, perturb_frequency=1.0
+        perturb_amplitude=0.02, perturb_frequency=0.5
     )
+    """
 
     """
     mesh_file =  generate_square_with_rect_obstacle_mesh(
@@ -347,4 +349,6 @@ if __name__ == "__main__":
     )
     """
 
+    """
     convert_msh_to_xdmf(mesh_file)
+    """
