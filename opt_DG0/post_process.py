@@ -33,8 +33,17 @@ initial_guess_mesh_util = MeshUtil(
     msh_file_path, markers_dict, obstacle_stiffness)
 
 result_path = "outputs/result_sin_0.5_DG0_matlab.h5"
+goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
 matlab_fullfield_csv_path = "measurements/matlab_fullfield_sin0.5.csv"
 results = calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, result_path,
                                         initial_guess_mesh_util, inc_wave_setup)
 
-plot_projected_errors(results, "error_sin0.5_DG0_matlab.png")
+plot_projected_errors(results, "outputs/error_sin0.5_DG0_matlab.png")
+
+plot_mesh_deformation_from_result(
+    result_path,
+    goal_geometry_msh_path,
+    initial_guess_mesh_util,
+    plot_file_name="outputs/mesh_deformation_sin_0.5_DG0_matlab.png",
+    mesh_overlay_plot_file_name = "outputs/mesh_overlay_sin0.5_DG0_matlab.png"
+)

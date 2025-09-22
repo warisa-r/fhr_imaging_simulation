@@ -71,7 +71,7 @@ h_moola = moola.DolfinPrimalVector(h)
 
 solver = moola.BFGS(problem, h_moola,
                     options={
-                        "maxiter": 5
+                        "maxiter": 10
                     })
 
 sol = solver.solve()
@@ -91,6 +91,7 @@ plot_mesh_deformation_from_result(
     goal_geometry_msh_path,
     initial_guess_mesh_util,
     plot_file_name="outputs/mesh_deformation_sin_0.5_DG0_matlab.png",
+    mesh_overlay_plot_file_name = "outputs/mesh_overlay_sin0.5_DG0_matlab.png"
 )
 
 matlab_fullfield_csv_path = "measurements/matlab_fullfield_sin0.5.csv"

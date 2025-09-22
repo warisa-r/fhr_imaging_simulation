@@ -43,11 +43,50 @@ def gather_and_plot_mesh(mesh, ax, color="k", linewidth=0.3, title=None):
         ax.set_aspect("equal")
 
 
+def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, plot_file_name="mesh_outlines.png"):
+#TODO: Make this compatible with parallel run
+    # Extract boundary meshes
+    boundary_original = BoundaryMesh(original_mesh, "exterior")
+    boundary_goal = BoundaryMesh(goal_mesh, "exterior")
+    boundary_optimized = BoundaryMesh(optimized_mesh, "exterior")
+
+    # Helper function to plot a boundary mesh
+    def plot_boundary(ax, boundary_mesh, color, label):
+        coords = boundary_mesh.coordinates()
+        cells = boundary_mesh.cells()
+
+        for cell in cells:
+            pts = coords[cell]
+            ax.plot(pts[:, 0], pts[:, 1], color=color, linewidth=1.0, label=label)
+            label = None
+
+    # Create the figure
+    plt.figure(figsize=(8, 8))
+    ax = plt.gca()
+
+    # Plot outlines
+    plot_boundary(ax, boundary_original, "blue", "Original")
+    plot_boundary(ax, boundary_goal, "red", "Goal")
+    plot_boundary(ax, boundary_optimized, "green", "Optimized")
+
+    # Add legend and styling
+    ax.set_aspect('equal', 'box')
+    ax.set_title("Overlay of Mesh Outlines")
+    ax.legend()
+
+    # Save or show the figure
+    if MPI.comm_world.rank == 0:
+        plt.savefig(plot_file_name, dpi=300)
+        plt.close()
+        print(f"Overlay mesh outline saved to {plot_file_name}")
+
+
 def plot_mesh_deformation_from_result(
     h5_file_path,
     goal_geometry_msh_path,
     initial_guess_mesh_util,
     plot_file_name="mesh_deformation.png",
+    mesh_overlay_plot_file_name = "outlines.png",
     subplot_titles=None,
 ):
 
@@ -131,6 +170,8 @@ def plot_mesh_deformation_from_result(
         plt.close()
         print(f"Mesh deformation plot saved to {plot_file_name}")
 
+    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name)
+
 
 def plot_projected_errors(results, error_plot_file, show=False, projection_degree=0):
 
@@ -156,21 +197,22 @@ def plot_projected_errors(results, error_plot_file, show=False, projection_degre
         ax0, ax1, ax2 = axes
 
         ax0.plot(x_s, proj_mag_s, marker="o", markersize=3,
-                 linestyle="-", color="tab:blue")
+                linestyle="-", color="tab:blue", label="Optimized")
         ax0.plot(x_s, matlab_mag_s, marker="x", markersize=3,
-                 linestyle="-", color="tab:red")
+                linestyle="-", color="tab:red", label="Matlab ref")
         ax0.set_ylabel("|u|")
-        ax0.set_title("Magnitude")
+        ax0.set_title("Magnitude of u_total")
+        ax0.legend()
 
         ax1.plot(x_s, mag_err_s, marker="o", markersize=3,
                  linestyle="-", color="tab:orange")
         ax1.axhline(0.0, color="k", linewidth=0.6, linestyle="--")
-        ax1.set_ylabel("Magnitude error (proj - matlab)")
+        ax1.set_ylabel("Magnitude error (optimized - matlab ref)")
 
         ax2.plot(x_s, phase_err_deg_s, marker="o",
                  markersize=3, linestyle="-", color="tab:green")
         ax2.axhline(0.0, color="k", linewidth=0.6, linestyle="--")
-        ax2.set_ylabel("Phase error (deg)")
+        ax2.set_ylabel("Phase error in degree")
         ax2.set_xlabel("x")
 
         for ax in axes:
