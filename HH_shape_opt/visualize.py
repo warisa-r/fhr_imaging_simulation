@@ -44,11 +44,39 @@ def gather_and_plot_mesh(mesh, ax, color="k", linewidth=0.3, title=None):
 
 
 def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, plot_file_name="mesh_outlines.png"):
-#TODO: Make this compatible with parallel run
+    #TODO: Make this compatible with parallel run
     # Extract boundary meshes
     boundary_original = BoundaryMesh(original_mesh, "exterior")
     boundary_goal = BoundaryMesh(goal_mesh, "exterior")
     boundary_optimized = BoundaryMesh(optimized_mesh, "exterior")
+
+    # Calculate boundary difference metric
+    def calculate_boundary_difference(boundary1, boundary2):
+        coords1 = boundary1.coordinates()
+        coords2 = boundary2.coordinates()
+        
+        # Compare coordinates if SAME number of points
+        if len(coords1) == len(coords2):
+            # Sort by x-coordinate for consistent comparison
+            sorted_idx1 = np.argsort(coords1[:, 0])
+            sorted_idx2 = np.argsort(coords2[:, 0])
+            
+            coords1_sorted = coords1[sorted_idx1]
+            coords2_sorted = coords2[sorted_idx2]
+            
+            # Calculate squared differences
+            diff = coords1_sorted - coords2_sorted
+            squared_diff = np.sum(diff**2)
+            return squared_diff
+        else:
+            print(f"Warning: Different number of boundary points ({len(coords1)} vs {len(coords2)})")
+            return None
+
+    # Calculate difference between goal and optimized boundaries
+    boundary_diff = calculate_boundary_difference(boundary_goal, boundary_optimized)
+    
+    if boundary_diff is not None:
+        print(f"Sum of squared boundary differences (goal vs optimized): {boundary_diff:.6e}")
 
     # Helper function to plot a boundary mesh
     def plot_boundary(ax, boundary_mesh, color, label):
@@ -71,7 +99,10 @@ def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, 
 
     # Add legend and styling
     ax.set_aspect('equal', 'box')
-    ax.set_title("Overlay of Mesh Outlines")
+    title = "Overlay of Mesh Outlines"
+    if boundary_diff is not None:
+        title += f"\nBoundary diff²: {boundary_diff:.4e}"
+    ax.set_title(title)
     ax.legend()
 
     # Save or show the figure
@@ -93,7 +124,7 @@ def plot_mesh_deformation_from_result(
     if subplot_titles is None:
         subplot_titles = [
             "Original mesh",
-            "Reference/perturbed mesh of amplitude 2cm",
+            "Reference/perturbed mesh",
             ""
         ]
 
