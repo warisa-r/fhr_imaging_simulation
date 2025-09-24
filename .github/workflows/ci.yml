@@ -37,7 +37,7 @@ jobs:
           # Remove the installer container (if still present)
           docker rm -f installer || true
 
-      - name: Run basic test (MPI)
+      - name: Run one optimization test (MPI)
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \

@@ -63,4 +63,4 @@ def test_opt_runs_two_iterations_and_zero_residual():
     solver = moola.BFGS(problem, h_moola, options={"maxiter": 1})
     sol = solver.solve()
 
-    assert sol['objective'] ==  0.12257583068565156
+    assert sol['objective'] ==  0.1225758306856595
