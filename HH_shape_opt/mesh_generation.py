@@ -10,6 +10,14 @@ obstacle_marker = 3
 obstacle_opt_marker = 4
 domain_marker = 5
 
+def calculate_mesh_size(freq_max = 5e9, num_mesh_points_per_wavelength = 5):
+    c = 299792458
+
+    # Parameters
+    wavelength = c / freq_max  # Physical wavelength
+    mesh_size = wavelength / num_mesh_points_per_wavelength
+
+    return mesh_size
 
 def plot_mesh(filename, ax, title=""):
     mesh = meshio.read(filename)
