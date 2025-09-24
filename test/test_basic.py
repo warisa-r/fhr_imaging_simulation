@@ -62,7 +62,7 @@ def test_basic_runs_two_iterations_and_zero_residual():
     solver = moola.BFGS(problem, h_moola, options={"maxiter": 1})
     sol = solver.solve()
 
-    assert sol['objective'] == 0.010592287670655856
+    assert abs(sol['objective'] - 0.010592287670655856) < 1e-9
 
     # Check that the objective functional is consistent
     result_path = os.path.join(BASE_DIR, "outputs", "result_sin0.5_DG0_matlab.h5")

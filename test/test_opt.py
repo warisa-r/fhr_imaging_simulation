@@ -63,4 +63,6 @@ def test_opt_runs_two_iterations_and_zero_residual():
     solver = moola.BFGS(problem, h_moola, options={"maxiter": 1})
     sol = solver.solve()
 
-    assert sol['objective'] ==  0.1225758306856595
+    # For some reasons, running in Github pipeline with multiple processes seem to yield a level of randomness to the
+    # objective functional value 
+    assert abs(sol['objective'] - 0.1225758306856595) < 1e-9
