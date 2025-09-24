@@ -136,7 +136,7 @@ def plot_mesh_deformation_from_result(
     # Extract the number of the marker of each object in the simulation
     obstacle_marker = initial_guess_mesh_util.markers_dict["obstacle"]
     side_wall_marker = initial_guess_mesh_util.markers_dict["side_wall"]
-    bottom_wall_marker = initial_guess_mesh_util.markers_dict["bottom_wall"]
+    receiver_edge_marker = initial_guess_mesh_util.markers_dict["bottom_wall"]
     obstacle_opt_marker = initial_guess_mesh_util.markers_dict["obstacle_opt"]
 
     obstacle_stiffness = initial_guess_mesh_util.obstacle_stiffness
@@ -171,7 +171,7 @@ def plot_mesh_deformation_from_result(
     # Deform the mesh using the imported mesh_deformation
     s_final = mesh_deformation(
         h_vol, mesh_copy, markers_copy,
-        obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker, obstacle_stiffness
+        obstacle_marker, side_wall_marker, receiver_edge_marker, obstacle_opt_marker, obstacle_stiffness
     )
     ALE.move(mesh_copy, s_final)
 

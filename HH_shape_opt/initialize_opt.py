@@ -5,7 +5,7 @@ import subprocess
 import numpy as np
 import os
 
-from .mesh_generation import convert_msh_to_xdmf
+from .generate_mesh import convert_msh_to_xdmf
 
 # To get the path of an xml file and its facet region file from msh assuming that
 # dolfin-convert has been called

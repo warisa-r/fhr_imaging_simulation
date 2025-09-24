@@ -1,4 +1,4 @@
-from HH_shape_opt.mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
+from HH_shape_opt.mesh_generation import obstacle_marker, side_wall_marker, receiver_edge_marker
 from HH_shape_opt.mesh_generation import generate_square_with_sin_perturbed_rect_obstacle_mesh, convert_msh_to_xdmf
 
 if __name__ == "__main__":

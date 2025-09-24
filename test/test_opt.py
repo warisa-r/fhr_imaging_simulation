@@ -4,9 +4,7 @@ from dolfin import *
 from dolfin_adjoint import *
 import moola
 
-from HH_shape_opt.initialize_opt import MeshUtil
-from HH_shape_opt.helmholtz_solve import forward_solve, load_forward_simulation_data_bottomwall, IncidentWaveSetup, plane_wave
-from HH_shape_opt.mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker
+from HH_shape_opt import *
 
 BASE_DIR = os.path.dirname(__file__)
 
@@ -30,10 +28,10 @@ def test_opt_runs_two_iterations_and_zero_residual():
     msh_file_path = os.path.join(
         BASE_DIR, "meshes", "square_with_rect_obstacle_opt.msh")
     markers_dict = {
-        "obstacle": obstacle_marker,
-        "side_wall": side_wall_marker,
-        "bottom_wall": bottom_wall_marker,
-        "obstacle_opt": obstacle_opt_marker
+        "obstacle": OBSTACLE_MARKER,
+        "side_wall": SIDE_WALL_MARKER,
+        "bottom_wall": RECEIVER_EDGE_MARKER,
+        "obstacle_opt": OBSTACLE_OPT_MARKER
     }
     obstacle_stiffness = 25
 
@@ -49,12 +47,12 @@ def test_opt_runs_two_iterations_and_zero_residual():
     h.vector().apply("insert")
 
     # forward solve + build objective
-    u_tot_mag_dg0, _, _, ds_bottom, V_DG0 = forward_solve(
+    u_tot_mag_dg0, _, _, ds_receiver, V_DG0 = forward_solve(
         h, inc_wave_setup, initial_guess_mesh_util)
     u_ref_dg0, _ = load_forward_simulation_data_bottomwall(
         measurement_data_file_path, V_DG0)
     J = assemble(
-        (inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0) * ds_bottom))
+        (inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0) * ds_receiver))
     Jhat = ReducedFunctional(J, Control(h))
 
     # optimize for exactly 2 iterations
