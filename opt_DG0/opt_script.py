@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 from HH_shape_opt.mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker
 from HH_shape_opt.initialize_opt import MeshUtil
 from HH_shape_opt.helmholtz_solve import forward_solve, load_forward_simulation_data_bottomwall, IncidentWaveSetup, plane_wave
-from HH_shape_opt.process_result import save_optimization_result
-from HH_shape_opt.visualize import plot_mesh_deformation_from_result
+from HH_shape_opt.process_result import save_optimization_result, calculate_magnitude_and_phase_error
+from HH_shape_opt.visualize import plot_mesh_deformation_from_result, plot_projected_errors
 
 # Ensure this can be run from root dir
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -25,7 +25,7 @@ set_log_level(LogLevel.ERROR)
 frequency = 5e9
 inc_wave_setup = IncidentWaveSetup(frequency, plane_wave)
 
-measurement_data_file_path = "measurements/matlab_measurements_sin0.5.csv"
+measurement_data_file_path = "measurements/matlab_measurements_sin0.5_top_perturbed.csv"
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
 markers_dict = {
     "obstacle": obstacle_marker,
@@ -54,16 +54,20 @@ h_V.rename("Volume extension of h", "")
 ##########################
 
 # Solve the forward problem
-u_tot_mag_dg0, ds_bottom, V_DG0 = forward_solve(
+u_tot_mag_dg0, u_tot_re_projected, u_tot_im_projected, ds_bottom, V_DG0 = forward_solve(
     h, inc_wave_setup, initial_guess_mesh_util)
 
 # Load the reference data in the same function space as the projected result of the forward solve
-u_ref_dg0 = load_forward_simulation_data_bottomwall(
+u_ref_dg0, _ = load_forward_simulation_data_bottomwall(
     measurement_data_file_path, V_DG0)
 
 J = assemble(
     (inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0) * ds_bottom))
 Jhat = ReducedFunctional(J, Control(h))
+
+dJdh = Jhat.derivative()
+plot(dJdh, title="dJdh")
+plt.savefig("outputs/grad_perturbed_sin1_bottom.png")
 
 ## Start optimizing ##
 problem = MoolaOptimizationProblem(Jhat)
@@ -71,20 +75,17 @@ h_moola = moola.DolfinPrimalVector(h)
 
 solver = moola.BFGS(problem, h_moola,
                     options={
-                        "maxiter": 10,
-                        "gtol": 1e-7,
+                        "maxiter": 20
                     })
 
 sol = solver.solve()
 h_opt = sol['control'].data
 
-result_path = "outputs/result_sin_0.5_DG0_matlab.h5"
-goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
+result_path = "outputs/result_sin0.5_top_perturbed_DG0_matlab.h5"
+goal_geometry_msh_path = "meshes/square_with_sin_perturbed_top_bottom_rect_obstacle.msh"
 
 save_optimization_result(
     sol,
-    msh_file_path,
-    obstacle_stiffness,
     result_file=result_path,
     use_scipy=False
 )
@@ -93,8 +94,15 @@ plot_mesh_deformation_from_result(
     result_path,
     goal_geometry_msh_path,
     initial_guess_mesh_util,
-    plot_file_name="outputs/mesh_deformation_sin_0.5_DG0_matlab.png",
+    plot_file_name="outputs/mesh_deformation_sin0.5_top_perturbed_DG0_matlab.png",
+    mesh_overlay_plot_file_name = "outputs/mesh_overlay_sin0.5_top_perturbed_DG0_matlab.png"
 )
+
+matlab_fullfield_csv_path = "measurements/matlab_fullfield_sin0.5_top_perturbed.csv"
+results = calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, result_path,
+                                        initial_guess_mesh_util, inc_wave_setup)
+
+plot_projected_errors(results, "outputs/error_sin0.5_top_perturbed_DG0_matlab.png")
 
 # Print optimization summary
 print("\n=== Optimization Summary ===")

@@ -40,9 +40,20 @@ class MeshUtil():
         self.markers_dict = markers_dict
         self.obstacle_stiffness = obstacle_stiffness
 
-    def get_mesh_and_markers(self):
-        # Or we can regenerate every time?
-        if self.mesh == None or self.boundary_markers == None:
+    @classmethod
+    def from_xdmf(cls, mesh_xdmf_file_path, mesh_facets_xdmf_file_path, markers_dict, obstacle_stiffness):
+        instance = cls.__new__(cls)  # Create an uninitialized instance
+        instance.mesh_xdmf_file_path = mesh_xdmf_file_path
+        instance.mesh_facets_xdmf_file_path = mesh_facets_xdmf_file_path
+        instance.mesh = None
+        instance.boundary_markers = None
+        instance.markers_dict = markers_dict
+        instance.obstacle_stiffness = obstacle_stiffness
+        return instance
+
+    def get_mesh_and_markers(self, create_new_object=False):
+        # Create new object only when called. Sometimes we need fresh new mesh. Not the already modified one.
+        if self.mesh == None or self.boundary_markers == None or create_new_object == True:
             self.mesh = Mesh()
             with XDMFFile(self.mesh_xdmf_file_path) as infile:
                 infile.read(self.mesh)
