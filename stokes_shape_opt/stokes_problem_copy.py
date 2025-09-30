@@ -161,11 +161,11 @@ with XDMFFile("mf.xdmf") as infile:
     infile.read(mvc, "name_to_read")
     mf = cpp.mesh.MeshFunctionSizet(mesh, mvc)
 
-ds_bottom = Measure("ds", domain=mesh, subdomain_data=mf,
+ds_receiver = Measure("ds", domain=mesh, subdomain_data=mf,
                     subdomain_id=wall_marker)
 ds_sides = Measure("ds", domain=mesh, subdomain_data=mf,
                    subdomain_id=inflow_marker)
-ds_outer = ds_bottom + ds_sides
+ds_outer = ds_receiver + ds_sides
 # We compute the initial volume of the obstacle
 
 # We create a Boundary-mesh and function space for our control :math:`h`
@@ -254,7 +254,7 @@ plt.axis("off")
 plt.savefig("intial.png", dpi=800, bbox_inches="tight", pad_inches=0)
 """
 
-J = assemble(inner((u), (u)) * ds_bottom)
+J = assemble(inner((u), (u)) * ds_receiver)
 
 Jhat = ReducedFunctional(J, Control(h))
 s_opt = minimize(

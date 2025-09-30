@@ -10,7 +10,7 @@ import os
 import gmsh
 import matplotlib.pyplot as plt
 
-from HH_shape_opt.mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker
+from HH_shape_opt.mesh_generation import obstacle_marker, side_wall_marker, receiver_edge_marker, obstacle_opt_marker
 from HH_shape_opt.initialize_opt import MeshUtil
 from HH_shape_opt.helmholtz_solve import forward_solve, load_forward_simulation_data_bottomwall, IncidentWaveSetup, plane_wave
 from HH_shape_opt.process_result import save_optimization_result, calculate_magnitude_and_phase_error
@@ -24,7 +24,7 @@ msh_file_path = "meshes/square_with_rect_obstacle.msh"
 markers_dict = {
     "obstacle": obstacle_marker,
     "side_wall": side_wall_marker,
-    "bottom_wall": bottom_wall_marker,
+    "bottom_wall": receiver_edge_marker,
     "obstacle_opt": None
 }
 obstacle_stiffness = 25

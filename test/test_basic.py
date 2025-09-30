@@ -4,9 +4,7 @@ from dolfin import *
 from dolfin_adjoint import *
 import moola
 
-from HH_shape_opt.initialize_opt import MeshUtil
-from HH_shape_opt.helmholtz_solve import forward_solve, load_forward_simulation_data_bottomwall, IncidentWaveSetup, plane_wave
-from HH_shape_opt.mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker
+from HH_shape_opt import *
 
 BASE_DIR = os.path.dirname(__file__)
 
@@ -25,9 +23,9 @@ def initialize_Jhat_basic():
 
     # Optimize all edges of obstacle
     markers_dict = {
-        "obstacle": obstacle_marker,
-        "side_wall": side_wall_marker,
-        "bottom_wall": bottom_wall_marker,
+        "obstacle": OBSTACLE_MARKER,
+        "side_wall": SIDE_WALL_MARKER,
+        "bottom_wall": RECEIVER_EDGE_MARKER,
         "obstacle_opt": None
     }
     obstacle_stiffness = 25
@@ -44,10 +42,10 @@ def initialize_Jhat_basic():
     h.vector().apply("insert")
 
     # forward solve + build objective
-    u_tot_mag_dg0, _, _, ds_bottom, V_DG0 = forward_solve(h, inc_wave_setup, initial_guess_mesh_util)
+    u_tot_mag_dg0, _, _, ds_receiver, V_DG0 = forward_solve(h, inc_wave_setup, initial_guess_mesh_util)
     u_ref_dg0, _ = load_forward_simulation_data_bottomwall(MEASUREMENT_DATA_FILE_PATH, V_DG0)
     J = assemble(
-        (inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0) * ds_bottom))
+        (inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0) * ds_receiver))
     Jhat = ReducedFunctional(J, Control(h))
 
     return Jhat, h, initial_guess_mesh_util, inc_wave_setup
@@ -71,10 +69,10 @@ def test_basic_runs_two_iterations_and_zero_residual():
         h5f.read(h, "/h_opt")
 
     mesh_fresh, markers_fresh = initial_guess_mesh_util.get_mesh_and_markers(create_new_object=True)
-    u_mag_fresh, _, _, ds_bottom_fresh, Vproj_fresh = forward_solve(h, inc_wave_setup, initial_guess_mesh_util, projection_degree=0)
+    u_mag_fresh, _, _, ds_receiver_fresh, Vproj_fresh = forward_solve(h, inc_wave_setup, initial_guess_mesh_util, projection_degree=0)
     # reproject u_ref onto the fresh Vproj_fresh for fair comparison:
     u_ref_dg0_fresh, _ = load_forward_simulation_data_bottomwall(MEASUREMENT_DATA_FILE_PATH, Vproj_fresh)
-    J_manual = assemble((u_mag_fresh - u_ref_dg0_fresh)**2 * ds_bottom_fresh)
+    J_manual = assemble((u_mag_fresh - u_ref_dg0_fresh)**2 * ds_receiver_fresh)
 
     # Assert that forward simulation gives the same objective functional value as the objective functional value call
     # by dolfin_adjoint's tape

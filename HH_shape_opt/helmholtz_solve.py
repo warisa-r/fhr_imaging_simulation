@@ -53,7 +53,7 @@ class IncidentWaveSetup:
         self.u_inc_im = IncidentImag()
 
 
-def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bottom_wall_marker, obstacle_opt_marker, obstacle_stiffness):
+def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, receiver_edge_marker, obstacle_opt_marker, obstacle_stiffness):
     # Create scalar function space for material properties
     V = FunctionSpace(mesh, "CG", 1)
     u, v = TrialFunction(V), TestFunction(V)
@@ -64,7 +64,7 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
     if obstacle_opt_marker is not None:
         bcs0 = [
             DirichletBC(V, Constant(1.0), markers, side_wall_marker),
-            DirichletBC(V, Constant(1.0), markers, bottom_wall_marker),
+            DirichletBC(V, Constant(1.0), markers, receiver_edge_marker),
             DirichletBC(V, Constant(1.0), markers, obstacle_marker),
             DirichletBC(V, Constant(obstacle_stiffness),
                         markers, obstacle_opt_marker),
@@ -73,7 +73,7 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
     else:
         bcs0 = [
             DirichletBC(V, Constant(1.0), markers, side_wall_marker),
-            DirichletBC(V, Constant(1.0), markers, bottom_wall_marker),
+            DirichletBC(V, Constant(1.0), markers, receiver_edge_marker),
             DirichletBC(V, Constant(obstacle_stiffness),
                         markers, obstacle_marker),
         ]
@@ -110,7 +110,7 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, bo
 
     # Boundary conditions: fix bottom and side walls
     bc_el = [
-        DirichletBC(S, Constant((0.0, 0.0)), markers, bottom_wall_marker),
+        DirichletBC(S, Constant((0.0, 0.0)), markers, receiver_edge_marker),
         DirichletBC(S, Constant((0.0, 0.0)), markers, side_wall_marker)
     ]
 
@@ -189,7 +189,7 @@ def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, projection
     # Extract the number of the marker of each object in the simulation
     obstacle_marker = initial_guess_mesh_util.markers_dict["obstacle"]
     side_wall_marker = initial_guess_mesh_util.markers_dict["side_wall"]
-    bottom_wall_marker = initial_guess_mesh_util.markers_dict["bottom_wall"]
+    receiver_edge_marker = initial_guess_mesh_util.markers_dict["bottom_wall"]
     obstacle_opt_marker = initial_guess_mesh_util.markers_dict["obstacle_opt"]
 
     obstacle_stiffness = initial_guess_mesh_util.obstacle_stiffness
@@ -197,15 +197,15 @@ def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, projection
     # Transfer h → volume and deform the copy since we want to preserve always the original
     h_vol = transfer_from_boundary(h_control, mesh)
     s = mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker,
-                         bottom_wall_marker, obstacle_opt_marker, obstacle_stiffness)
+                         receiver_edge_marker, obstacle_opt_marker, obstacle_stiffness)
     ALE.move(mesh, s)
 
     V = FunctionSpace(mesh, "CG", 5)
     u_inc_re = project(inc_wave_setup.u_inc_re, V)
     u_inc_im = project(inc_wave_setup.u_inc_im, V)
 
-    ds_bottom = Measure("ds", domain=mesh, subdomain_data=markers,
-                        subdomain_id=bottom_wall_marker)
+    ds_receiver = Measure("ds", domain=mesh, subdomain_data=markers,
+                        subdomain_id=receiver_edge_marker)
     ds_sides = Measure("ds", domain=mesh, subdomain_data=markers,
                        subdomain_id=side_wall_marker)
     ds_obstacle = Measure(
@@ -218,7 +218,7 @@ def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, projection
             Measure("ds", domain=mesh, subdomain_data=markers,
                     subdomain_id=obstacle_opt_marker)
 
-    ds_outer = ds_bottom + ds_sides
+    ds_outer = ds_receiver + ds_sides
 
     W = FunctionSpace(mesh, MixedElement([V.ufl_element(),
                                           V.ufl_element()]))
@@ -274,7 +274,7 @@ def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, projection
     u_tot_re_projected = project(u_tot_re, V_projection)
     u_tot_im_projected = project(u_tot_im, V_projection)
 
-    ds_bottom = Measure("ds", domain=mesh, subdomain_data=markers,
-                        subdomain_id=bottom_wall_marker)
+    ds_receiver = Measure("ds", domain=mesh, subdomain_data=markers,
+                        subdomain_id=receiver_edge_marker)
 
-    return u_tot_mag_projected, u_tot_re_projected, u_tot_im_projected, ds_bottom, V_projection
+    return u_tot_mag_projected, u_tot_re_projected, u_tot_im_projected, ds_receiver, V_projection

@@ -8,7 +8,7 @@ import json
 import gmsh
 import matplotlib.pyplot as plt
 
-from HH_shape_opt.mesh_generation import obstacle_marker, side_wall_marker, bottom_wall_marker
+from HH_shape_opt.mesh_generation import obstacle_marker, side_wall_marker, receiver_edge_marker
 
 k_background = 2 * np.pi * 5e9 / 299792458  # 2pi f / c
 
@@ -56,14 +56,14 @@ u_inc_im = project(IncidentImag(degree=2), V)
 # Define the outward unit normal vector
 n = FacetNormal(mesh)
 
-ds_bottom = Measure("ds", domain=mesh, subdomain_data=boundary_markers,
-                    subdomain_id=bottom_wall_marker)
+ds_receiver = Measure("ds", domain=mesh, subdomain_data=boundary_markers,
+                    subdomain_id=receiver_edge_marker)
 ds_sides = Measure("ds", domain=mesh,
                    subdomain_data=boundary_markers, subdomain_id=side_wall_marker)
 ds_obstacle = Measure(
     "ds", domain=mesh, subdomain_data=boundary_markers, subdomain_id=obstacle_marker)
 
-ds_outer = ds_bottom + ds_sides
+ds_outer = ds_receiver + ds_sides
 
 # Define mixed function space
 W = FunctionSpace(mesh, V_element * V_element)
@@ -120,7 +120,7 @@ if projection_degree == 0:
     x_vals = []
     y_vals = []
 
-    for facet in SubsetIterator(boundary_markers, bottom_wall_marker):
+    for facet in SubsetIterator(boundary_markers, receiver_edge_marker):
         cell = Cell(mesh, facet.entities(2)[0])  # cell adjacent to facet
         dof_idx = V_DG0.dofmap().cell_dofs(cell.index())[0]
         u_val = u_tot_mag_dg0.vector()[dof_idx]
