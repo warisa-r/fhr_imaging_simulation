@@ -182,7 +182,7 @@ def load_forward_simulation_data_bottomwall(measurement_data_file_path, V_ref, p
     return u_ref, num_data_points
 
 
-def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, projection_degree=0):
+def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, return_u_scat = False, projection_degree=0):
     # Get mesh and markers from the MeshUtil object
     mesh, markers = initial_guess_mesh_util.get_mesh_and_markers(True)
 
@@ -261,6 +261,8 @@ def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, projection
     u_tot_re = u_inc_re + u_sol_re
     u_tot_im = u_inc_im + u_sol_im
 
+    # Calculate the magnitude of scattered wave and total wave
+    u_sol_mag = sqrt(u_sol_re**2 + u_sol_im**2)
     u_tot_mag = sqrt(u_tot_re**2 + u_tot_im**2)
 
     if projection_degree == 0:
@@ -268,13 +270,19 @@ def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, projection
     else:
         V_projection = FunctionSpace(mesh, "CG", projection_degree)
 
-    u_tot_mag_projected = project(u_tot_mag, V_projection)
-
-    # For phase error calculation
-    u_tot_re_projected = project(u_tot_re, V_projection)
-    u_tot_im_projected = project(u_tot_im, V_projection)
-
     ds_receiver = Measure("ds", domain=mesh, subdomain_data=markers,
                         subdomain_id=receiver_edge_marker)
 
-    return u_tot_mag_projected, u_tot_re_projected, u_tot_im_projected, ds_receiver, V_projection
+    if return_u_scat:
+        u_scat_mag_projected = project(u_sol_mag, V_projection)
+        # For final signal phase comparison
+        u_scat_re_projected = project(u_sol_re, V_projection)
+        u_scat_im_projected = project(u_sol_im, V_projection)
+        return u_scat_mag_projected, u_scat_re_projected, u_scat_im_projected, ds_receiver, V_projection
+    
+    else:
+        u_tot_mag_projected = project(u_tot_mag, V_projection)
+        # For final signal phase comparison
+        u_tot_re_projected = project(u_tot_re, V_projection)
+        u_tot_im_projected = project(u_tot_im, V_projection)
+        return u_tot_mag_projected, u_tot_re_projected, u_tot_im_projected, ds_receiver, V_projection
