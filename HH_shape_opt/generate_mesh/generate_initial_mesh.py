@@ -1,10 +1,12 @@
 import meshio
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import os
 import gmsh
 
 from .mesh_util import SIDE_WALL_MARKER, RECEIVER_EDGE_MARKER, OBSTACLE_MARKER, OBSTACLE_OPT_MARKER, DOMAIN_MARKER
+from .mesh_util import calculate_mesh_size
 
 
 def generate_square_with_rect_obstacle_mesh(
@@ -88,7 +90,46 @@ def generate_square_with_rect_obstacle_mesh(
     gmsh.finalize()
     return f"{output_name}.msh"
 
+#TODO: (low priority finish this)
+class MeshGenerator():
+    def __init__(signal_csv_file, freq_max = 5e9, num_mesh_points_per_wavelength = 5):
+        mesh_size = calculate_mesh_size(freq_max, num_mesh_points_per_wavelength)
+        # The csv must have categories 'x', 'y', and 'u'
+        df = pd.read_csv(measurement_data_file_path)
+        points = df[["x", "y"]].values
 
+        # Assert points are approximately equidistant and within mesh_size constraint
+        self._validate_point_spacing(points, mesh_size)
+        
+        #TODO: Define domain and generate mesh
+        return
+    
+    def _validate_point_spacing(self, points, mesh_size, tolerance=1e-12):
+        if len(points) < 2:
+            return  # Can't validate spacing with less than 2 points
+        
+        # Calculate distances between consecutive points
+        distances = []
+        for i in range(len(points) - 1):
+            dist = np.sqrt((points[i+1][0] - points[i][0])**2 + 
+                          (points[i+1][1] - points[i][1])**2)
+            distances.append(dist)
+        
+        distances = np.array(distances)
+        
+        # Assert all distances are <= mesh_size
+        assert np.all(distances <= mesh_size), \
+            f"Some point distances exceed mesh_size: max distance = {np.max(distances):.2e}, mesh_size = {mesh_size:.2e}"
+        
+        # Assert points are approximately equidistant (within tolerance)
+        if len(distances) > 1:
+            mean_distance = np.mean(distances)
+            max_deviation = np.max(np.abs(distances - mean_distance))
+            assert max_deviation <= tolerance, \
+                f"Points are not equidistant within tolerance {tolerance:.2e}: max deviation = {max_deviation:.2e}"
+        
+        print(f"Point spacing validation passed: {len(distances)} segments, "
+              f"mean distance = {np.mean(distances):.6e}, max deviation = {np.max(np.abs(distances - np.mean(distances))):.2e}")
 
 
 if __name__ == "__main__":

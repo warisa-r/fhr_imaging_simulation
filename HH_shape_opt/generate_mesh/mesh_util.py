@@ -6,7 +6,7 @@ OBSTACLE_MARKER = 3
 OBSTACLE_OPT_MARKER = 4
 DOMAIN_MARKER = 5
 
-def calculate_mesh_size(freq_max = 5e9, num_mesh_points_per_wavelength = 5):
+def calculate_mesh_size(freq_max, num_mesh_points_per_wavelength):
     c = 299792458
 
     # Parameters
