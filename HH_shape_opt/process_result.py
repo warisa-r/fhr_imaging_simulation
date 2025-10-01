@@ -118,12 +118,16 @@ def calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, h5_file_path,
     # Calculate phase error
     projected_u = projected_re + 1j * projected_im
     matlab_u = real_values_matlab + 1j * imag_values_matlab
+    matlab_u_phase = np.angle(matlab_u)
+    projected_u_phase = np.angle(projected_u)
     phase_error = np.angle(projected_u * np.conjugate(matlab_u))  # in rad
 
     results = {
         "points": points,
         "matlab_mag": mag_values_matlab,
         "projected_mag": projected_mag,
+        "matlab_phase":  matlab_u_phase,
+        "projected_phase": projected_u_phase,
         "mag_error": mag_error,
         "phase_error": phase_error,
     }

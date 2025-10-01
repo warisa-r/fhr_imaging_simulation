@@ -67,7 +67,7 @@ def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, 
             # Calculate squared differences
             diff = coords1_sorted - coords2_sorted
             squared_diff = np.sum(diff**2)
-            return squared_diff
+            return squared_diff / len(coords1) # Normalize the error
         else:
             print(f"Warning: Different number of boundary points ({len(coords1)} vs {len(coords2)})")
             return None
@@ -212,6 +212,8 @@ def plot_projected_errors(results, error_plot_file, show=False, projection_degre
         x = points[:, 0]
         proj_mag = np.asarray(results["projected_mag"])
         matlab_mag = np.asarray(results["matlab_mag"])
+        matlab_phase = np.degrees(np.asarray(results["matlab_phase"]))
+        proj_phase = np.degrees(np.asarray(results["projected_phase"]))
         mag_err = np.asarray(results["mag_error"])
         phase_err_rad = np.asarray(results["phase_error"])
         phase_err_deg = np.degrees(phase_err_rad)
@@ -221,11 +223,13 @@ def plot_projected_errors(results, error_plot_file, show=False, projection_degre
         x_s = x[order]
         proj_mag_s = proj_mag[order]
         matlab_mag_s = matlab_mag[order]
+        proj_phase_s = proj_phase[order]
+        matlab_phase_s = matlab_phase[order]
         mag_err_s = mag_err[order]
         phase_err_deg_s = phase_err_deg[order]
 
-        fig, axes = plt.subplots(3, 1, figsize=(10, 9), sharex=True)
-        ax0, ax1, ax2 = axes
+        fig, axes = plt.subplots(4, 1, figsize=(10, 9), sharex=True)
+        ax0, ax1, ax2, ax3 = axes
 
         ax0.plot(x_s, proj_mag_s, marker="o", markersize=3,
                 linestyle="-", color="tab:blue", label="Optimized")
@@ -235,16 +239,24 @@ def plot_projected_errors(results, error_plot_file, show=False, projection_degre
         ax0.set_title("Magnitude of u_total")
         ax0.legend()
 
-        ax1.plot(x_s, mag_err_s, marker="o", markersize=3,
-                 linestyle="-", color="tab:orange")
-        ax1.axhline(0.0, color="k", linewidth=0.6, linestyle="--")
-        ax1.set_ylabel("Magnitude error (optimized - matlab ref)")
+        ax1.plot(x_s, proj_phase_s, marker="o", markersize=3,
+                linestyle="-", color="tab:blue", label="Optimized")
+        ax1.plot(x_s, matlab_phase_s, marker="x", markersize=3,
+                linestyle="-", color="tab:red", label="Matlab ref")
+        ax1.set_ylabel("Phase of u")
+        ax1.set_title("Phase of u_total")
+        ax1.legend()
 
-        ax2.plot(x_s, phase_err_deg_s, marker="o",
-                 markersize=3, linestyle="-", color="tab:green")
+        ax2.plot(x_s, mag_err_s, marker="o", markersize=3,
+                 linestyle="-", color="tab:orange")
         ax2.axhline(0.0, color="k", linewidth=0.6, linestyle="--")
-        ax2.set_ylabel("Phase error in degree")
-        ax2.set_xlabel("x")
+        ax2.set_ylabel("Magnitude error (optimized - matlab ref)")
+
+        ax3.plot(x_s, phase_err_deg_s, marker="o",
+                 markersize=3, linestyle="-", color="tab:green")
+        ax3.axhline(0.0, color="k", linewidth=0.6, linestyle="--")
+        ax3.set_ylabel("Phase error in degree")
+        ax3.set_xlabel("x")
 
         for ax in axes:
             ax.grid(True, alpha=0.3)
