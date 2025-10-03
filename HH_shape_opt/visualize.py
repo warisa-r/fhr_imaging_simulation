@@ -204,7 +204,13 @@ def plot_mesh_deformation_from_result(
     extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name)
 
 
-def plot_projected_errors(results, error_plot_file, show=False, projection_degree=0):
+def plot_projected_errors(results, error_plot_file, 
+    use_u_scat = False, show=False, projection_degree=0):
+
+    if use_u_scat:
+        u_to_plot = "u_scatter"
+    else:
+        u_to_plot = "u_total"
 
     # Plot in rank 0 only
     if MPI.comm_world.rank == 0:
@@ -236,7 +242,7 @@ def plot_projected_errors(results, error_plot_file, show=False, projection_degre
         ax0.plot(x_s, matlab_mag_s, marker="x", markersize=3,
                 linestyle="-", color="tab:red", label="Matlab ref")
         ax0.set_ylabel("|u|")
-        ax0.set_title("Magnitude of u_total")
+        ax0.set_title(f"Magnitude of " + u_to_plot)
         ax0.legend()
 
         ax1.plot(x_s, proj_phase_s, marker="o", markersize=3,
@@ -244,7 +250,7 @@ def plot_projected_errors(results, error_plot_file, show=False, projection_degre
         ax1.plot(x_s, matlab_phase_s, marker="x", markersize=3,
                 linestyle="-", color="tab:red", label="Matlab ref")
         ax1.set_ylabel("Phase of u")
-        ax1.set_title("Phase of u_total")
+        ax1.set_title("Phase of " + u_to_plot)
         ax1.legend()
 
         ax2.plot(x_s, mag_err_s, marker="o", markersize=3,

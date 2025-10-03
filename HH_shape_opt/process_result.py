@@ -36,7 +36,8 @@ def save_optimization_result(
 
 
 def calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, h5_file_path,
-                                        initial_guess_mesh_util, inc_wave_setup):
+                                        initial_guess_mesh_util, inc_wave_setup, 
+                                        use_u_scat = False):
 
     mesh, markers = initial_guess_mesh_util.get_mesh_and_markers()
     b_mesh = BoundaryMesh(mesh, "exterior")
@@ -46,7 +47,7 @@ def calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, h5_file_path,
         h5f.read(h, "/h_opt")
     
     u_tot_mag_projected, u_tot_re_projected, u_tot_im_projected, _, V_projection = forward_solve(h, 
-                                                    inc_wave_setup, initial_guess_mesh_util, projection_degree=0)
+                                                    inc_wave_setup, initial_guess_mesh_util, use_u_scat)
 
     mag_vec = u_tot_mag_projected.vector().get_local()
     re_vec = u_tot_re_projected.vector().get_local()

@@ -2,6 +2,7 @@ from dolfin import *
 from dolfin_adjoint import *
 import numpy as np
 import pandas as pd
+from scipy.special import hankel1
 
 ## CONSTANTS ##
 
@@ -24,6 +25,9 @@ def plane_wave_angle(angle_deg):
 
     return wave_func
 
+def cylindrical_wave(x, k_background, source):
+    R = np.linalg.norm(x - source)
+    return 1j/4 * hankel1(0, k*R)
 
 class IncidentWaveSetup:
     def __init__(self, frequency, incident_field_func):
