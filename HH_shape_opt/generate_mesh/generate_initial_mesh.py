@@ -5,7 +5,7 @@ import pandas as pd
 import os
 import gmsh
 
-from .mesh_util import SIDE_WALL_MARKER, RECEIVER_EDGE_MARKER, OBSTACLE_MARKER, OBSTACLE_OPT_MARKER, DOMAIN_MARKER
+from .mesh_util import SIDE_WALL_MARKER, RECEIVER_EDGE_MARKER, OBSTACLE_MARKER, OBSTACLE_OPT_MARKER, DOMAIN_MARKER, OBSTACLE_DOMAIN_MARKER
 from .mesh_util import calculate_mesh_size
 
 
@@ -208,7 +208,7 @@ def generate_square_with_meshed_rect_obstacle(
 
     # Physical groups for domains (2D regions)
     gmsh.model.addPhysicalGroup(2, [background_surface], DOMAIN_MARKER, "background_domain")
-    gmsh.model.addPhysicalGroup(2, [obstacle_surface], OBSTACLE_MARKER, "obstacle_domain")
+    gmsh.model.addPhysicalGroup(2, [obstacle_surface], OBSTACLE_DOMAIN_MARKER, "obstacle_domain")
 
     # Generate mesh
     gmsh.model.mesh.generate(2)

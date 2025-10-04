@@ -1,0 +1,1 @@
+The result here is generated from optimizing u_scat and since it is so weak, I use the amplitude of 50 to strengthen the signal. Strengthening it further causes the gradient to be too large and makes the result super irregular.

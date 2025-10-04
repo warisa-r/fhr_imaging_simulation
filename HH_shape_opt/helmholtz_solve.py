@@ -3,6 +3,8 @@ from dolfin_adjoint import *
 import numpy as np
 import pandas as pd
 from scipy.special import hankel1
+import os
+import meshio
 
 ## CONSTANTS ##
 
@@ -291,4 +293,117 @@ def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, return_u_s
         # For final signal phase comparison
         u_tot_re_projected = project(u_tot_re, V_projection)
         u_tot_im_projected = project(u_tot_im, V_projection)
+        return u_tot_mag_projected, u_tot_re_projected, u_tot_im_projected, ds_receiver, V_projection
+
+def forward_solve_refraction(h_control, inc_wave_setup, initial_guess_mesh_util, return_u_scat = True, projection_degree=0):
+    # Get mesh and markers from the MeshUtil object
+    mesh, markers = initial_guess_mesh_util.get_mesh_and_markers(True)
+
+    # Extract the number of the marker of each object in the simulation
+    obstacle_marker = initial_guess_mesh_util.markers_dict["obstacle"]
+    side_wall_marker = initial_guess_mesh_util.markers_dict["side_wall"]
+    receiver_edge_marker = initial_guess_mesh_util.markers_dict["bottom_wall"]
+    obstacle_opt_marker = initial_guess_mesh_util.markers_dict["obstacle_opt"]
+
+    obstacle_stiffness = initial_guess_mesh_util.obstacle_stiffness
+
+    # Transfer h → volume and deform the copy since we want to preserve always the original
+    h_vol = transfer_from_boundary(h_control, mesh)
+    s = mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker,
+                         receiver_edge_marker, obstacle_opt_marker, obstacle_stiffness)
+    ALE.move(mesh, s)
+
+    V = FunctionSpace(mesh, "CG", 5)
+    u_inc_re = project(inc_wave_setup.u_inc_re, V)
+    u_inc_im = project(inc_wave_setup.u_inc_im, V)
+
+    ds_receiver = Measure("ds", domain=mesh, subdomain_data=markers,
+                        subdomain_id=receiver_edge_marker)
+    ds_sides = Measure("ds", domain=mesh, subdomain_data=markers,
+                       subdomain_id=side_wall_marker)
+    ds_obstacle = Measure(
+        "ds", domain=mesh, subdomain_data=markers, subdomain_id=obstacle_marker)
+
+    if obstacle_opt_marker != None:
+        # Since obstacle_marker excludes the to-be-optimized outline of the obstacle
+        # we need to add the to-be-optimized outline to ds_obstacle
+        ds_obstacle = ds_obstacle + \
+            Measure("ds", domain=mesh, subdomain_data=markers,
+                    subdomain_id=obstacle_opt_marker)
+
+    ds_outer = ds_receiver + ds_sides
+
+    W = FunctionSpace(mesh, MixedElement([V.ufl_element(),
+                                          V.ufl_element()]))
+    (u_re, u_im), (v_re, v_im) = TrialFunctions(W), TestFunctions(W)
+
+    #TODO: Read from dic instead
+    from .generate_mesh.mesh_util import DOMAIN_MARKER, OBSTACLE_DOMAIN_MARKER
+    k_background = inc_wave_setup.k_background
+    k_obst_fac = 5000 #TODO: Dependent on permissivity
+    k_obstacle = k_background * k_obst_fac
+
+    # Define function g in the right hand side
+    # We use k_background here since obviously we
+    # will integrate g over domain boundary which won't intersect with obstacle domain
+    n = FacetNormal(mesh)
+    g_re = dot(grad(u_inc_re), n) + k_background * u_inc_im
+    g_im = dot(grad(u_inc_im), n) - k_background * u_inc_re
+
+    #TODO: Factorize this to be in MeshUtil
+    mvc = MeshValueCollection("size_t", mesh, mesh.topology().dim())
+    with XDMFFile("meshes/square_with_meshed_rect_obstacle_domains.xdmf") as infile:
+        infile.read(mvc, "name_to_read")   # must match the name used in meshio
+    domain_markers = cpp.mesh.MeshFunctionSizet(mesh, mvc)
+    
+
+    dx_domain = Measure(
+        "dx", domain=mesh, subdomain_data=domain_markers, subdomain_id= DOMAIN_MARKER)
+    dx_obstacle = Measure(
+        "dx", domain=mesh, subdomain_data=domain_markers, subdomain_id= OBSTACLE_DOMAIN_MARKER)
+
+    a = (inner(grad(u_re), grad(v_re)) - k_background**2*u_re*v_re)*dx_domain \
+        + (inner(grad(u_re), grad(v_re)) - k_obstacle**2*u_re*v_re)*dx_obstacle \
+        + k_background*u_im*v_re*ds_outer \
+        + (inner(grad(u_im), grad(v_im)) - k_background**2*u_im*v_im)*dx_domain \
+        + (inner(grad(u_im), grad(v_im)) - k_obstacle**2*u_im*v_im)*dx_obstacle \
+        - k_background*u_re*v_im*ds_outer
+
+    L = (g_re*v_re + g_im * v_im)*ds_outer
+
+    bcs = [] # No Dirichlet boundary condition
+    w = Function(W)
+    solve(a == L, w, bcs)
+
+    # Extract solutions
+    u_tot_re, u_tot_im = w.split()
+
+    # Scatter field expressions
+    u_scat_re = u_tot_re - u_inc_re
+    u_scat_im = u_tot_im - u_inc_im
+
+    # Calculate the magnitude of scattered wave and total wave
+    u_scat_mag = sqrt(u_scat_re**2 + u_scat_im**2)
+    u_tot_mag = sqrt(u_tot_re**2 + u_tot_im**2)
+
+    if projection_degree == 0:
+        V_projection = FunctionSpace(mesh, "DG", 0)
+    else:
+        V_projection = FunctionSpace(mesh, "CG", projection_degree)
+
+    ds_receiver = Measure("ds", domain=mesh, subdomain_data=markers,
+                        subdomain_id=receiver_edge_marker)
+
+    if return_u_scat:
+        u_scat_mag_projected = project(u_scat_mag, V_projection)  # Fixed: was u_sol_mag
+        # For final signal phase comparison
+        u_scat_re_projected = project(u_scat_re, V_projection)    # Fixed: was u_sol_re
+        u_scat_im_projected = project(u_scat_im, V_projection)    # Fixed: was u_sol_im
+        return u_scat_mag_projected, u_scat_re_projected, u_scat_im_projected, ds_receiver, V_projection
+    
+    else:
+        u_tot_mag_projected = project(u_tot_mag, V_projection)
+        # For final signal phase comparison
+        u_tot_re_projected = project(u_tot_re, V_projection)      # Fixed: was u_tot_re
+        u_tot_im_projected = project(u_tot_im, V_projection)      # Fixed: was u_tot_im
         return u_tot_mag_projected, u_tot_re_projected, u_tot_im_projected, ds_receiver, V_projection

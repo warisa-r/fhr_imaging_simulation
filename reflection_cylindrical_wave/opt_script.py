@@ -52,7 +52,7 @@ h_V.rename("Volume extension of h", "")
 ##########################
 
 # Solve the forward problem
-u_tot_mag_dg0, u_tot_re_projected, u_tot_im_projected, ds_receiver, V_DG0 = forward_solve(
+u_scat_mag_dg0, u_scat_re_projected, u_scat_im_projected, ds_receiver, V_DG0 = forward_solve(
     h, inc_wave_setup, initial_guess_mesh_util, True)
 
 # Load the reference data in the same function space as the projected result of the forward solve
@@ -60,7 +60,7 @@ u_ref_dg0, _ = load_forward_simulation_data_bottomwall(
     measurement_data_file_path, V_DG0)
 
 J = assemble(
-    (inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0) * ds_receiver))
+    (inner(u_scat_mag_dg0 - u_ref_dg0, u_scat_mag_dg0 - u_ref_dg0) * ds_receiver))
 Jhat = ReducedFunctional(J, Control(h))
 
 ## Start optimizing ##

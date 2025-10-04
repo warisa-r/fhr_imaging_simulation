@@ -10,6 +10,7 @@ RECEIVER_EDGE_MARKER = 2
 OBSTACLE_MARKER = 3
 OBSTACLE_OPT_MARKER = 4
 DOMAIN_MARKER = 5
+OBSTACLE_DOMAIN_MARKER = 6
 
 def calculate_mesh_size(freq_max, num_mesh_points_per_wavelength):
     c = 299792458
@@ -40,21 +41,22 @@ def plot_mesh(filename, ax, title="", show_domains=True, show_markers=True):
     # Define human-readable names and colors
     domain_labels = {
         DOMAIN_MARKER: "Domain",
-        OBSTACLE_MARKER: "Obstacle",
+        OBSTACLE_DOMAIN_MARKER: "Obstacle",
         5: "Medium",
     }
     
     domain_colors = {
         DOMAIN_MARKER: "lightblue",
-        OBSTACLE_MARKER: "lightcoral",
+        OBSTACLE_DOMAIN_MARKER: "lightcoral",
         5: "lightgreen",
     }
     
+    # TODO: Think if we should use the marker name directly
     marker_labels = {
         SIDE_WALL_MARKER: "Side Wall",
         RECEIVER_EDGE_MARKER: "Receiver Edge", 
         OBSTACLE_MARKER: "Obstacle Boundary",
-        OBSTACLE_OPT_MARKER: "Optimized Obstacle",
+        OBSTACLE_OPT_MARKER: "To-be-optimized Obstacle Boundary",
     }
     
     marker_colors = {
@@ -126,27 +128,31 @@ def plot_mesh(filename, ax, title="", show_domains=True, show_markers=True):
 
 
 def convert_msh_to_xdmf(msh_file_path):
-
     # Define output paths based on the input .msh file
     base_path, _ = os.path.splitext(msh_file_path)
     xdmf_path = f"{base_path}.xdmf"
     facet_xdmf_path = f"{base_path}_facets.xdmf"
+    domain_xdmf_path = f"{base_path}_domains.xdmf"
 
-    # --- Convert .msh to .xdmf using meshio (only on rank 0) ---
+    # Convert .msh to .xdmf using meshio (only on rank 0)
     print(f"[INFO] Converting {msh_file_path} to XDMF format...")
     msh = meshio.read(msh_file_path)
 
     # Extract 2D points from the 3D points read by meshio
     points_2d = msh.points[:, :2]
 
-    # Create and write the domain mesh (triangles) using 2D points
+    # Write the domain mesh (geometry + triangles)
     triangle_cells = msh.get_cells_type("triangle")
-    domain_mesh = meshio.Mesh(points=points_2d, cells=[
-                              ("triangle", triangle_cells)])
-    domain_mesh.write(xdmf_path)
-    print(f"[INFO] Wrote domain mesh to {xdmf_path}")
+    triangle_data = msh.get_cell_data("gmsh:physical", "triangle")
+    domain_mesh = meshio.Mesh(
+        points=points_2d,
+        cells=[("triangle", triangle_cells)],
+        cell_data={"name_to_read": [triangle_data]}
+    )
+    domain_mesh.write(domain_xdmf_path)
+    print(f"[INFO] Wrote domain markers to {domain_xdmf_path}")
 
-    # Create and write the facet mesh (lines) using 2D points
+    # Write the facet mesh (geometry + lines)
     line_cells = msh.get_cells_type("line")
     line_data = msh.get_cell_data("gmsh:physical", "line")
     facet_mesh = meshio.Mesh(
@@ -157,4 +163,12 @@ def convert_msh_to_xdmf(msh_file_path):
     facet_mesh.write(facet_xdmf_path)
     print(f"[INFO] Wrote facet markers to {facet_xdmf_path}")
 
-    return xdmf_path, facet_xdmf_path
+    # Write the pure geometry (without markers)
+    geometry_mesh = meshio.Mesh(
+        points=points_2d,
+        cells=[("triangle", triangle_cells)]
+    )
+    geometry_mesh.write(xdmf_path)
+    print(f"[INFO] Wrote base geometry to {xdmf_path}")
+
+    return xdmf_path, facet_xdmf_path, domain_xdmf_path
