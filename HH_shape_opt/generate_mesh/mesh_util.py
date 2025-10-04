@@ -1,3 +1,8 @@
+import meshio
+import numpy as np
+import os
+from matplotlib.collections import PolyCollection, LineCollection
+
 # Global mesh markers
 
 SIDE_WALL_MARKER = 1
@@ -15,22 +20,109 @@ def calculate_mesh_size(freq_max, num_mesh_points_per_wavelength):
 
     return mesh_size
 
-def plot_mesh(filename, ax, title=""):
+def plot_mesh(filename, ax, title="", show_domains=True, show_markers=True):
     mesh = meshio.read(filename)
     points = mesh.points[:, :2]
-    # Find triangle cells
-    cells = None
-    for cell_block in mesh.cells:
+    
+    # Find triangle cells for domains
+    triangle_cells = None
+    triangle_data = None
+    for i, cell_block in enumerate(mesh.cells):
         if cell_block.type == "triangle":
-            cells = cell_block.data
+            triangle_cells = cell_block.data
+            if mesh.cell_data and "gmsh:physical" in mesh.cell_data:
+                triangle_data = mesh.cell_data["gmsh:physical"][i]
             break
-    if cells is None:
+    
+    if triangle_cells is None:
         raise RuntimeError("No triangle cells found in mesh.")
-    ax.triplot(points[:, 0], points[:, 1], cells, color="gray", linewidth=0.5)
+    
+    # Define human-readable names and colors
+    domain_labels = {
+        DOMAIN_MARKER: "Domain",
+        OBSTACLE_MARKER: "Obstacle",
+        5: "Medium",
+    }
+    
+    domain_colors = {
+        DOMAIN_MARKER: "lightblue",
+        OBSTACLE_MARKER: "lightcoral",
+        5: "lightgreen",
+    }
+    
+    marker_labels = {
+        SIDE_WALL_MARKER: "Side Wall",
+        RECEIVER_EDGE_MARKER: "Receiver Edge", 
+        OBSTACLE_MARKER: "Obstacle Boundary",
+        OBSTACLE_OPT_MARKER: "Optimized Obstacle",
+    }
+    
+    marker_colors = {
+        SIDE_WALL_MARKER: "blue",
+        RECEIVER_EDGE_MARKER: "red", 
+        OBSTACLE_MARKER: "black",
+        OBSTACLE_OPT_MARKER: "orange",
+    }
+    
+    # Plot different domains
+    if show_domains and triangle_data is not None:
+        unique_domains = np.unique(triangle_data)
+        for domain in unique_domains:
+            domain_mask = triangle_data == domain
+            domain_triangles = triangle_cells[domain_mask]
+            
+            if len(domain_triangles) == 0:
+                continue
+            
+            color = domain_colors.get(domain, "lightgray")
+            label = domain_labels.get(domain, f"Domain {domain}")
+            
+            # Build polygons for each triangle
+            polys = [points[tri] for tri in domain_triangles]
+            coll = PolyCollection(polys, facecolors=color, alpha=0.6, label=label)
+            ax.add_collection(coll)
+    
+    # Plot mesh edges
+    ax.triplot(points[:, 0], points[:, 1], triangle_cells, 
+               color="gray", linewidth=0.3, alpha=0.8)
+    
+    # Plot boundary markers
+    if show_markers:
+        line_cells = None
+        line_data = None
+        for i, cell_block in enumerate(mesh.cells):
+            if cell_block.type == "line":
+                line_cells = cell_block.data
+                if mesh.cell_data and "gmsh:physical" in mesh.cell_data:
+                    line_data = mesh.cell_data["gmsh:physical"][i]
+                break
+        
+        if line_cells is not None and line_data is not None:
+            unique_markers = np.unique(line_data)
+            
+            for marker in unique_markers:
+                marker_mask = line_data == marker
+                marker_lines = line_cells[marker_mask]
+                color = marker_colors.get(marker, "purple")
+                label = marker_labels.get(marker, f"Marker {marker}")
+                
+                # Build list of line segments (each is a 2x2 array of xy coords)
+                segments = [points[line] for line in marker_lines]
+                
+                # Add all segments for this marker as one collection
+                lc = LineCollection(segments, colors=color, linewidths=2, label=label)
+                ax.add_collection(lc)
+    
     ax.set_aspect("equal")
     ax.set_title(title)
     ax.set_xlabel("x")
     ax.set_ylabel("y")
+    
+    # Add legend
+    handles, labels = ax.get_legend_handles_labels()
+    if handles:
+        ax.legend()
+
 
 
 def convert_msh_to_xdmf(msh_file_path):

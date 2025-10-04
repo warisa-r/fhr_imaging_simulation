@@ -131,6 +131,91 @@ class MeshGenerator():
         print(f"Point spacing validation passed: {len(distances)} segments, "
               f"mean distance = {np.mean(distances):.6e}, max deviation = {np.max(np.abs(distances - np.mean(distances))):.2e}")
 
+def generate_square_with_meshed_rect_obstacle(
+    width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=0.05,
+    output_name="square_with_meshed_rect_obstacle",
+    n_points_bottom=100, n_points_rect_bottom=40,
+    use_opt_marker=False
+):
+    # Obstacle with which refraction can still happen
+    
+    gmsh.initialize()
+    gmsh.clear()
+    gmsh.model.add("square_with_meshed_rect_obstacle")
+
+    # Outer square points
+    p1 = gmsh.model.geo.addPoint(0, 0, 0, mesh_size)         # Bottom-left
+    p2 = gmsh.model.geo.addPoint(width, 0, 0, mesh_size)     # Bottom-right
+    p3 = gmsh.model.geo.addPoint(width, height, 0, mesh_size)  # Top-right
+    p4 = gmsh.model.geo.addPoint(0, height, 0, mesh_size)    # Top-left
+
+    # Outer square lines
+    l1 = gmsh.model.geo.addLine(p1, p2)  # Bottom
+    l2 = gmsh.model.geo.addLine(p2, p3)  # Right
+    l3 = gmsh.model.geo.addLine(p3, p4)  # Top
+    l4 = gmsh.model.geo.addLine(p4, p1)  # Left
+
+    # Use TransfiniteCurve for bottom wall discretization
+    gmsh.model.geo.mesh.setTransfiniteCurve(l1, n_points_bottom)
+
+    # Rectangle obstacle center
+    cx, cy = width/2, height/2
+    rx1 = cx - rect_w/2
+    rx2 = cx + rect_w/2
+    ry1 = cy - rect_h/2
+    ry2 = cy + rect_h/2
+
+    # Rectangle obstacle points (counterclockwise)
+    rp1 = gmsh.model.geo.addPoint(rx1, ry1, 0, mesh_size)
+    rp2 = gmsh.model.geo.addPoint(rx2, ry1, 0, mesh_size)
+    rp3 = gmsh.model.geo.addPoint(rx2, ry2, 0, mesh_size)
+    rp4 = gmsh.model.geo.addPoint(rx1, ry2, 0, mesh_size)
+
+    # Rectangle obstacle lines
+    rl1 = gmsh.model.geo.addLine(rp1, rp2)  # Bottom
+    rl2 = gmsh.model.geo.addLine(rp2, rp3)  # Right
+    rl3 = gmsh.model.geo.addLine(rp3, rp4)  # Top
+    rl4 = gmsh.model.geo.addLine(rp4, rp1)  # Left
+    rect_lines = [rl1, rl2, rl3, rl4]
+
+    gmsh.model.geo.mesh.setTransfiniteCurve(rl1, n_points_rect_bottom)
+
+    # Create curve loops
+    outer_loop = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4])
+    rect_loop = gmsh.model.geo.addCurveLoop(rect_lines)
+
+    # Create TWO separate surfaces:
+    # 1. Background domain (outer square minus rectangle)
+    background_surface = gmsh.model.geo.addPlaneSurface([outer_loop, rect_loop])
+    
+    # 2. Obstacle domain (rectangle)
+    obstacle_surface = gmsh.model.geo.addPlaneSurface([rect_loop])
+
+    gmsh.model.geo.synchronize()
+
+    # Physical groups for boundaries
+    gmsh.model.addPhysicalGroup(1, [l1], RECEIVER_EDGE_MARKER, "bottom_wall")
+    gmsh.model.addPhysicalGroup(1, [l2, l3, l4], SIDE_WALL_MARKER, "outer_walls")
+    
+    if use_opt_marker:
+        # Mark the bottom of the obstacle separately for optimization
+        gmsh.model.addPhysicalGroup(1, [rl1], OBSTACLE_OPT_MARKER, "obstacle_opt_boundary")
+        # Mark the rest of the obstacle boundary
+        gmsh.model.addPhysicalGroup(1, [rl2, rl3, rl4], OBSTACLE_MARKER, "obstacle_boundary")
+    else:
+        # Mark the entire obstacle boundary with one marker
+        gmsh.model.addPhysicalGroup(1, rect_lines, OBSTACLE_MARKER, "obstacle_boundary")
+
+    # Physical groups for domains (2D regions)
+    gmsh.model.addPhysicalGroup(2, [background_surface], DOMAIN_MARKER, "background_domain")
+    gmsh.model.addPhysicalGroup(2, [obstacle_surface], OBSTACLE_MARKER, "obstacle_domain")
+
+    # Generate mesh
+    gmsh.model.mesh.generate(2)
+    gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
+    gmsh.write(f"{output_name}.msh")
+    gmsh.finalize()
+    return f"{output_name}.msh"
 
 if __name__ == "__main__":
     print("Generating square with hole mesh...")
