@@ -25,9 +25,11 @@ def plane_wave_angle(angle_deg):
 
     return wave_func
 
-def cylindrical_wave(x, k_background, source):
-    R = np.linalg.norm(x - source)
-    return 1j/4 * hankel1(0, k*R)
+def cylindrical_wave(amp, source):
+    def cylindrical_wave_func(x, k_background):
+        R = np.linalg.norm(np.array(x) - np.array(source))
+        return amp * 1j/4 * hankel1(0, k_background * R)
+    return cylindrical_wave_func
 
 class IncidentWaveSetup:
     def __init__(self, frequency, incident_field_func):

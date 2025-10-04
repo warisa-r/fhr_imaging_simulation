@@ -76,7 +76,7 @@ def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, 
     boundary_diff = calculate_boundary_difference(boundary_goal, boundary_optimized)
     
     if boundary_diff is not None:
-        print(f"Sum of squared boundary differences (goal vs optimized): {boundary_diff:.6e}")
+        print(f"Normalized sum of squared boundary differences (goal vs optimized): {boundary_diff:.6e}")
 
     # Helper function to plot a boundary mesh
     def plot_boundary(ax, boundary_mesh, color, label):
@@ -150,9 +150,6 @@ def plot_mesh_deformation_from_result(
     with HDF5File(MPI.comm_world, h5_file_path, "r") as h5f:
         h = Function(S_b, name="Design")
         h5f.read(h, "/h_opt")
-        # h_opt_vec = h.vector()
-        # h_mean_abs = np.mean(np.abs(h_opt_vec.get_local()))
-        # print("h_mean_abs:", h_mean_abs)
         try:
             final_residual = h5f.attributes("/h_opt")["objective"]
         except Exception:
