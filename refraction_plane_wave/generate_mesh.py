@@ -10,11 +10,20 @@ if __name__ == "__main__":
     wavelength = c / freq_max  # Physical wavelength
     mesh_size = wavelength / 5
 
+    """
     mesh_file = generate_square_with_meshed_rect_obstacle(
         width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=mesh_size,
         output_name="meshes/square_with_meshed_rect_obstacle",
         n_points_bottom=100, n_points_rect_bottom=40,
         use_opt_marker=False
+    )
+    """
+
+    mesh_file =  generate_square_with_meshed_sin_perturbed_rect_obstacle(
+        width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=mesh_size,
+        output_name="meshes/square_with_meshed_halfsin_perturbed_rect_obstacle",
+        n_points_bottom=100, n_points_rect_bottom=40,
+        perturb_amplitude=0.01, perturb_frequency=0.5,
     )
 
     # Create a figure containing a single Axes.

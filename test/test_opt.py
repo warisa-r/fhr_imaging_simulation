@@ -37,7 +37,7 @@ def test_opt_runs_two_iterations_and_zero_residual():
 
     initial_guess_mesh_util = MeshUtil(
         msh_file_path, markers_dict, obstacle_stiffness)
-    mesh, _ = initial_guess_mesh_util.get_mesh_and_markers()
+    mesh, _, _ = initial_guess_mesh_util.get_mesh_and_markers()
 
     # design variable
     b_mesh = BoundaryMesh(mesh, "exterior")

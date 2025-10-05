@@ -39,9 +39,6 @@ mesh, markers, domain_markers = initial_guess_mesh_util.get_mesh_and_markers()
 sub_mesh = SubMesh(mesh, domain_markers, OBSTACLE_DOMAIN_MARKER)
 b_mesh = BoundaryMesh(sub_mesh, "exterior")
 
-plot(b_mesh)
-#plt.show()
-
 S = VectorFunctionSpace(mesh, "CG", 1)
 h = Function(S, name="Design")
 h.vector()[:] = 0.0
@@ -61,6 +58,9 @@ J = assemble(
     (inner(u_scat_mag_dg0 - u_ref_dg0, u_scat_mag_dg0 - u_ref_dg0) * ds_receiver)
 )
 Jhat = ReducedFunctional(J, Control(h))
+dJdh = Jhat.derivative()
+plot(dJdh)
+plt.savefig("dJdh.png")
 
 ## Start optimizing ##
 problem = MoolaOptimizationProblem(Jhat)
@@ -74,9 +74,9 @@ solver = moola.BFGS(problem, h_moola,
 sol = solver.solve()
 #s_opt = sol['control'].data
 
-"""
+
 result_path = "outputs/result_sin0.5_refraction_3_DG0_matlab.h5"
-goal_geometry_msh_path = "meshes/square_with_sin_perturbed_rect_obstacle.msh"
+goal_geometry_msh_path = "meshes/square_with_meshed_halfsin_perturbed_rect_obstacle.msh"
 
 save_optimization_result(
     sol,
@@ -84,14 +84,28 @@ save_optimization_result(
     use_scipy=False
 )
 
+h_opt = sol['control'].data
+
+Jhat(h_opt)
+optimal, _ = plot(mesh, color="r", linewidth=0.25, label="Optimal mesh")
+plt.show()
+
 plot_mesh_deformation_from_result(
     result_path,
     goal_geometry_msh_path,
     initial_guess_mesh_util,
     plot_file_name="outputs/mesh_deformation_sin0.5_refraction_3_DG0_matlab.png",
-    mesh_overlay_plot_file_name="outputs/mesh_overlay_sin0.5_refraction_3_DG0_matlab.png"
+    mesh_overlay_plot_file_name="outputs/mesh_overlay_sin0.5_refraction_3_DG0_matlab.png",
+    refraction = True
 )
 
+print("\n=== Optimization Summary ===")
+print(f"Initial design: all zeros")
+print(
+    f"Optimal design range: [{np.min(h_opt.vector().get_local()):.6e}, {np.max(h_opt.vector().get_local()):.6e}]")
+print(f"Max displacement: {np.max(np.abs(h_opt.vector().get_local())):.6e}")
+
+"""
 matlab_fullfield_csv_path = "measurements/matlab_fullfield_sin0.5_refraction_3.csv"
 results = calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, result_path,
                                               initial_guess_mesh_util, inc_wave_setup, True)

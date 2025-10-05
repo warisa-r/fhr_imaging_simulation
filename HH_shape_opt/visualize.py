@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 
 from .initialize_opt import msh2xml_path, initialize_opt_xdmf
-from .helmholtz_solve import mesh_deformation
+from .helmholtz_solve import mesh_deformation, mesh_deformation_refraction
 from .process_result import calculate_magnitude_and_phase_error
 
 
@@ -43,6 +43,92 @@ def gather_and_plot_mesh(mesh, ax, color="k", linewidth=0.3, title=None):
             ax.set_title(title)
         ax.set_aspect("equal")
 
+def gather_and_plot_mesh_with_domains(mesh, obstacle_domain_marker, domain_marker, domain_markers, ax, title=None, show_domains=True):
+    comm = MPI.comm_world
+
+    coords = mesh.coordinates()
+    cells_array = mesh.cells()  # This is already a numpy array
+    
+    # Get domain data for each cell
+    if domain_markers is not None and show_domains:
+        domain_data = []
+        # Iterate over cell objects using dolfin's cells() iterator
+        for cell in cells(mesh):  # Use dolfin's cells() function, not the numpy array
+            domain_data.append(domain_markers[cell])
+        domain_data = np.array(domain_data)
+    else:
+        domain_data = None
+
+    # Gather coordinates, cells, and domain data
+    all_coords = comm.gather(coords, root=0)
+    all_cells = comm.gather(cells_array, root=0)  # Use the numpy array here
+    all_domains = comm.gather(domain_data, root=0)
+
+    if comm.rank == 0:
+        # Offset each partition's cell indices
+        global_coords = []
+        global_cells = []
+        global_domains = []
+        offset = 0
+        
+        for coords_part, cells_part, domains_part in zip(all_coords, all_cells, all_domains):
+            global_coords.append(coords_part)
+            global_cells.append(cells_part + offset)
+            if domains_part is not None:
+                global_domains.append(domains_part)
+            offset += coords_part.shape[0]
+
+        global_coords = np.vstack(global_coords)
+        global_cells = np.vstack(global_cells)
+        
+        if len(global_domains) > 0:
+            global_domains = np.concatenate(global_domains)
+        else:
+            global_domains = None
+
+        # Define domain colors
+        from matplotlib.collections import PolyCollection
+        
+        domain_colors = {
+            domain_marker: "lightblue",
+            obstacle_domain_marker: "lightcoral",
+        }
+        
+        domain_labels = {
+            domain_marker: "Background Domain",
+            obstacle_domain_marker: "Obstacle Domain",
+        }
+
+        # Plot domains with different colors
+        if global_domains is not None and show_domains:
+            unique_domains = np.unique(global_domains)
+            for domain in unique_domains:
+                domain_mask = global_domains == domain
+                domain_triangles = global_cells[domain_mask]
+                
+                if len(domain_triangles) == 0:
+                    continue
+                
+                color = domain_colors.get(domain, "lightgray")
+                label = domain_labels.get(domain, f"Domain {domain}")
+                
+                # Build polygons for each triangle
+                polys = [global_coords[tri] for tri in domain_triangles]
+                coll = PolyCollection(
+                    polys, facecolors=color, alpha=0.6, edgecolors='gray', 
+                    linewidths=0.3, label=label
+                )
+                ax.add_collection(coll)
+        
+        # Plot mesh edges
+        triang = mtri.Triangulation(
+            global_coords[:, 0], global_coords[:, 1], global_cells)
+        ax.triplot(triang, color="gray", linewidth=0.3, alpha=0.8)
+        
+        if title:
+            ax.set_title(title)
+        ax.set_aspect("equal")
+        ax.legend()
 
 def extract_and_overlay_mesh_outlines(
         original_mesh, goal_mesh, optimized_mesh, plot_file_name="mesh_outlines.png"):
@@ -124,6 +210,7 @@ def plot_mesh_deformation_from_result(
     initial_guess_mesh_util,
     plot_file_name="mesh_deformation.png",
     mesh_overlay_plot_file_name="outlines.png",
+    refraction = False,
     subplot_titles=None,
 ):
 
@@ -138,76 +225,132 @@ def plot_mesh_deformation_from_result(
 
     # Create fresh new mesh out of msh_file_path instead of the already
     # modified mesh saved in initial_guess_mesh_util
-    mesh, markers = initial_guess_mesh_util.get_mesh_and_markers(True)
+    mesh, markers, domain_markers = initial_guess_mesh_util.get_mesh_and_markers(True)
 
     # Extract the number of the marker of each object in the simulation
     obstacle_marker = initial_guess_mesh_util.markers_dict["obstacle"]
     side_wall_marker = initial_guess_mesh_util.markers_dict["side_wall"]
     receiver_edge_marker = initial_guess_mesh_util.markers_dict["bottom_wall"]
     obstacle_opt_marker = initial_guess_mesh_util.markers_dict["obstacle_opt"]
+    domain_marker = initial_guess_mesh_util.markers_dict["domain_marker"]
+    obstacle_domain_marker = initial_guess_mesh_util.markers_dict["obstacle_domain_marker"]
 
     obstacle_stiffness = initial_guess_mesh_util.obstacle_stiffness
 
-    # Load h and optimization info from checkpoint
-    b_mesh = BoundaryMesh(mesh, "exterior")
-    S_b = VectorFunctionSpace(b_mesh, "CG", 1)
-    h = Function(S_b, name="Design")
-    final_residual = None
-    num_iterations = None
-    with HDF5File(MPI.comm_world, h5_file_path, "r") as h5f:
+    if refraction == False:
+        # Load h and optimization info from checkpoint
+        b_mesh = BoundaryMesh(mesh, "exterior")
+        S_b = VectorFunctionSpace(b_mesh, "CG", 1)
         h = Function(S_b, name="Design")
-        h5f.read(h, "/h_opt")
-        try:
-            final_residual = h5f.attributes("/h_opt")["objective"]
-        except Exception:
-            final_residual = None
-        try:
-            num_iterations = h5f.attributes("/h_opt")["nit"]
-        except Exception:
-            num_iterations = None
+        final_residual = None
+        num_iterations = None
+        with HDF5File(MPI.comm_world, h5_file_path, "r") as h5f:
+            h = Function(S_b, name="Design")
+            h5f.read(h, "/h_opt")
+            try:
+                final_residual = h5f.attributes("/h_opt")["objective"]
+            except Exception:
+                final_residual = None
+            try:
+                num_iterations = h5f.attributes("/h_opt")["nit"]
+            except Exception:
+                num_iterations = None
 
-    # Create fresh new mesh out of msh_file_path instead of the already
-    # modified mesh saved in initial_guess_mesh_util
-    mesh_copy, markers_copy = initial_guess_mesh_util.get_mesh_and_markers(
-        True)
+        # Create fresh new mesh out of msh_file_path instead of the already
+        # modified mesh saved in initial_guess_mesh_util
+        mesh_copy, markers_copy, _ = initial_guess_mesh_util.get_mesh_and_markers(
+            True)
 
-    h_vol = transfer_from_boundary(h, mesh_copy)
+        h_vol = transfer_from_boundary(h, mesh_copy)
 
-    # Deform the mesh using the imported mesh_deformation
-    s_final = mesh_deformation(
-        h_vol, mesh_copy, markers_copy,
-        obstacle_marker, side_wall_marker, receiver_edge_marker, obstacle_opt_marker, obstacle_stiffness
-    )
-    ALE.move(mesh_copy, s_final)
+        # Deform the mesh using the imported mesh_deformation
+        s_final = mesh_deformation(
+            h_vol, mesh_copy, markers_copy,
+            obstacle_marker, side_wall_marker, receiver_edge_marker, obstacle_opt_marker, obstacle_stiffness
+        )
 
-    # Load goal geometry mesh
-    _, mesh_goal, markers_goal = initialize_opt_xdmf(goal_geometry_msh_path)
+        ALE.move(mesh_copy, s_final)
 
-    plt.figure(figsize=(18, 6))
+        # Load goal geometry mesh
+        _, mesh_goal, markers_goal, _ = initialize_opt_xdmf(goal_geometry_msh_path)
 
-    ax1 = plt.subplot(1, 3, 1)
-    gather_and_plot_mesh(mesh, ax1, color="b",
-                         linewidth=0.5, title=subplot_titles[0])
+        plt.figure(figsize=(18, 6))
 
-    ax2 = plt.subplot(1, 3, 2)
-    gather_and_plot_mesh(mesh_goal, ax2, color="r",
-                         linewidth=0.5, title=subplot_titles[1])
+        ax1 = plt.subplot(1, 3, 1)
+        gather_and_plot_mesh(mesh, ax1, color="b",
+                            linewidth=0.5, title=subplot_titles[0])
 
-    ax3 = plt.subplot(1, 3, 3)
-    title = subplot_titles[2]
-    if num_iterations is not None or final_residual is not None:
-        title += f"\n(iters={num_iterations}, residual={final_residual:.2e})"
-    gather_and_plot_mesh(mesh_copy, ax3, color="r", linewidth=0.5, title=title)
+        ax2 = plt.subplot(1, 3, 2)
+        gather_and_plot_mesh(mesh_goal, ax2, color="r",
+                            linewidth=0.5, title=subplot_titles[1])
 
-    plt.tight_layout()
+        ax3 = plt.subplot(1, 3, 3)
+        title = subplot_titles[2]
+        if num_iterations is not None or final_residual is not None:
+            title += f"\n(iters={num_iterations}, residual={final_residual:.2e})"
+        gather_and_plot_mesh(mesh_copy, ax3, color="r", linewidth=0.5, title=title)
 
-    if MPI.comm_world.rank == 0:
-        plt.savefig(plot_file_name)
-        plt.close()
-        print(f"Mesh deformation plot saved to {plot_file_name}")
+        plt.tight_layout()
 
-    extract_and_overlay_mesh_outlines(
-        mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name)
+        if MPI.comm_world.rank == 0:
+            plt.savefig(plot_file_name)
+            plt.close()
+            print(f"Mesh deformation plot saved to {plot_file_name}")
+
+        extract_and_overlay_mesh_outlines(
+            mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name)
+    else:
+        S = VectorFunctionSpace(mesh, "CG", 1)
+        final_residual = None
+        num_iterations = None
+        with HDF5File(MPI.comm_world, h5_file_path, "r") as h5f:
+            h = Function(S, name="Design")
+            h5f.read(h, "/h_opt")
+            try:
+                final_residual = h5f.attributes("/h_opt")["objective"]
+            except Exception:
+                final_residual = None
+            try:
+                num_iterations = h5f.attributes("/h_opt")["nit"]
+            except Exception:
+                num_iterations = None
+        
+        # Create fresh new mesh out of msh_file_path instead of the already
+        # modified mesh saved in initial_guess_mesh_util
+        mesh_copy, markers_copy, domain_markers_copy = initial_guess_mesh_util.get_mesh_and_markers(
+            True)
+
+        # Deform the mesh using the imported mesh_deformation_refraction
+        s_final = mesh_deformation_refraction(
+            h, mesh_copy, markers_copy, domain_markers_copy,
+            obstacle_marker, side_wall_marker, receiver_edge_marker, 
+            obstacle_domain_marker, domain_marker, obstacle_stiffness #TODO: Read these from dict instead
+        )
+        ALE.move(mesh_copy, s_final)
+
+        # Load goal geometry mesh
+        _, mesh_goal, markers_goal, domain_markers_goal = initialize_opt_xdmf(goal_geometry_msh_path)
+
+        plt.figure(figsize=(18, 6))
+
+        ax1 = plt.subplot(1, 3, 1)
+        gather_and_plot_mesh_with_domains(mesh, obstacle_domain_marker, domain_marker, domain_markers, ax1, title=subplot_titles[0])
+
+        ax2 = plt.subplot(1, 3, 2)
+        gather_and_plot_mesh_with_domains(mesh_goal, obstacle_domain_marker, domain_marker, domain_markers, ax2, title=subplot_titles[1])
+
+        ax3 = plt.subplot(1, 3, 3)
+        title = subplot_titles[2]
+        if num_iterations is not None or final_residual is not None:
+            title += f"\n(iters={num_iterations}, residual={final_residual:.2e})"
+        gather_and_plot_mesh_with_domains(mesh_copy, obstacle_domain_marker, domain_marker, domain_markers_copy, ax3, title=title)
+
+        plt.tight_layout()
+
+        if MPI.comm_world.rank == 0:
+            plt.savefig(plot_file_name)
+            plt.close()
+            print(f"Mesh deformation plot saved to {plot_file_name}")
 
 
 def plot_projected_errors(results, error_plot_file,

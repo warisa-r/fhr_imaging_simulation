@@ -33,7 +33,7 @@ obstacle_stiffness = 25
 
 initial_guess_mesh_util = MeshUtil(
     msh_file_path, markers_dict, obstacle_stiffness)
-mesh, _ = initial_guess_mesh_util.get_mesh_and_markers()
+mesh, _, _ = initial_guess_mesh_util.get_mesh_and_markers()
 
 ##### Initialization #####
 # Create boundary mesh and design variables

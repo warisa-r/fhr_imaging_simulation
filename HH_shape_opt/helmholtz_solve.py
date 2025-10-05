@@ -138,18 +138,32 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker,
     return s
 
 def mesh_deformation_refraction(h_vol, mesh, markers, domain_markers, obstacle_marker, side_wall_marker,
-                     receiver_edge_marker, obstacle_domain_marker, obstacle_stiffness):
+                     receiver_edge_marker, obstacle_domain_marker, domain_marker, obstacle_stiffness):
     # Create scalar function space for material properties
     V = FunctionSpace(mesh, "CG", 1)
     u, v = TrialFunction(V), TestFunction(V)
+
+    # Define obstacle and the background domain
+    dx_obstacle = Measure("dx",
+                       domain=mesh,
+                       subdomain_data=domain_markers,
+                       subdomain_id=obstacle_domain_marker
+                       )
+
+    dx_background = Measure("dx",
+                    domain=mesh,
+                    subdomain_data=domain_markers,
+                    subdomain_id=domain_marker
+                    )
+
+    # Let the inside of the obstacle have 1000 times more stiffness its boundary
     a = -inner(grad(u), grad(v)) * dx
     L0 = Constant(0.0) * v * dx
 
     bcs0 = [
         DirichletBC(V, Constant(1.0), markers, side_wall_marker),
         DirichletBC(V, Constant(1.0), markers, receiver_edge_marker),
-        DirichletBC(V, Constant(obstacle_stiffness),
-                    markers, obstacle_marker),
+        DirichletBC(V, Constant(obstacle_stiffness), markers, obstacle_marker),
     ]
 
     # Solve for material distribution
@@ -160,20 +174,19 @@ def mesh_deformation_refraction(h_vol, mesh, markers, domain_markers, obstacle_m
     S = VectorFunctionSpace(mesh, "CG", 1)
     u_vec, v_vec = TrialFunction(S), TestFunction(S)
 
-    # Define measure for obstacle boundary
-    dObs = Measure("dS",
-                       domain=mesh,
-                       subdomain_data=domain_markers,
-                       subdomain_id=obstacle_domain_marker
-                       )
-
     # Define strain and stress tensors
     def ε(w): return sym(grad(w))
     def σ(w): return 2 * mu * ε(w)
 
+    dObs = Measure("dS",
+                    domain=mesh,
+                    subdomain_data=domain_markers,
+                    subdomain_id=domain_marker
+                    )
+
     # Elastic variational problem
     a_el = inner(σ(u_vec), grad(v_vec)) * dx
-    L_el = inner(h_vol('+'), v_vec('+')) * dObs
+    L_el = inner(h_vol, v_vec) * dx_obstacle
 
     # Boundary conditions: fix bottom and side walls
     bc_el = [
@@ -249,7 +262,7 @@ def load_forward_simulation_data_bottomwall(
 def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util,
                   return_u_scat=False, projection_degree=0):
     # Get mesh and markers from the MeshUtil object
-    mesh, markers = initial_guess_mesh_util.get_mesh_and_markers(True)
+    mesh, markers, _ = initial_guess_mesh_util.get_mesh_and_markers(True)
 
     # Extract the number of the marker of each object in the simulation
     obstacle_marker = initial_guess_mesh_util.markers_dict["obstacle"]
@@ -371,7 +384,7 @@ def forward_solve_refraction(
 
     #TODO: Not usable
     s = mesh_deformation_refraction(h_control, mesh, markers, domain_markers, obstacle_marker, side_wall_marker,
-                     receiver_edge_marker, obstacle_domain_marker, obstacle_stiffness)
+                     receiver_edge_marker, obstacle_domain_marker, domain_marker, obstacle_stiffness)
     ALE.move(mesh, s)
 
     V = FunctionSpace(mesh, "CG", 5)

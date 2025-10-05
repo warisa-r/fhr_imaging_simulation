@@ -37,7 +37,7 @@ def initialize_Jhat_basic():
 
     initial_guess_mesh_util = MeshUtil(
         MSH_FILE_PATH, markers_dict, obstacle_stiffness)
-    mesh, _ = initial_guess_mesh_util.get_mesh_and_markers()
+    mesh, _, _ = initial_guess_mesh_util.get_mesh_and_markers()
 
     # design variable
     b_mesh = BoundaryMesh(mesh, "exterior")
@@ -78,7 +78,7 @@ def test_basic_runs_two_iterations_and_zero_residual():
     with HDF5File(MPI.comm_world, result_path, "r") as h5f:
         h5f.read(h, "/h_opt")
 
-    mesh_fresh, markers_fresh = initial_guess_mesh_util.get_mesh_and_markers(
+    mesh_fresh, markers_fresh, domain_markers_fresh = initial_guess_mesh_util.get_mesh_and_markers(
         create_new_object=True)
     u_mag_fresh, _, _, ds_receiver_fresh, Vproj_fresh = forward_solve(
         h, inc_wave_setup, initial_guess_mesh_util, projection_degree=0)

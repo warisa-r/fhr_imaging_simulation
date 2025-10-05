@@ -40,7 +40,7 @@ def calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, h5_file_path,
                                         initial_guess_mesh_util, inc_wave_setup,
                                         use_u_scat=False):
 
-    mesh, markers = initial_guess_mesh_util.get_mesh_and_markers()
+    mesh, markers, _ = initial_guess_mesh_util.get_mesh_and_markers()
     b_mesh = BoundaryMesh(mesh, "exterior")
     S_b = VectorFunctionSpace(b_mesh, "CG", 1)
     h = Function(S_b, name="Design")

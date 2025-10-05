@@ -87,7 +87,7 @@ class MeshUtil():
 
 def initialize_opt_xdmf(msh_file_path):
     comm = MPI.comm_world
-    xdmf_path, facet_xdmf_path = msh2xdmf_path(msh_file_path)
+    xdmf_path, facet_xdmf_path, domain_xdmf_path = msh2xdmf_path(msh_file_path)
 
     # --- Convert .msh to .xdmf using meshio (only on rank 0) ---
     if comm.rank == 0:
@@ -125,10 +125,18 @@ def initialize_opt_xdmf(msh_file_path):
         infile.read(mvc, "name_to_read")
         markers = cpp.mesh.MeshFunctionSizet(mesh, mvc)
 
+    mvc_dom = MeshValueCollection("size_t", mesh, mesh.topology().dim())
+    with XDMFFile(domain_xdmf_path) as infile:
+        # must match the name used in meshio
+        infile.read(mvc_dom, "name_to_read")
+        domain_markers = cpp.mesh.MeshFunctionSizet(
+            mesh, mvc_dom)
+
+
     # Create boundary mesh and design variable
     b_mesh = BoundaryMesh(mesh, "exterior")
     S_b = VectorFunctionSpace(b_mesh, "CG", 1)
     h = Function(S_b, name="Design")
     h.vector()[:] = 0.0  # Zero initial guess for h
 
-    return h, mesh, markers
+    return h, mesh, markers, domain_markers
