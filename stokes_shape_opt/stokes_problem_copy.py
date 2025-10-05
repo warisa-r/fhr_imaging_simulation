@@ -87,7 +87,8 @@
 # Implementation
 # **************
 #
-# First, the :py:mod:`dolfin` and :py:mod:`dolfin_adjoint` modules are imported:
+# First, the :py:mod:`dolfin` and :py:mod:`dolfin_adjoint` modules are
+# imported:
 
 import matplotlib.pyplot as plt
 from create_mesh import inflow_marker, outflow_marker, wall_marker, obstacle_marker, c_x, c_y, L, H
@@ -162,7 +163,7 @@ with XDMFFile("mf.xdmf") as infile:
     mf = cpp.mesh.MeshFunctionSizet(mesh, mvc)
 
 ds_receiver = Measure("ds", domain=mesh, subdomain_data=mf,
-                    subdomain_id=wall_marker)
+                      subdomain_id=wall_marker)
 ds_sides = Measure("ds", domain=mesh, subdomain_data=mf,
                    subdomain_id=inflow_marker)
 ds_outer = ds_receiver + ds_sides
@@ -206,12 +207,12 @@ W = FunctionSpace(mesh, V1 * V2)
 (u_re, u_im) = TrialFunctions(W)
 (v_re, v_im) = TestFunctions(W)
 
-a = (inner(grad(u_re), grad(v_re)) - 5**2*u_re*v_re)*dx \
-    + 5*u_im*v_re*ds_outer \
-    + (inner(grad(u_im), grad(v_im)) - 5**2*u_im*v_im)*dx \
-    - 5*u_re*v_im*ds_outer
+a = (inner(grad(u_re), grad(v_re)) - 5**2 * u_re * v_re) * dx \
+    + 5 * u_im * v_re * ds_outer \
+    + (inner(grad(u_im), grad(v_im)) - 5**2 * u_im * v_im) * dx \
+    - 5 * u_re * v_im * ds_outer
 
-l = Constant(0.0)*(v_re + v_im)*dx
+l = Constant(0.0) * (v_re + v_im) * dx
 
 # The Dirichlet boundary conditions on :math:`\Gamma` is defined as follows
 

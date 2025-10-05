@@ -8,7 +8,8 @@ import matplotlib.tri as mtri
 from .initialize_opt import msh2xml_path, initialize_opt_xdmf
 from .helmholtz_solve import mesh_deformation, forward_solve
 
-# TODO: Some redundancy here with msh_file_path and obstacle_stiffness since it's already saved in MeshUtil
+# TODO: Some redundancy here with msh_file_path and obstacle_stiffness
+# since it's already saved in MeshUtil
 
 
 def save_optimization_result(
@@ -36,8 +37,8 @@ def save_optimization_result(
 
 
 def calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, h5_file_path,
-                                        initial_guess_mesh_util, inc_wave_setup, 
-                                        use_u_scat = False):
+                                        initial_guess_mesh_util, inc_wave_setup,
+                                        use_u_scat=False):
 
     mesh, markers = initial_guess_mesh_util.get_mesh_and_markers()
     b_mesh = BoundaryMesh(mesh, "exterior")
@@ -45,9 +46,9 @@ def calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, h5_file_path,
     h = Function(S_b, name="Design")
     with HDF5File(MPI.comm_world, h5_file_path, "r") as h5f:
         h5f.read(h, "/h_opt")
-    
-    u_tot_mag_projected, u_tot_re_projected, u_tot_im_projected, _, V_projection = forward_solve(h, 
-                                                    inc_wave_setup, initial_guess_mesh_util, use_u_scat)
+
+    u_tot_mag_projected, u_tot_re_projected, u_tot_im_projected, _, V_projection = forward_solve(h,
+                                                                                                 inc_wave_setup, initial_guess_mesh_util, use_u_scat)
 
     mag_vec = u_tot_mag_projected.vector().get_local()
     re_vec = u_tot_re_projected.vector().get_local()
@@ -110,7 +111,6 @@ def calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, h5_file_path,
             projected_re[i] = re_vec[closest_global_dof]
             projected_im[i] = im_vec[closest_global_dof]
 
-
     # Now projected_* arrays are in the same order as csv points
 
     # Compute magnitude error
@@ -127,7 +127,7 @@ def calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, h5_file_path,
         "points": points,
         "matlab_mag": mag_values_matlab,
         "projected_mag": projected_mag,
-        "matlab_phase":  matlab_u_phase,
+        "matlab_phase": matlab_u_phase,
         "projected_phase": projected_u_phase,
         "mag_error": mag_error,
         "phase_error": phase_error,

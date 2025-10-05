@@ -87,7 +87,8 @@
 # Implementation
 # **************
 #
-# First, the :py:mod:`dolfin` and :py:mod:`dolfin_adjoint` modules are imported:
+# First, the :py:mod:`dolfin` and :py:mod:`dolfin_adjoint` modules are
+# imported:
 
 import matplotlib.pyplot as plt
 from create_mesh import inflow_marker, outflow_marker, wall_marker, obstacle_marker, c_x, c_y, L, H
@@ -258,7 +259,8 @@ Bc2 = (L * H**2 / 2 - assemble(y * dx(domain=mesh))) / (L * H - Vol)
 beta = 1e4
 J += beta * ((Bc1 - c_x)**2 + (Bc2 - c_y)**2)
 
-# We define the reduced functional, where :math:`h` is the design parameter# and use scipy to minimize the objective.
+# We define the reduced functional, where :math:`h` is the design
+# parameter# and use scipy to minimize the objective.
 
 Jhat = ReducedFunctional(J, Control(h))
 s_opt = minimize(

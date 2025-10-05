@@ -32,13 +32,16 @@ result_path = "outputs/result_sin0.5_scatter_DG0_matlab.h5"
 goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
 matlab_fullfield_csv_path = "measurements/matlab_fullfield_sin0.5_scatter.csv"
 results = calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, result_path,
-                                        initial_guess_mesh_util, inc_wave_setup, True)
+                                              initial_guess_mesh_util, inc_wave_setup, True)
 
-plot_projected_errors(results, "outputs/error_sin0.5_scatter_DG0_matlab.png", True)
+plot_projected_errors(
+    results,
+    "outputs/error_sin0.5_scatter_DG0_matlab.png",
+    True)
 plot_mesh_deformation_from_result(
     result_path,
     goal_geometry_msh_path,
     initial_guess_mesh_util,
     plot_file_name="outputs/mesh_deformation_sin0.5_scatter_DG0_matlab.png",
-    mesh_overlay_plot_file_name = "outputs/mesh_overlay_sin0.5_scatter_DG0_matlab.png"
+    mesh_overlay_plot_file_name="outputs/mesh_overlay_sin0.5_scatter_DG0_matlab.png"
 )

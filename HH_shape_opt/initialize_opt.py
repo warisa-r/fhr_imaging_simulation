@@ -22,48 +22,67 @@ def msh2xdmf_path(msh_file_path):
     base_path = os.path.splitext(msh_file_path)[0]
     xdmf_path = base_path + ".xdmf"
     facet_xdmf_path = base_path + "_facets.xdmf"
-    return xdmf_path, facet_xdmf_path
+    domain_xdmf_path = base_path + "_domains.xdmf"
+    return xdmf_path, facet_xdmf_path, domain_xdmf_path
 
 
 class MeshUtil():
     def __init__(self, msh_file_path, markers_dict, obstacle_stiffness):
         self.msh_file_path = msh_file_path
-        self.mesh_xdmf_file_path, self.mesh_facets_xdmf_file_path = msh2xdmf_path(
+        self.mesh_xdmf_file_path, self.mesh_facets_xdmf_file_path, self.mesh_domain_xdmf_file_path = msh2xdmf_path(
             msh_file_path)
 
         # Check if XDMF files exist, if not, generate them
-        if not (os.path.exists(self.mesh_xdmf_file_path) and os.path.exists(self.mesh_facets_xdmf_file_path)):
-            convert_msh_to_xdmf(msh_file_path)
+        if not (os.path.exists(self.mesh_xdmf_file_path)
+                and os.path.exists(self.mesh_facets_xdmf_file_path)
+                and os.path.exists(self.mesh_domain_xdmf_file_path)):
+            convert_msh_to_xdmf(self.msh_file_path)
 
         self.mesh = None
         self.boundary_markers = None
+        self.domain_markers = None
         self.markers_dict = markers_dict
         self.obstacle_stiffness = obstacle_stiffness
 
     @classmethod
-    def from_xdmf(cls, mesh_xdmf_file_path, mesh_facets_xdmf_file_path, markers_dict, obstacle_stiffness):
+    def from_xdmf(cls, mesh_xdmf_file_path, mesh_facets_xdmf_file_path, mesh_domain_xdmf_file_path,
+                  markers_dict, obstacle_stiffness):
         instance = cls.__new__(cls)  # Create an uninitialized instance
         instance.mesh_xdmf_file_path = mesh_xdmf_file_path
         instance.mesh_facets_xdmf_file_path = mesh_facets_xdmf_file_path
+        instance.mesh_domain_xdmf_file_path = mesh_domain_xdmf_file_path
         instance.mesh = None
         instance.boundary_markers = None
+        instance.domain_markers = None
         instance.markers_dict = markers_dict
         instance.obstacle_stiffness = obstacle_stiffness
         return instance
 
     def get_mesh_and_markers(self, create_new_object=False):
-        # Create new object only when called. Sometimes we need fresh new mesh. Not the already modified one.
-        if self.mesh == None or self.boundary_markers == None or create_new_object == True:
+        # Create new object only when called. Sometimes we need fresh new mesh.
+        # Not the already modified one.
+        if self.mesh is None or self.boundary_markers is None or create_new_object == True:
+            # Read mesh
             self.mesh = Mesh()
             with XDMFFile(self.mesh_xdmf_file_path) as infile:
                 infile.read(self.mesh)
-            mvc = MeshValueCollection("size_t", self.mesh, 1)
+            # Read mesh boundary markers
+            mf = MeshValueCollection("size_t", self.mesh, 1)
             with XDMFFile(self.mesh_facets_xdmf_file_path) as infile:
-                infile.read(mvc, "name_to_read")
+                infile.read(mf, "name_to_read")
                 self.boundary_markers = cpp.mesh.MeshFunctionSizet(
+                    self.mesh, mf)
+            # Read mesh domain markers
+            mvc = MeshValueCollection("size_t", self.mesh, self.mesh.topology().dim())
+            with XDMFFile(self.mesh_domain_xdmf_file_path) as infile:
+                # must match the name used in meshio
+                infile.read(mvc, "name_to_read")
+                self.domain_markers = cpp.mesh.MeshFunctionSizet(
                     self.mesh, mvc)
 
-        return self.mesh, self.boundary_markers
+        # TODO: Also return domain_markers and change the existing code that use this version
+        # TODO: Differentiate all the markers to boundary_markers not just simply markers
+        return self.mesh, self.boundary_markers, self.domain_markers
 
 
 def initialize_opt_xdmf(msh_file_path):

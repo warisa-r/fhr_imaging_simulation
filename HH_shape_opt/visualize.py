@@ -22,7 +22,8 @@ def gather_and_plot_mesh(mesh, ax, color="k", linewidth=0.3, title=None):
     all_cells = comm.gather(cells, root=0)
 
     if comm.rank == 0:
-        # Offset each partition's cell indices so they refer to the global coords array
+        # Offset each partition's cell indices so they refer to the global
+        # coords array
         global_coords = []
         global_cells = []
         offset = 0
@@ -43,8 +44,9 @@ def gather_and_plot_mesh(mesh, ax, color="k", linewidth=0.3, title=None):
         ax.set_aspect("equal")
 
 
-def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, plot_file_name="mesh_outlines.png"):
-    #TODO: Make this compatible with parallel run
+def extract_and_overlay_mesh_outlines(
+        original_mesh, goal_mesh, optimized_mesh, plot_file_name="mesh_outlines.png"):
+    # TODO: Make this compatible with parallel run
     # Extract boundary meshes
     boundary_original = BoundaryMesh(original_mesh, "exterior")
     boundary_goal = BoundaryMesh(goal_mesh, "exterior")
@@ -54,29 +56,32 @@ def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, 
     def calculate_boundary_difference(boundary1, boundary2):
         coords1 = boundary1.coordinates()
         coords2 = boundary2.coordinates()
-        
+
         # Compare coordinates if SAME number of points
         if len(coords1) == len(coords2):
             # Sort by x-coordinate for consistent comparison
             sorted_idx1 = np.argsort(coords1[:, 0])
             sorted_idx2 = np.argsort(coords2[:, 0])
-            
+
             coords1_sorted = coords1[sorted_idx1]
             coords2_sorted = coords2[sorted_idx2]
-            
+
             # Calculate squared differences
             diff = coords1_sorted - coords2_sorted
             squared_diff = np.sum(diff**2)
-            return squared_diff / len(coords1) # Normalize the error
+            return squared_diff / len(coords1)  # Normalize the error
         else:
-            print(f"Warning: Different number of boundary points ({len(coords1)} vs {len(coords2)})")
+            print(
+                f"Warning: Different number of boundary points ({len(coords1)} vs {len(coords2)})")
             return None
 
     # Calculate difference between goal and optimized boundaries
-    boundary_diff = calculate_boundary_difference(boundary_goal, boundary_optimized)
-    
+    boundary_diff = calculate_boundary_difference(
+        boundary_goal, boundary_optimized)
+
     if boundary_diff is not None:
-        print(f"Normalized sum of squared boundary differences (goal vs optimized): {boundary_diff:.6e}")
+        print(
+            f"Normalized sum of squared boundary differences (goal vs optimized): {boundary_diff:.6e}")
 
     # Helper function to plot a boundary mesh
     def plot_boundary(ax, boundary_mesh, color, label):
@@ -85,7 +90,8 @@ def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, 
 
         for cell in cells:
             pts = coords[cell]
-            ax.plot(pts[:, 0], pts[:, 1], color=color, linewidth=1.0, label=label)
+            ax.plot(pts[:, 0], pts[:, 1], color=color,
+                    linewidth=1.0, label=label)
             label = None
 
     # Create the figure
@@ -117,7 +123,7 @@ def plot_mesh_deformation_from_result(
     goal_geometry_msh_path,
     initial_guess_mesh_util,
     plot_file_name="mesh_deformation.png",
-    mesh_overlay_plot_file_name = "outlines.png",
+    mesh_overlay_plot_file_name="outlines.png",
     subplot_titles=None,
 ):
 
@@ -130,7 +136,8 @@ def plot_mesh_deformation_from_result(
 
     msh_file_path = initial_guess_mesh_util.msh_file_path
 
-    # Create fresh new mesh out of msh_file_path instead of the already modified mesh saved in initial_guess_mesh_util
+    # Create fresh new mesh out of msh_file_path instead of the already
+    # modified mesh saved in initial_guess_mesh_util
     mesh, markers = initial_guess_mesh_util.get_mesh_and_markers(True)
 
     # Extract the number of the marker of each object in the simulation
@@ -159,7 +166,8 @@ def plot_mesh_deformation_from_result(
         except Exception:
             num_iterations = None
 
-    # Create fresh new mesh out of msh_file_path instead of the already modified mesh saved in initial_guess_mesh_util
+    # Create fresh new mesh out of msh_file_path instead of the already
+    # modified mesh saved in initial_guess_mesh_util
     mesh_copy, markers_copy = initial_guess_mesh_util.get_mesh_and_markers(
         True)
 
@@ -198,11 +206,12 @@ def plot_mesh_deformation_from_result(
         plt.close()
         print(f"Mesh deformation plot saved to {plot_file_name}")
 
-    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name)
+    extract_and_overlay_mesh_outlines(
+        mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name)
 
 
-def plot_projected_errors(results, error_plot_file, 
-    use_u_scat = False, show=False, projection_degree=0):
+def plot_projected_errors(results, error_plot_file,
+                          use_u_scat=False, show=False, projection_degree=0):
 
     if use_u_scat:
         u_to_plot = "u_scatter"
@@ -235,17 +244,17 @@ def plot_projected_errors(results, error_plot_file,
         ax0, ax1, ax2, ax3 = axes
 
         ax0.plot(x_s, proj_mag_s, marker="o", markersize=3,
-                linestyle="-", color="tab:blue", label="Optimized")
+                 linestyle="-", color="tab:blue", label="Optimized")
         ax0.plot(x_s, matlab_mag_s, marker="x", markersize=3,
-                linestyle="-", color="tab:red", label="Matlab ref")
+                 linestyle="-", color="tab:red", label="Matlab ref")
         ax0.set_ylabel("|u|")
         ax0.set_title(f"Magnitude of " + u_to_plot)
         ax0.legend()
 
         ax1.plot(x_s, proj_phase_s, marker="o", markersize=3,
-                linestyle="-", color="tab:blue", label="Optimized")
+                 linestyle="-", color="tab:blue", label="Optimized")
         ax1.plot(x_s, matlab_phase_s, marker="x", markersize=3,
-                linestyle="-", color="tab:red", label="Matlab ref")
+                 linestyle="-", color="tab:red", label="Matlab ref")
         ax1.set_ylabel("Phase of u")
         ax1.set_title("Phase of " + u_to_plot)
         ax1.legend()
@@ -272,7 +281,8 @@ def plot_projected_errors(results, error_plot_file,
         plt.close(fig)
 
         # TODO: Make this a test
-        print(f"Sum of magnitude error square: {np.sum(mag_err ** 2)}") # If divided by 1/num points-1 i think u can recover the residual
+        # If divided by 1/num points-1 i think u can recover the residual
+        print(f"Sum of magnitude error square: {np.sum(mag_err ** 2)}")
         print(f"Projected error plots saved to {error_plot_file}")
 
 
@@ -281,7 +291,8 @@ def plot_comparison(dolfin_csv_path, matlab_csv_path, output_image_path):
     df_dolfin = pd.read_csv(dolfin_csv_path)
     df_matlab = pd.read_csv(matlab_csv_path)
 
-    # Check data alignment. Round x values to avoid floating point precision issues
+    # Check data alignment. Round x values to avoid floating point precision
+    # issues
     df_dolfin['x_rounded'] = df_dolfin['x'].round(10)
     df_dolfin = df_dolfin.sort_values(by='x_rounded')
     df_matlab['x_rounded'] = df_matlab['x'].round(10)

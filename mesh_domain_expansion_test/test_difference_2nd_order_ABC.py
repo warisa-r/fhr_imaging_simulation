@@ -64,12 +64,14 @@ surf_grad_im = dot(grad_u_im, grad_v_im) - du_dn_im * dv_dn_im
 
 # Second-order correction: -(1/2ik)(1/R²)∫∇_t u · ∇_t v ds + (1/2ikR)∫u·v ds
 abc_2nd_tangential_re = - \
-    (1.0/(2.0*k_background*R*R)) * surf_grad_re * ds_outer
-abc_2nd_tangential_im = (1.0/(2.0*k_background*R*R)
+    (1.0 / (2.0 * k_background * R * R)) * surf_grad_re * ds_outer
+abc_2nd_tangential_im = (1.0 / (2.0 * k_background * R * R)
                          ) * surf_grad_im * ds_outer
 
-abc_2nd_curvature_re = (1.0/(2.0*k_background*R)) * u_im * v_re * ds_outer
-abc_2nd_curvature_im = -(1.0/(2.0*k_background*R)) * u_re * v_im * ds_outer
+abc_2nd_curvature_re = (1.0 / (2.0 * k_background * R)
+                        ) * u_im * v_re * ds_outer
+abc_2nd_curvature_im = -(1.0 / (2.0 * k_background * R)
+                         ) * u_re * v_im * ds_outer
 
 # Complete bilinear form
 a = (inner(grad(u_re), grad(v_re)) - k_background**2 * u_re * v_re) * dx + \

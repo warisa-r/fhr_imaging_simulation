@@ -9,7 +9,8 @@ except ModuleNotFoundError:
     sys.exit(0)
 
 
-def generate_mesh(filename: str, lmbda: int, order: int, verbose: bool = False):
+def generate_mesh(filename: str, lmbda: int, order: int,
+                  verbose: bool = False):
     if MPI.COMM_WORLD.rank == 0:
         gmsh.initialize()
         gmsh.model.add("helmholtz_domain")

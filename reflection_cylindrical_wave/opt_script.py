@@ -21,12 +21,14 @@ set_log_level(LogLevel.ERROR)
 frequency = 5e9
 wave_source = (0.5, -2.0)
 amp = 50
-inc_wave_setup = IncidentWaveSetup(frequency, cylindrical_wave(amp, wave_source))
+inc_wave_setup = IncidentWaveSetup(
+    frequency, cylindrical_wave(
+        amp, wave_source))
 
 measurement_data_file_path = "measurements/matlab_measurements_sin0.5_scatter.csv"
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
 markers_dict = {
-    "obstacle": OBSTACLE_MARKER, # Markers importee from our mesh generation module
+    "obstacle": OBSTACLE_MARKER,  # Markers importee from our mesh generation module
     "side_wall": SIDE_WALL_MARKER,
     "bottom_wall": RECEIVER_EDGE_MARKER,
     "obstacle_opt": None
@@ -55,7 +57,8 @@ h_V.rename("Volume extension of h", "")
 u_scat_mag_dg0, u_scat_re_projected, u_scat_im_projected, ds_receiver, V_DG0 = forward_solve(
     h, inc_wave_setup, initial_guess_mesh_util, True)
 
-# Load the reference data in the same function space as the projected result of the forward solve
+# Load the reference data in the same function space as the projected
+# result of the forward solve
 u_ref_dg0, _ = load_forward_simulation_data_bottomwall(
     measurement_data_file_path, V_DG0)
 
@@ -89,14 +92,17 @@ plot_mesh_deformation_from_result(
     goal_geometry_msh_path,
     initial_guess_mesh_util,
     plot_file_name="outputs/mesh_deformation_sin0.5_scatter_DG0_matlab.png",
-    mesh_overlay_plot_file_name = "outputs/mesh_overlay_sin0.5_scatter_DG0_matlab.png"
+    mesh_overlay_plot_file_name="outputs/mesh_overlay_sin0.5_scatter_DG0_matlab.png"
 )
 
 matlab_fullfield_csv_path = "measurements/matlab_fullfield_sin0.5_scatter.csv"
 results = calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, result_path,
-                                        initial_guess_mesh_util, inc_wave_setup, True)
+                                              initial_guess_mesh_util, inc_wave_setup, True)
 
-plot_projected_errors(results, "outputs/error_sin0.5_scatter_DG0_matlab.png", True)
+plot_projected_errors(
+    results,
+    "outputs/error_sin0.5_scatter_DG0_matlab.png",
+    True)
 
 # Print optimization summary
 print("\n=== Optimization Summary ===")

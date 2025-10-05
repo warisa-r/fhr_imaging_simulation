@@ -1,5 +1,6 @@
 from .mesh_util import SIDE_WALL_MARKER, RECEIVER_EDGE_MARKER, OBSTACLE_MARKER, DOMAIN_MARKER
 
+
 def generate_square_with_sin_perturbed_rect_obstacle_mesh(
     width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=0.05,
     output_name="square_with_sin_perturbed_rect_obstacle",
@@ -28,11 +29,11 @@ def generate_square_with_sin_perturbed_rect_obstacle_mesh(
     gmsh.model.geo.mesh.setTransfiniteCurve(l1, n_points_bottom)
 
     # Rectangle obstacle center
-    cx, cy = width/2, height/2
-    rx1 = cx - rect_w/2
-    rx2 = cx + rect_w/2
-    ry1 = cy - rect_h/2
-    ry2 = cy + rect_h/2
+    cx, cy = width / 2, height / 2
+    rx1 = cx - rect_w / 2
+    rx2 = cx + rect_w / 2
+    ry1 = cy - rect_h / 2
+    ry2 = cy + rect_h / 2
 
     # Perturbed bottom edge of rectangle
     rect_bottom_points = []
@@ -44,14 +45,15 @@ def generate_square_with_sin_perturbed_rect_obstacle_mesh(
 
     # Right edge point
     rp2 = gmsh.model.geo.addPoint(rx2, ry2, 0, mesh_size)
-    
+
     # Perturbed top edge of rectangle (if enabled)
     rect_top_points = []
     if perturb_top:
         for i in range(n_points_rect_bottom):
             t = i / (n_points_rect_bottom - 1)
             x = rx2 - t * (rx2 - rx1)  # Going from right to left
-            y = ry2 + top_perturb_amplitude * np.sin(2 * top_perturb_frequency * np.pi * t)
+            y = ry2 + top_perturb_amplitude * \
+                np.sin(2 * top_perturb_frequency * np.pi * t)
             rect_top_points.append(gmsh.model.geo.addPoint(x, y, 0, mesh_size))
     else:
         # Non-perturbed top edge
@@ -62,26 +64,28 @@ def generate_square_with_sin_perturbed_rect_obstacle_mesh(
 
     # Rectangle lines
     rect_lines = []
-    
+
     # Bottom (perturbed)
     for i in range(n_points_rect_bottom - 1):
         rect_lines.append(gmsh.model.geo.addLine(
-            rect_bottom_points[i], rect_bottom_points[i+1]))
-    
+            rect_bottom_points[i], rect_bottom_points[i + 1]))
+
     # Right edge
     if perturb_top:
-        rect_lines.append(gmsh.model.geo.addLine(rect_bottom_points[-1], rect_top_points[0]))
+        rect_lines.append(gmsh.model.geo.addLine(
+            rect_bottom_points[-1], rect_top_points[0]))
     else:
         rect_lines.append(gmsh.model.geo.addLine(rect_bottom_points[-1], rp2))
-    
+
     # Top edge
     if perturb_top:
         # Top (perturbed)
         for i in range(n_points_rect_bottom - 1):
             rect_lines.append(gmsh.model.geo.addLine(
-                rect_top_points[i], rect_top_points[i+1]))
+                rect_top_points[i], rect_top_points[i + 1]))
         # Left edge
-        rect_lines.append(gmsh.model.geo.addLine(rect_top_points[-1], rect_bottom_points[0]))
+        rect_lines.append(gmsh.model.geo.addLine(
+            rect_top_points[-1], rect_bottom_points[0]))
     else:
         # Top (non-perturbed)
         rect_lines.append(gmsh.model.geo.addLine(rp2, rp3))
@@ -112,6 +116,7 @@ def generate_square_with_sin_perturbed_rect_obstacle_mesh(
     gmsh.finalize()
     return f"{output_name}.msh"
 
+
 def generate_square_with_cos_perturbed_rect_obstacle_mesh(
     width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=0.05,
     output_name="square_with_cos_perturbed_rect_obstacle",
@@ -139,11 +144,11 @@ def generate_square_with_cos_perturbed_rect_obstacle_mesh(
     gmsh.model.geo.mesh.setTransfiniteCurve(l1, n_points_bottom)
 
     # Rectangle obstacle center
-    cx, cy = width/2, height/2
-    rx1 = cx - rect_w/2
-    rx2 = cx + rect_w/2
-    ry1 = cy - rect_h/2
-    ry2 = cy + rect_h/2
+    cx, cy = width / 2, height / 2
+    rx1 = cx - rect_w / 2
+    rx2 = cx + rect_w / 2
+    ry1 = cy - rect_h / 2
+    ry2 = cy + rect_h / 2
 
     # Perturbed bottom edge of rectangle
     rect_bottom_points = []
@@ -163,7 +168,7 @@ def generate_square_with_cos_perturbed_rect_obstacle_mesh(
     # Bottom (perturbed)
     for i in range(n_points_rect_bottom - 1):
         rect_lines.append(gmsh.model.geo.addLine(
-            rect_bottom_points[i], rect_bottom_points[i+1]))
+            rect_bottom_points[i], rect_bottom_points[i + 1]))
     # Right
     rect_lines.append(gmsh.model.geo.addLine(rect_bottom_points[-1], rp3))
     rect_lines.append(gmsh.model.geo.addLine(rp3, rp4))

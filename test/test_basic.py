@@ -8,13 +8,18 @@ from HH_shape_opt import *
 
 BASE_DIR = os.path.dirname(__file__)
 
-MEASUREMENT_DATA_FILE_PATH = os.path.join(BASE_DIR, "measurements", "matlab_measurements_sin0.5.csv")
-MSH_FILE_PATH = os.path.join(BASE_DIR, "meshes", "square_with_rect_obstacle.msh")
+MEASUREMENT_DATA_FILE_PATH = os.path.join(
+    BASE_DIR, "measurements", "matlab_measurements_sin0.5.csv")
+MSH_FILE_PATH = os.path.join(
+    BASE_DIR,
+    "meshes",
+    "square_with_rect_obstacle.msh")
+
 
 def initialize_Jhat_basic():
     # ensure test runs from opt_DG0 so relative paths match the script
     repo_root = os.path.dirname(os.path.dirname(__file__))
-    opt_dir = os.path.join(repo_root, "opt_DG0")
+    opt_dir = os.path.join(repo_root, "reflection_plane_wave")
     os.chdir(opt_dir)
 
     # setup (match opt_script)
@@ -42,8 +47,10 @@ def initialize_Jhat_basic():
     h.vector().apply("insert")
 
     # forward solve + build objective
-    u_tot_mag_dg0, _, _, ds_receiver, V_DG0 = forward_solve(h, inc_wave_setup, initial_guess_mesh_util)
-    u_ref_dg0, _ = load_forward_simulation_data_bottomwall(MEASUREMENT_DATA_FILE_PATH, V_DG0)
+    u_tot_mag_dg0, _, _, ds_receiver, V_DG0 = forward_solve(
+        h, inc_wave_setup, initial_guess_mesh_util)
+    u_ref_dg0, _ = load_forward_simulation_data_bottomwall(
+        MEASUREMENT_DATA_FILE_PATH, V_DG0)
     J = assemble(
         (inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0) * ds_receiver))
     Jhat = ReducedFunctional(J, Control(h))
@@ -63,15 +70,21 @@ def test_basic_runs_two_iterations_and_zero_residual():
     assert abs(sol['objective'] - 0.010592287670655856) < 1e-9
 
     # Check that the objective functional is consistent
-    result_path = os.path.join(BASE_DIR, "outputs", "result_sin0.5_DG0_matlab.h5")
+    result_path = os.path.join(
+        BASE_DIR,
+        "outputs",
+        "result_sin0.5_DG0_matlab.h5")
     # Read h from a result file
     with HDF5File(MPI.comm_world, result_path, "r") as h5f:
         h5f.read(h, "/h_opt")
 
-    mesh_fresh, markers_fresh = initial_guess_mesh_util.get_mesh_and_markers(create_new_object=True)
-    u_mag_fresh, _, _, ds_receiver_fresh, Vproj_fresh = forward_solve(h, inc_wave_setup, initial_guess_mesh_util, projection_degree=0)
+    mesh_fresh, markers_fresh = initial_guess_mesh_util.get_mesh_and_markers(
+        create_new_object=True)
+    u_mag_fresh, _, _, ds_receiver_fresh, Vproj_fresh = forward_solve(
+        h, inc_wave_setup, initial_guess_mesh_util, projection_degree=0)
     # reproject u_ref onto the fresh Vproj_fresh for fair comparison:
-    u_ref_dg0_fresh, _ = load_forward_simulation_data_bottomwall(MEASUREMENT_DATA_FILE_PATH, Vproj_fresh)
+    u_ref_dg0_fresh, _ = load_forward_simulation_data_bottomwall(
+        MEASUREMENT_DATA_FILE_PATH, Vproj_fresh)
     J_manual = assemble((u_mag_fresh - u_ref_dg0_fresh)**2 * ds_receiver_fresh)
 
     # Assert that forward simulation gives the same objective functional value as the objective functional value call

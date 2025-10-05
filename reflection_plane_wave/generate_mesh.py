@@ -11,7 +11,6 @@ if __name__ == "__main__":
     wavelength = c / freq_max  # Physical wavelength
     mesh_size = wavelength / 5
 
-    
     mesh_file = generate_square_with_sin_perturbed_rect_obstacle_mesh(
         width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=mesh_size,
         output_name="meshes/square_with_sin_perturbed_top_bottom_rect_obstacle",
@@ -19,7 +18,6 @@ if __name__ == "__main__":
         perturb_amplitude=0.01, perturb_frequency=0.5,
         perturb_top=True, top_perturb_amplitude=0.01, top_perturb_frequency=2
     )
-    
 
     """
     mesh_file =  generate_square_with_rect_obstacle_mesh(
@@ -30,6 +28,4 @@ if __name__ == "__main__":
     )
     """
 
-    
     convert_msh_to_xdmf(mesh_file)
-    

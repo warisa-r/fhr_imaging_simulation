@@ -82,7 +82,7 @@ gradJ = dolfinx.fem.Function(W)
 
 u_degree = max(2, order)
 u_el = ufl.VectorElement("Lagrange", mesh.ufl_cell(), u_degree)
-p_el = ufl.FiniteElement("Lagrange", mesh.ufl_cell(), u_degree-1)
+p_el = ufl.FiniteElement("Lagrange", mesh.ufl_cell(), u_degree - 1)
 Z = dolfinx.fem.FunctionSpace(mesh, ufl.MixedElement([u_el, p_el]))
 z = dolfinx.fem.Function(Z)
 z_adjoint = dolfinx.fem.Function(Z)
@@ -91,13 +91,13 @@ u, p = ufl.split(z)
 test = ufl.TestFunction(Z)
 v, q = ufl.split(test)
 
-nu = 1./400
-e = nu*ufl.inner(ufl.grad(u), ufl.grad(v))*ufl.dx - p*ufl.div(v)*ufl.dx \
-    + ufl.inner(ufl.dot(ufl.grad(u), u), v)*ufl.dx + ufl.div(u)*q*ufl.dx
+nu = 1. / 400
+e = nu * ufl.inner(ufl.grad(u), ufl.grad(v)) * ufl.dx - p * ufl.div(v) * ufl.dx \
+    + ufl.inner(ufl.dot(ufl.grad(u), u), v) * ufl.dx + ufl.div(u) * q * ufl.dx
 
 
 def u_in(x):
-    return (6*x[1] * (1-x[1], np.zeros(x.shape[1], dtype=np.float64)))
+    return (6 * x[1] * (1 - x[1], np.zeros(x.shape[1], dtype=np.float64)))
 
 
 Z0, _ = Z.sub(0).collapse()
@@ -120,9 +120,9 @@ bc_walls_adjoint = dolfinx.fem.dirichletbc(u_adjoint, wall_dofs, Z.sub(0))
 bcs = [bc_inlet, bc_walls]
 bcs_adjoint = [bc_inlet_adjoint, bc_walls_adjoint]
 
-J = nu*ufl.inner(ufl.grad(u), ufl.grad(u))*ufl.dx
+J = nu * ufl.inner(ufl.grad(u), ufl.grad(u)) * ufl.dx
 Jf = dolfinx.fem.form(J)
-volume = dolfinx.fem.Constant(mesh, 1.)*ufl.dx
+volume = dolfinx.fem.Constant(mesh, 1.) * ufl.dx
 volume_form = dolfinx.fem.form(volume)
 target_volume = mesh.comm.allreduce(
     dolfinx.fem.assemble_scalar(volume_form), op=MPI.SUM)
@@ -180,7 +180,7 @@ dvol_func = dolfinx.fem.Function(W)
 
 # Riesz representation variational problem
 phi, psi = ufl.TrialFunction(W), ufl.TestFunction(W)
-a_riesz = dolfinx.fem.form(ufl.inner(ufl.grad(phi), ufl.grad(psi))*ufl.dx)
+a_riesz = dolfinx.fem.form(ufl.inner(ufl.grad(phi), ufl.grad(psi)) * ufl.dx)
 facets_non_move = np.sort(np.hstack([ft.find(tag) for tag in [10, 11, 12]]))
 dofs_non_move = dolfinx.fem.locate_dofs_topological(W, ft.dim, facets_non_move)
 zero_bc = dolfinx.fem.Function(W)
@@ -205,11 +205,12 @@ for i in range(1, 51):
     dvol_func.x.scatter_reverse(dolfinx.la.InsertMode.add)
     current_vol = mesh.comm.allreduce(
         dolfinx.fem.assemble_scalar(volume_form), op=MPI.SUM)
-    dL_func.x.array[:] += 2*c*dvol_func.x.array*(current_vol-target_volume)
+    dL_func.x.array[:] += 2 * c * dvol_func.x.array * \
+        (current_vol - target_volume)
 
     dolfinx.fem.petsc.set_bc(dL_func.vector, bc_riesz)
     solver_riesz.solve(dL_func.vector, gradJ.vector)
-    mesh.geometry.x[:, :2] -= 0.5*gradJ.x.array.reshape(-1, 2)
+    mesh.geometry.x[:, :2] -= 0.5 * gradJ.x.array.reshape(-1, 2)
     solve_state_and_adjoint(i)
     print(i, mesh.comm.allreduce(dolfinx.fem.assemble_scalar(Jf), op=MPI.SUM))
 

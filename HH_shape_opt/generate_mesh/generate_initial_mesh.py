@@ -36,11 +36,11 @@ def generate_square_with_rect_obstacle_mesh(
     gmsh.model.geo.mesh.setTransfiniteCurve(l1, n_points_bottom)
 
     # Rectangle obstacle center
-    cx, cy = width/2, height/2
-    rx1 = cx - rect_w/2
-    rx2 = cx + rect_w/2
-    ry1 = cy - rect_h/2
-    ry2 = cy + rect_h/2
+    cx, cy = width / 2, height / 2
+    rx1 = cx - rect_w / 2
+    rx2 = cx + rect_w / 2
+    ry1 = cy - rect_h / 2
+    ry2 = cy + rect_h / 2
 
     # Rectangle obstacle points (counterclockwise)
     rp1 = gmsh.model.geo.addPoint(rx1, ry1, 0, mesh_size)
@@ -90,46 +90,52 @@ def generate_square_with_rect_obstacle_mesh(
     gmsh.finalize()
     return f"{output_name}.msh"
 
-#TODO: (low priority finish this)
+# TODO: (low priority finish this)
+
+
 class MeshGenerator():
-    def __init__(signal_csv_file, freq_max = 5e9, num_mesh_points_per_wavelength = 5):
-        mesh_size = calculate_mesh_size(freq_max, num_mesh_points_per_wavelength)
+    def __init__(signal_csv_file, freq_max=5e9,
+                 num_mesh_points_per_wavelength=5):
+        mesh_size = calculate_mesh_size(
+            freq_max, num_mesh_points_per_wavelength)
         # The csv must have categories 'x', 'y', and 'u'
         df = pd.read_csv(measurement_data_file_path)
         points = df[["x", "y"]].values
 
-        # Assert points are approximately equidistant and within mesh_size constraint
+        # Assert points are approximately equidistant and within mesh_size
+        # constraint
         self._validate_point_spacing(points, mesh_size)
-        
-        #TODO: Define domain and generate mesh
+
+        # TODO: Define domain and generate mesh
         return
-    
+
     def _validate_point_spacing(self, points, mesh_size, tolerance=1e-12):
         if len(points) < 2:
             return  # Can't validate spacing with less than 2 points
-        
+
         # Calculate distances between consecutive points
         distances = []
         for i in range(len(points) - 1):
-            dist = np.sqrt((points[i+1][0] - points[i][0])**2 + 
-                          (points[i+1][1] - points[i][1])**2)
+            dist = np.sqrt((points[i + 1][0] - points[i][0])**2 +
+                           (points[i + 1][1] - points[i][1])**2)
             distances.append(dist)
-        
+
         distances = np.array(distances)
-        
+
         # Assert all distances are <= mesh_size
         assert np.all(distances <= mesh_size), \
             f"Some point distances exceed mesh_size: max distance = {np.max(distances):.2e}, mesh_size = {mesh_size:.2e}"
-        
+
         # Assert points are approximately equidistant (within tolerance)
         if len(distances) > 1:
             mean_distance = np.mean(distances)
             max_deviation = np.max(np.abs(distances - mean_distance))
             assert max_deviation <= tolerance, \
                 f"Points are not equidistant within tolerance {tolerance:.2e}: max deviation = {max_deviation:.2e}"
-        
+
         print(f"Point spacing validation passed: {len(distances)} segments, "
               f"mean distance = {np.mean(distances):.6e}, max deviation = {np.max(np.abs(distances - np.mean(distances))):.2e}")
+
 
 def generate_square_with_meshed_rect_obstacle(
     width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=0.05,
@@ -137,8 +143,8 @@ def generate_square_with_meshed_rect_obstacle(
     n_points_bottom=100, n_points_rect_bottom=40,
     use_opt_marker=False
 ):
-    # Obstacle with which refraction can still happen
-    
+    # This version creates two adjacent, meshed domains (background and obstacle).
+
     gmsh.initialize()
     gmsh.clear()
     gmsh.model.add("square_with_meshed_rect_obstacle")
@@ -159,11 +165,11 @@ def generate_square_with_meshed_rect_obstacle(
     gmsh.model.geo.mesh.setTransfiniteCurve(l1, n_points_bottom)
 
     # Rectangle obstacle center
-    cx, cy = width/2, height/2
-    rx1 = cx - rect_w/2
-    rx2 = cx + rect_w/2
-    ry1 = cy - rect_h/2
-    ry2 = cy + rect_h/2
+    cx, cy = width / 2, height / 2
+    rx1 = cx - rect_w / 2
+    rx2 = cx + rect_w / 2
+    ry1 = cy - rect_h / 2
+    ry2 = cy + rect_h / 2
 
     # Rectangle obstacle points (counterclockwise)
     rp1 = gmsh.model.geo.addPoint(rx1, ry1, 0, mesh_size)
@@ -184,11 +190,11 @@ def generate_square_with_meshed_rect_obstacle(
     outer_loop = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4])
     rect_loop = gmsh.model.geo.addCurveLoop(rect_lines)
 
-    # Create TWO separate surfaces:
-    # 1. Background domain (outer square minus rectangle)
+    # Create TWO separate, adjacent surfaces:
+    # 1. Background domain (outer square with a hole for the obstacle)
     background_surface = gmsh.model.geo.addPlaneSurface([outer_loop, rect_loop])
-    
-    # 2. Obstacle domain (rectangle)
+
+    # 2. Obstacle domain (the inner rectangle)
     obstacle_surface = gmsh.model.geo.addPlaneSurface([rect_loop])
 
     gmsh.model.geo.synchronize()
@@ -196,7 +202,7 @@ def generate_square_with_meshed_rect_obstacle(
     # Physical groups for boundaries
     gmsh.model.addPhysicalGroup(1, [l1], RECEIVER_EDGE_MARKER, "bottom_wall")
     gmsh.model.addPhysicalGroup(1, [l2, l3, l4], SIDE_WALL_MARKER, "outer_walls")
-    
+
     if use_opt_marker:
         # Mark the bottom of the obstacle separately for optimization
         gmsh.model.addPhysicalGroup(1, [rl1], OBSTACLE_OPT_MARKER, "obstacle_opt_boundary")
@@ -215,7 +221,10 @@ def generate_square_with_meshed_rect_obstacle(
     gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
     gmsh.write(f"{output_name}.msh")
     gmsh.finalize()
+
     return f"{output_name}.msh"
+
+
 
 if __name__ == "__main__":
     print("Generating square with hole mesh...")
