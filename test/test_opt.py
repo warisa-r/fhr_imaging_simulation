@@ -16,7 +16,7 @@ def test_opt_runs_two_iterations_and_zero_residual():
 
     # ensure test runs from opt_DG0 so relative paths match the script
     repo_root = os.path.dirname(os.path.dirname(__file__))
-    opt_dir = os.path.join(repo_root, "opt_DG0")
+    opt_dir = os.path.join(repo_root, "reflection_plane_wave")
     os.chdir(opt_dir)
 
     # setup (match opt_script)

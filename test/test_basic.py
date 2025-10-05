@@ -14,7 +14,7 @@ MSH_FILE_PATH = os.path.join(BASE_DIR, "meshes", "square_with_rect_obstacle.msh"
 def initialize_Jhat_basic():
     # ensure test runs from opt_DG0 so relative paths match the script
     repo_root = os.path.dirname(os.path.dirname(__file__))
-    opt_dir = os.path.join(repo_root, "opt_DG0")
+    opt_dir = os.path.join(repo_root, "reflection_plane_wave")
     os.chdir(opt_dir)
 
     # setup (match opt_script)
