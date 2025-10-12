@@ -23,7 +23,7 @@ if __name__ == "__main__":
     # Plot the generated mesh
     fig, ax = plt.subplots(figsize=(10, 8))
     # Hide receiver patches (show only predefined markers)
-    plot_mesh(mesh_file, ax, title="Mesh without Receiver Patches", show_receiver_patches=True)
+    plot_mesh(mesh_file, ax, title="Mesh without Receiver Patches", show_receiver_patches=False)
     plt.show()
     plt.close()
 

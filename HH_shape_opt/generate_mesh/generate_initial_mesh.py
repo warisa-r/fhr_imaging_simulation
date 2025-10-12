@@ -324,7 +324,7 @@ def generate_square_with_rect_obstacle_and_receiver_segments(
 
     # Physical groups
     # Mark entire bottom wall (all segments)
-    gmsh.model.addPhysicalGroup(1, all_bottom_lines, BOTTOM_WALL_MARKER, "bottom_wall")
+    #gmsh.model.addPhysicalGroup(1, all_bottom_lines, BOTTOM_WALL_MARKER, "bottom_wall")
     
     # Mark only receiver segments
     if receiver_lines:
@@ -334,7 +334,7 @@ def generate_square_with_rect_obstacle_and_receiver_segments(
             gmsh.model.addPhysicalGroup(1, [rx_line], marker_id, f"receiver_segment_{idx}")
     
     # Mark side walls
-    gmsh.model.addPhysicalGroup(1, [l2, l3, l4], SIDE_WALL_MARKER, "outer_walls")
+    gmsh.model.addPhysicalGroup(1, all_bottom_lines + [l2, l3, l4], SIDE_WALL_MARKER, "outer_walls")
     
     # Mark obstacle
     if use_opt_marker:
