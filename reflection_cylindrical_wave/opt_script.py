@@ -23,7 +23,7 @@ wave_source = (0.5, -2.0)
 amp = 50
 inc_wave_setup = IncidentWaveSetup(frequency, cylindrical_wave(amp, wave_source))
 
-measurement_data_file_path = "measurements/matlab_measurements_sin0.5_scatter.csv"
+measurement_data_file_path = "measurements/matlab_fullfield_sin0.5_scatter.csv"
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
 markers_dict = {
     "obstacle": OBSTACLE_MARKER, # Markers importee from our mesh generation module
@@ -52,15 +52,15 @@ h_V.rename("Volume extension of h", "")
 ##########################
 
 # Solve the forward problem
-u_tot_mag_dg0, u_tot_re_projected, u_tot_im_projected, ds_receiver, V_DG0 = forward_solve(
+u_scat_re, u_scat_im, ds_receiver, V_DG0 = forward_solve(
     h, inc_wave_setup, initial_guess_mesh_util, True)
 
 # Load the reference data in the same function space as the projected result of the forward solve
-u_ref_dg0, _ = load_forward_simulation_data_bottomwall(
+u_ref_re, u_ref_im, _ = load_forward_simulation_data_bottomwall(
     measurement_data_file_path, V_DG0)
 
 J = assemble(
-    (inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0) * ds_receiver))
+    (((u_scat_re - u_ref_re)**2 + (u_scat_im - u_ref_im)**2) * ds_receiver))
 Jhat = ReducedFunctional(J, Control(h))
 
 ## Start optimizing ##
@@ -75,7 +75,7 @@ solver = moola.BFGS(problem, h_moola,
 sol = solver.solve()
 h_opt = sol['control'].data
 
-result_path = "outputs/result_sin0.5_scatter_DG0_matlab.h5"
+result_path = "outputs/result_sin0.5_scat.h5"
 goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
 
 save_optimization_result(
@@ -88,15 +88,15 @@ plot_mesh_deformation_from_result(
     result_path,
     goal_geometry_msh_path,
     initial_guess_mesh_util,
-    plot_file_name="outputs/mesh_deformation_sin0.5_scatter_DG0_matlab.png",
-    mesh_overlay_plot_file_name = "outputs/mesh_overlay_sin0.5_scatter_DG0_matlab.png"
+    plot_file_name="outputs/mesh_deformation_sin0.5_scat.png",
+    mesh_overlay_plot_file_name = "outputs/mesh_overlay_sin0.5_scat.png"
 )
 
 matlab_fullfield_csv_path = "measurements/matlab_fullfield_sin0.5_scatter.csv"
 results = calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, result_path,
                                         initial_guess_mesh_util, inc_wave_setup, True)
 
-plot_projected_errors(results, "outputs/error_sin0.5_scatter_DG0_matlab.png", True)
+plot_projected_errors(results, "outputs/error_sin0.5_scat.png", True)
 
 # Print optimization summary
 print("\n=== Optimization Summary ===")
