@@ -1,5 +1,12 @@
 from .mesh_util import SIDE_WALL_MARKER, RECEIVER_EDGE_MARKER, OBSTACLE_MARKER, DOMAIN_MARKER
 
+import meshio
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import os
+import gmsh
+
 def generate_square_with_sin_perturbed_rect_obstacle_mesh(
     width=1.0, height=1.0, rect_w=0.4, rect_h=0.2, mesh_size=0.05,
     output_name="square_with_sin_perturbed_rect_obstacle",

@@ -10,6 +10,8 @@ RECEIVER_EDGE_MARKER = 2
 OBSTACLE_MARKER = 3
 OBSTACLE_OPT_MARKER = 4
 DOMAIN_MARKER = 5
+BOTTOM_WALL_MARKER = 6
+RECEIVER_SEGMENT_MARKER = 7
 
 def calculate_mesh_size(freq_max, num_mesh_points_per_wavelength):
     c = 299792458
@@ -20,7 +22,7 @@ def calculate_mesh_size(freq_max, num_mesh_points_per_wavelength):
 
     return mesh_size
 
-def plot_mesh(filename, ax, title="", show_domains=True, show_markers=True):
+def plot_mesh(filename, ax, title="", show_domains=True, show_markers=True, show_receiver_patches=True):
     mesh = meshio.read(filename)
     points = mesh.points[:, :2]
     
@@ -55,6 +57,8 @@ def plot_mesh(filename, ax, title="", show_domains=True, show_markers=True):
         RECEIVER_EDGE_MARKER: "Receiver Edge", 
         OBSTACLE_MARKER: "Obstacle Boundary",
         OBSTACLE_OPT_MARKER: "Optimized Obstacle",
+        BOTTOM_WALL_MARKER: "Bottom Wall",
+        RECEIVER_SEGMENT_MARKER: "Receiver Segments",
     }
     
     marker_colors = {
@@ -62,6 +66,8 @@ def plot_mesh(filename, ax, title="", show_domains=True, show_markers=True):
         RECEIVER_EDGE_MARKER: "red", 
         OBSTACLE_MARKER: "black",
         OBSTACLE_OPT_MARKER: "orange",
+        BOTTOM_WALL_MARKER: "green",
+        RECEIVER_SEGMENT_MARKER: "purple",
     }
     
     # Plot different domains
@@ -100,11 +106,30 @@ def plot_mesh(filename, ax, title="", show_domains=True, show_markers=True):
         if line_cells is not None and line_data is not None:
             unique_markers = np.unique(line_data)
             
+            # Track if we've already added a "Receiver Patches" label
+            receiver_patches_labeled = False
+            
             for marker in unique_markers:
                 marker_mask = line_data == marker
                 marker_lines = line_cells[marker_mask]
-                color = marker_colors.get(marker, "purple")
-                label = marker_labels.get(marker, f"Marker {marker}")
+                
+                if marker >= RECEIVER_SEGMENT_MARKER:
+                    # Unknown marker > 7: treat as additional receiver patch
+                    # Skip if show_receiver_patches is False
+                    if not show_receiver_patches:
+                        continue
+                    color = "purple"  # Same color for all receiver patches
+                    label = "Receiver Patches" if not receiver_patches_labeled else None
+                    receiver_patches_labeled = True
+                # Check if this marker is already defined
+                elif marker in marker_labels:
+                    # Use predefined label and color
+                    color = marker_colors[marker]
+                    label = marker_labels[marker]
+                else:
+                    # Unknown marker <= 7: use default gray
+                    color = "gray"
+                    label = f"Marker {marker}"
                 
                 # Build list of line segments (each is a 2x2 array of xy coords)
                 segments = [points[line] for line in marker_lines]
@@ -122,7 +147,6 @@ def plot_mesh(filename, ax, title="", show_domains=True, show_markers=True):
     handles, labels = ax.get_legend_handles_labels()
     if handles:
         ax.legend()
-
 
 
 def convert_msh_to_xdmf(msh_file_path):

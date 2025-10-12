@@ -1,5 +1,4 @@
-from HH_shape_opt.mesh_generation import obstacle_marker, side_wall_marker, receiver_edge_marker
-from HH_shape_opt.mesh_generation import generate_square_with_sin_perturbed_rect_obstacle_mesh, convert_msh_to_xdmf
+from HH_shape_opt import *
 
 if __name__ == "__main__":
     print("Generating square with hole mesh...")
@@ -19,7 +18,11 @@ if __name__ == "__main__":
         perturb_amplitude=0.01, perturb_frequency=0.5,
         perturb_top=True, top_perturb_amplitude=0.01, top_perturb_frequency=2
     )
-    
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    plot_mesh(mesh_file, ax, title="Full Mesh")
+    plt.show()
+    plt.close()
 
     """
     mesh_file =  generate_square_with_rect_obstacle_mesh(
