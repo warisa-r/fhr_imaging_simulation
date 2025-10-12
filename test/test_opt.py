@@ -24,7 +24,7 @@ def test_opt_runs_two_iterations_and_zero_residual():
     inc_wave_setup = IncidentWaveSetup(frequency, plane_wave)
 
     measurement_data_file_path = os.path.join(
-        BASE_DIR, "measurements", "matlab_measurements_sin1.csv")
+        BASE_DIR, "measurements", "matlab_fullfield_sin1_scatter.csv")
     msh_file_path = os.path.join(
         BASE_DIR, "meshes", "square_with_rect_obstacle_opt.msh")
     markers_dict = {
@@ -47,12 +47,12 @@ def test_opt_runs_two_iterations_and_zero_residual():
     h.vector().apply("insert")
 
     # forward solve + build objective
-    u_tot_mag_dg0, _, _, ds_receiver, V_DG0 = forward_solve(
-        h, inc_wave_setup, initial_guess_mesh_util)
-    u_ref_dg0, _ = load_forward_simulation_data_bottomwall(
+    u_scat_re, u_scat_im, ds_receiver, V_DG0 = forward_solve(
+        h, inc_wave_setup, initial_guess_mesh_util, True)
+    u_ref_re, u_ref_im, _ = load_forward_simulation_data_bottomwall(
         measurement_data_file_path, V_DG0)
     J = assemble(
-        (inner(u_tot_mag_dg0 - u_ref_dg0, u_tot_mag_dg0 - u_ref_dg0) * ds_receiver))
+        (((u_scat_re - u_ref_re)**2 + (u_scat_im - u_ref_im)**2) * ds_receiver))
     Jhat = ReducedFunctional(J, Control(h))
 
     # optimize for exactly 2 iterations
@@ -63,4 +63,4 @@ def test_opt_runs_two_iterations_and_zero_residual():
 
     # For some reasons, running in Github pipeline with multiple processes seem to yield a level of randomness to the
     # objective functional value 
-    assert abs(sol['objective'] - 0.1225758306856595) < 1e-9
+    assert abs(sol['objective'] - 0.0880293755000248) < 1e-9

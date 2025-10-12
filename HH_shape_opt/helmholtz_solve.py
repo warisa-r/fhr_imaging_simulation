@@ -194,7 +194,7 @@ def load_forward_simulation_data_bottomwall(measurement_data_file_path, V_ref, p
 
     return u_ref_re, u_ref_im, num_data_points
 
-def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, return_u_scat = False, projection_degree=0):
+def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, return_u_scat = True, projection_degree=0):
     # Get mesh and markers from the MeshUtil object
     mesh, markers = initial_guess_mesh_util.get_mesh_and_markers(True)
 
