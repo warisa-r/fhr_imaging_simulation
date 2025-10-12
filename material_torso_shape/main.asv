@@ -1,0 +1,20 @@
+clc;
+clear;
+
+%% Load data
+
+gm = stlread('.\man_of_steel_statisch.stl');
+
+load('.\radar_parameters');
+
+%% Show torso and data
+
+P_gm = gm.Points*1e-3;
+E_gm = gm.ConnectivityList;
+
+g1 = figure;
+hold on;
+patch('Vertices', circshift(P_gm, 1, 2), 'Faces', E_gm, 'FaceAlpha', 0.2, 'EdgeAlpha', 0.15);
+
+figure;
+scatter3(virt_ant_pos(3,:), virt_ant_pos(1,:), virt_ant_pos(2,:));
