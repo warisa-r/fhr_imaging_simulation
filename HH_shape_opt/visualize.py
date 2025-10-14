@@ -70,7 +70,7 @@ def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, 
             return squared_diff / len(coords1) # Normalize the error
         else:
             print(f"Warning: Different number of boundary points ({len(coords1)} vs {len(coords2)})")
-            return None
+        return None
 
     # Calculate difference between goal and optimized boundaries
     boundary_diff = calculate_boundary_difference(boundary_goal, boundary_optimized)
@@ -104,6 +104,9 @@ def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, 
         title += f"\nBoundary diff²: {boundary_diff:.4e}"
     ax.set_title(title)
     ax.legend()
+
+    plt.show()
+    plt.close()
 
     # Save or show the figure
     if MPI.comm_world.rank == 0:
