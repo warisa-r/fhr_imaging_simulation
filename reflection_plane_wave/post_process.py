@@ -40,5 +40,8 @@ plot_mesh_deformation_from_result(
     goal_geometry_msh_path,
     initial_guess_mesh_util,
     plot_file_name="outputs/mesh_deformation_sin0.5_amp2_scat.png",
-    mesh_overlay_plot_file_name = "outputs/mesh_overlay_sin0.5_amp2_scat.png"
+    mesh_overlay_plot_file_name = "outputs/mesh_overlay_sin0.5_amp2_scat.png",
+    print_at_x = 0.5
 )
+
+# Difference between the optimized shape

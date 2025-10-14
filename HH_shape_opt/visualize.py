@@ -43,7 +43,7 @@ def gather_and_plot_mesh(mesh, ax, color="k", linewidth=0.3, title=None):
         ax.set_aspect("equal")
 
 
-def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, plot_file_name="mesh_outlines.png"):
+def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, plot_file_name="mesh_outlines.png", print_at_x = None):
     #TODO: Make this compatible with parallel run
     # Extract boundary meshes
     boundary_original = BoundaryMesh(original_mesh, "exterior")
@@ -51,7 +51,7 @@ def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, 
     boundary_optimized = BoundaryMesh(optimized_mesh, "exterior")
 
     # Calculate boundary difference metric
-    def calculate_boundary_difference(boundary1, boundary2):
+    def calculate_boundary_difference(boundary1, boundary2, print_at_x=None, tolerance=0.01):
         coords1 = boundary1.coordinates()
         coords2 = boundary2.coordinates()
         
@@ -64,6 +64,49 @@ def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, 
             coords1_sorted = coords1[sorted_idx1]
             coords2_sorted = coords2[sorted_idx2]
             
+            # Print specific point if requested -> To analyze the wrong local minimum case
+            if print_at_x is not None:
+                # Find all points within tolerance of print_at_x
+                mask1 = np.abs(coords1_sorted[:, 0] - print_at_x) < tolerance
+                mask2 = np.abs(coords2_sorted[:, 0] - print_at_x) < tolerance
+                
+                points1_near = coords1_sorted[mask1]
+                points2_near = coords2_sorted[mask2]
+                
+                print(f"\n{'='*60}")
+                print(f"Points near x = {print_at_x} (tolerance = {tolerance})")
+                print(f"{'='*60}")
+                
+                print(f"\nGoal boundary points ({len(points1_near)} found):")
+                print(f"{'Index':<8} {'x':<12} {'y':<12}")
+                print(f"{'-'*32}")
+                for i, pt in enumerate(points1_near):
+                    print(f"{i:<8} {pt[0]:<12.6f} {pt[1]:<12.6f}")
+                
+                print(f"\nOptimized boundary points ({len(points2_near)} found):")
+                print(f"{'Index':<8} {'x':<12} {'y':<12}")
+                print(f"{'-'*32}")
+                for i, pt in enumerate(points2_near):
+                    print(f"{i:<8} {pt[0]:<12.6f} {pt[1]:<12.6f}")
+                
+                # Calculate differences for matching points
+                if len(points1_near) > 0 and len(points2_near) > 0:
+                    print(f"\nPairwise differences (closest matches):")
+                    print(f"{'Goal (x,y)':<28} {'Opt (x,y)':<28} {'Δx':<12} {'Δy':<12} {'|Δ|²':<12}")
+                    print(f"{'-'*92}")
+                    
+                    for pt1 in points1_near:
+                        # Find closest point in optimized boundary
+                        distances = np.linalg.norm(points2_near - pt1, axis=1)
+                        closest_idx = np.argmin(distances)
+                        pt2 = points2_near[closest_idx]
+                        diff = pt1 - pt2
+                        
+                        print(f"({pt1[0]:.6f}, {pt1[1]:.6f})  ({pt2[0]:.6f}, {pt2[1]:.6f})  "
+                              f"{diff[0]:+.6e}  {diff[1]:+.6e}  {np.sum(diff**2):.6e}")
+                
+                print(f"{'='*60}\n")
+            
             # Calculate squared differences
             diff = coords1_sorted - coords2_sorted
             squared_diff = np.sum(diff**2)
@@ -73,7 +116,7 @@ def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, 
         return None
 
     # Calculate difference between goal and optimized boundaries
-    boundary_diff = calculate_boundary_difference(boundary_goal, boundary_optimized)
+    boundary_diff = calculate_boundary_difference(boundary_goal, boundary_optimized, print_at_x, tolerance=0.01)
     
     if boundary_diff is not None:
         print(f"Normalized sum of squared boundary differences (goal vs optimized): {boundary_diff:.6e}")
@@ -105,15 +148,11 @@ def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, 
     ax.set_title(title)
     ax.legend()
 
-    plt.show()
-    plt.close()
-
     # Save or show the figure
     if MPI.comm_world.rank == 0:
         plt.savefig(plot_file_name, dpi=300)
         plt.close()
         print(f"Overlay mesh outline saved to {plot_file_name}")
-
 
 def plot_mesh_deformation_from_result(
     h5_file_path,
@@ -121,6 +160,7 @@ def plot_mesh_deformation_from_result(
     initial_guess_mesh_util,
     plot_file_name="mesh_deformation.png",
     mesh_overlay_plot_file_name = "outlines.png",
+    print_at_x = None,
     subplot_titles=None,
 ):
 
@@ -201,7 +241,7 @@ def plot_mesh_deformation_from_result(
         plt.close()
         print(f"Mesh deformation plot saved to {plot_file_name}")
 
-    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name)
+    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
 
 
 def plot_projected_errors(results, error_plot_file, 
