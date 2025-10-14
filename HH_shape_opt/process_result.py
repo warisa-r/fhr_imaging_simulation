@@ -46,12 +46,14 @@ def calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, h5_file_path,
     with HDF5File(MPI.comm_world, h5_file_path, "r") as h5f:
         h5f.read(h, "/h_opt")
     
-    u_tot_mag_projected, u_tot_re_projected, u_tot_im_projected, _, V_projection = forward_solve(h, 
+    u_re_projected, u_im_projected, _, V_projection = forward_solve(h, 
                                                     inc_wave_setup, initial_guess_mesh_util, use_u_scat)
+    u_mag = sqrt(u_re_projected**2 + u_im_projected**2)
+    u_mag_projected = project(u_mag, V_projection)
 
-    mag_vec = u_tot_mag_projected.vector().get_local()
-    re_vec = u_tot_re_projected.vector().get_local()
-    im_vec = u_tot_im_projected.vector().get_local()
+    mag_vec = u_mag_projected.vector().get_local()
+    re_vec = u_re_projected.vector().get_local()
+    im_vec = u_im_projected.vector().get_local()
 
     # Read the data from matlab
     df = pd.read_csv(matlab_fullfield_csv_path)

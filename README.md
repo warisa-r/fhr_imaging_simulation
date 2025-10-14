@@ -23,3 +23,16 @@
     `python -c "import dolfin_adjoint"`
 9. If this is successful, install the rest of the dependencies:
   `conda install conda-forge python-gmsh meshio pandas matplotlib`
+
+
+# TODO
+- [x] We know the entire complex number. Change the objective functional to be |u-u_meas| instead of |u| - |u_meas| (commit before this change is https://github.com/warisa-r/fhr_imaging_simulation/commit/9bc010abf12aa56abeb6709c26be723efc1488c8)
+
+- [] Create a mesh that supports receivers that are not directly next to each other.
+
+Thesis
+- [] Motivation
+- [] Statement of the problem: Surface Radar imaging. And surface reconstruction. Torso paper vs 
+- [] Method My approach
+- [] Numerical experiments
+- [] Outlook on refraction... limitations

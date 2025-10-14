@@ -135,24 +135,28 @@ def load_forward_simulation_data_bottomwall(measurement_data_file_path, V_ref, p
     df = pd.read_csv(measurement_data_file_path)
     points = df[["x", "y"]].values
     num_data_points = len(points)
-    values = df["u"].values
+    values_real = df["real_u"].values
+    values_imag = df["imag_u"].values
 
-    # Set up the assignment
-    u_ref = Function(V_ref)
+    # Set up the assignment for real part
+    u_ref_re = Function(V_ref)
+    u_ref_im = Function(V_ref)
     mesh = V_ref.mesh()
     tree = mesh.bounding_box_tree()
     dofmap = V_ref.dofmap()
-    u_vec = u_ref.vector().get_local()
+    u_vec_real = u_ref_re.vector().get_local()
+    u_vec_imag = u_ref_im.vector().get_local()
 
     if projection_degree == 0:
         # Logic for DG0: one DOF per cell.
         assigned = np.zeros(mesh.num_cells(), dtype=bool)
-        for (x, y), val in zip(points, values):
+        for (x, y), val_real, val_imag in zip(points, values_real, values_imag):
             point = Point(x, y)
             cell_id = tree.compute_first_entity_collision(point)
             if cell_id < mesh.num_cells() and not assigned[cell_id]:
                 dof_idx = dofmap.cell_dofs(cell_id)[0]
-                u_vec[dof_idx] = val
+                u_vec_real[dof_idx] = val_real
+                u_vec_imag[dof_idx] = val_imag
                 assigned[cell_id] = True
             elif cell_id < mesh.num_cells() and assigned[cell_id]:
                 print(
@@ -161,7 +165,7 @@ def load_forward_simulation_data_bottomwall(measurement_data_file_path, V_ref, p
         # Logic for CG > 0 or DG > 0: find the closest DOF within the cell.
         dof_coords = V_ref.tabulate_dof_coordinates()
         assigned_dofs = set()
-        for (x, y), val in zip(points, values):
+        for (x, y), val_real, val_imag in zip(points, values_real, values_imag):
             point = Point(x, y)
             cell_id = tree.compute_first_entity_collision(point)
             if cell_id < mesh.num_cells():
@@ -175,20 +179,22 @@ def load_forward_simulation_data_bottomwall(measurement_data_file_path, V_ref, p
                 closest_global_dof = cell_dofs[closest_local_dof_idx]
 
                 if closest_global_dof not in assigned_dofs:
-                    u_vec[closest_global_dof] = val
+                    u_vec_real[closest_global_dof] = val_real
+                    u_vec_imag[closest_global_dof] = val_imag
                     assigned_dofs.add(closest_global_dof)
                 else:
                     # This can happen if a DOF is shared by multiple cells that contain points
                     pass
 
-    # Push the updated values into the Function
-    u_ref.vector().set_local(u_vec)
-    u_ref.vector().apply("insert")
+    # Push the updated values into the Functions
+    u_ref_re.vector().set_local(u_vec_real)
+    u_ref_re.vector().apply("insert")
+    u_ref_im.vector().set_local(u_vec_imag)
+    u_ref_im.vector().apply("insert")
 
-    return u_ref, num_data_points
+    return u_ref_re, u_ref_im, num_data_points
 
-
-def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, return_u_scat = False, projection_degree=0):
+def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, return_u_scat = True, projection_degree=0):
     # Get mesh and markers from the MeshUtil object
     mesh, markers = initial_guess_mesh_util.get_mesh_and_markers(True)
 
@@ -267,10 +273,6 @@ def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, return_u_s
     u_tot_re = u_inc_re + u_sol_re
     u_tot_im = u_inc_im + u_sol_im
 
-    # Calculate the magnitude of scattered wave and total wave
-    u_sol_mag = sqrt(u_sol_re**2 + u_sol_im**2)
-    u_tot_mag = sqrt(u_tot_re**2 + u_tot_im**2)
-
     if projection_degree == 0:
         V_projection = FunctionSpace(mesh, "DG", 0)
     else:
@@ -280,15 +282,13 @@ def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, return_u_s
                         subdomain_id=receiver_edge_marker)
 
     if return_u_scat:
-        u_scat_mag_projected = project(u_sol_mag, V_projection)
         # For final signal phase comparison
         u_scat_re_projected = project(u_sol_re, V_projection)
         u_scat_im_projected = project(u_sol_im, V_projection)
-        return u_scat_mag_projected, u_scat_re_projected, u_scat_im_projected, ds_receiver, V_projection
+        return u_scat_re_projected, u_scat_im_projected, ds_receiver, V_projection
     
     else:
-        u_tot_mag_projected = project(u_tot_mag, V_projection)
         # For final signal phase comparison
         u_tot_re_projected = project(u_tot_re, V_projection)
         u_tot_im_projected = project(u_tot_im, V_projection)
-        return u_tot_mag_projected, u_tot_re_projected, u_tot_im_projected, ds_receiver, V_projection
+        return u_tot_re_projected, u_tot_im_projected, ds_receiver, V_projection
