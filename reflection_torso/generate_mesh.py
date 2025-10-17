@@ -5,10 +5,11 @@ import numpy as np
 import pandas as pd
 import os
 import gmsh
+import math
 
 # Generate solution mesh
 def generate_torso_sim_mesh(
-    boundary_point_coordinate, torso_coordinate_csv, ant_pos_csv = None, mesh_size=0.05,
+    boundary_point_coordinate, torso_coordinate_csv, ant_pos_csv, mesh_size=0.05,
     output_name="torso_sim_mesh_solution"
 ):
 
@@ -16,34 +17,78 @@ def generate_torso_sim_mesh(
     gmsh.clear()
     gmsh.model.add("torso_sim_mesh_solution")
 
+    # Read receiver positions from csv
+    df_ant_pos = pd.read_csv(ant_pos_csv)
+    # Read only from the fist transmitter to reduce repetition
+    df_ant_pos = df_ant_pos.loc[df_ant_pos["tx_x"] == -0.1]
+    receiver_points = df_ant_pos[["rx_x", "rx_y"]].values
+
+    # Identify sets of consecutive receiver positions by distance
+    receiver_patches = []
+    if len(receiver_points) > 1: # Of course
+        # Calculate typical distance between consecutive receivers
+        receiver_dist = np.linalg.norm(receiver_points[1] - receiver_points[0], 2)
+        distance_threshold = receiver_dist
+        
+        current_patch = [0]  # Start first patch with first receiver
+        
+        for rx_i in range(1, len(receiver_points)):
+            dist_to_prev = np.linalg.norm(receiver_points[rx_i] - receiver_points[rx_i-1], 2)
+            
+            if abs(dist_to_prev - distance_threshold) < 1e-3:
+                # Still in same patch
+                current_patch.append(rx_i)
+            else:
+                # Start new patch
+                receiver_patches.append(current_patch)
+                current_patch = [rx_i]
+        
+        # Don't forget the last patch
+        receiver_patches.append(current_patch)
+        print(receiver_patches)
+    
+    num_receiver_per_patches = len(receiver_patches[0]) # Assume equal for all patches
+
     # Read boundary points from CSV
     df_boundary_edge_points = pd.read_csv(boundary_point_coordinate)
-    points = df_boundary_edge_points[["x", "y"]].values
+    boundary_points = df_boundary_edge_points[["x", "y"]].values
 
+    # Combine boundary points with receiver points, maintaining order
+    # We need to insert receiver points into the boundary at their locations
+    all_points = []
+    point_to_gmsh_id = {}
+    bp_receivers_indices = set()
+    
+    tolerance = 1e-6
+    
+    # Create a list to track which boundary points are receivers
+    for i, bp in enumerate(boundary_points):
+        # Check if this boundary point is a receiver point
+        is_receiver = False
+        for rp in receiver_points:
+            if np.linalg.norm(bp - rp) < tolerance:
+                is_receiver = True
+                bp_receivers_indices.add(len(all_points))
+                break
+        all_points.append(bp)
+    
+    # Create gmsh points
     ps = []
-    # Create boundary points
-    for point in points:
+    for point in all_points:
         p = gmsh.model.geo.addPoint(point[0], point[1], 0, mesh_size)
         ps.append(p)
 
     ls = []
-    # Create boundary lines (connecting consecutive points)
-    n_points = len(ps)
-    for i in range(n_points):
-        if i < n_points - 1:
-            l = gmsh.model.geo.addLine(ps[i], ps[i+1])
-        else:
-            # Close the loop
-            l = gmsh.model.geo.addLine(ps[i], ps[0])
-        ls.append(l)
+    receiver_lines = []
+    n_points = len(boundary_points)
+    tolerance = 1e-6
 
-    # Create a simple dummy obstacle (small circle/rectangle in center)
-    # Calculate center of domain
-    x_coords = points[:, 0]
-    y_coords = points[:, 1]
-    cx = (x_coords.min() + x_coords.max()) / 2
-    cy = (y_coords.min() + y_coords.max()) / 2
     
+    for i in range(n_points):
+        next_i = (i + 1) % n_points
+        line = gmsh.model.geo.addLine(ps[i], ps[next_i])
+        ls.append(line)
+
     # Create obstacle
     df_obstacle = pd.read_csv(torso_coordinate_csv)
     obstacle_ps = []
@@ -54,10 +99,9 @@ def generate_torso_sim_mesh(
         obstacle_ps.append(obstacle_p)
 
     obstacle_ls = []
-    # Create obstacle boundary lines (connecting consecutive points)
-    n_points = len(obstacle_ps)
-    for i in range(n_points):
-        if i < n_points - 1:
+    n_obstacle_points = len(obstacle_ps)
+    for i in range(n_obstacle_points):
+        if i < n_obstacle_points - 1:
             obstacle_l = gmsh.model.geo.addLine(obstacle_ps[i], obstacle_ps[i+1])
         else:
             # Close the loop
@@ -72,10 +116,19 @@ def generate_torso_sim_mesh(
     surface = gmsh.model.geo.addPlaneSurface([outer_loop, obstacle_loop])
 
     gmsh.model.geo.synchronize()
+    gmsh.model.mesh.removeDuplicateNodes()
 
     # Physical groups
-    gmsh.model.addPhysicalGroup(1, ls, SIDE_WALL_MARKER, "outer_walls")
-    gmsh.model.addPhysicalGroup(1, obstacle_ls, OBSTACLE_MARKER, "dummy_obstacle_boundary")
+    # Mark receiver edges separately
+    if receiver_lines:
+        gmsh.model.addPhysicalGroup(1, receiver_lines, RECEIVER_EDGE_MARKER, "receiver_edges")
+    
+    # Mark non-receiver outer walls
+    non_receiver_lines = [l for l in ls if l not in receiver_lines]
+    if non_receiver_lines:
+        gmsh.model.addPhysicalGroup(1, non_receiver_lines, SIDE_WALL_MARKER, "outer_walls")
+    
+    gmsh.model.addPhysicalGroup(1, obstacle_ls, OBSTACLE_MARKER, "torso_boundary")
     gmsh.model.addPhysicalGroup(2, [surface], DOMAIN_MARKER, "domain")
 
     # Generate mesh
@@ -97,7 +150,7 @@ if __name__ == "__main__":
     mesh_size = wavelength / 5
     # Generate and visualize mesh
     mesh_file = generate_torso_sim_mesh("meshes/boundary_points.csv", 
-                "meshes/torso_points.csv", mesh_size = mesh_size)
+                "meshes/torso_points.csv", "meshes/ant_pos_table.csv", mesh_size = mesh_size)
     fig, ax = plt.subplots(figsize=(10, 8))
     plot_mesh(mesh_file, ax, title="Torso Domain with Dummy Obstacle")
     plt.tight_layout()
