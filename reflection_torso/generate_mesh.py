@@ -86,8 +86,28 @@ def generate_torso_sim_mesh(
     
     for i in range(n_points):
         next_i = (i + 1) % n_points
-        line = gmsh.model.geo.addLine(ps[i], ps[next_i])
-        ls.append(line)
+        
+        # Special handling for the edge between i==1 and i==2
+        if i == 1:
+            # Create intermediate points at specific coordinates
+            p_left = gmsh.model.geo.addPoint(-0.1, 0, 0, mesh_size)
+            p_right = gmsh.model.geo.addPoint(0.1, 0, 0, mesh_size)
+            
+            # Create three line segments instead of one
+            line1 = gmsh.model.geo.addLine(ps[i], p_left)
+            line2 = gmsh.model.geo.addLine(p_left, p_right)
+            line3 = gmsh.model.geo.addLine(p_right, ps[next_i])
+            
+            ls.extend([line1, line2, line3])
+            
+            gmsh.model.geo.mesh.setTransfiniteCurve(line2, 11)
+            receiver_lines.append(line2)
+        else:
+            line = gmsh.model.geo.addLine(ps[i], ps[next_i])
+            ls.append(line)
+            if i == 0 or i == 2:
+                gmsh.model.geo.mesh.setTransfiniteCurve(line, 11)
+                receiver_lines.append(line)
 
     # Create obstacle
     df_obstacle = pd.read_csv(torso_coordinate_csv)
