@@ -130,9 +130,8 @@ def mesh_deformation(h_vol, mesh, markers, obstacle_marker, side_wall_marker, re
 
     return s
 
-
-def load_forward_simulation_data_bottomwall(measurement_data_file_path, V_ref, projection_degree=0):
-    df = pd.read_csv(measurement_data_file_path)
+def assign_ref_value(data_frame, V_ref, projection_degree):
+    df = data_frame
     points = df[["x", "y"]].values
     num_data_points = len(points)
     values_real = df["real_u"].values
@@ -192,6 +191,11 @@ def load_forward_simulation_data_bottomwall(measurement_data_file_path, V_ref, p
     u_ref_im.vector().set_local(u_vec_imag)
     u_ref_im.vector().apply("insert")
 
+    return u_ref_re, u_ref_im, num_data_points
+
+def load_forward_simulation_data_bottomwall(measurement_data_file_path, V_ref, projection_degree=0):
+    df = pd.read_csv(measurement_data_file_path)
+    u_ref_re, u_ref_im, num_data_points = assign_ref_value(df, V_ref, projection_degree)
     return u_ref_re, u_ref_im, num_data_points
 
 def forward_solve(h_control, inc_wave_setup, initial_guess_mesh_util, return_u_scat = True, projection_degree=0):

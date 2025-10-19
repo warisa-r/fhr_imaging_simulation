@@ -168,13 +168,25 @@ if __name__ == "__main__":
     # Parameters
     wavelength = c / freq_max  # Physical wavelength
     mesh_size = wavelength / 5
+    """
     # Generate and visualize mesh
+    mesh_file = generate_torso_sim_mesh("meshes/boundary_points.csv",
+                "meshes/torso_points.csv", "meshes/ant_pos_table.csv", mesh_size = mesh_size
+                , output_name="meshes/torso_sim_mesh_solution")
+    """
+
+    # Generate an initial mesh
     mesh_file = generate_torso_sim_mesh("meshes/boundary_points.csv", 
-                "meshes/torso_points.csv", "meshes/ant_pos_table.csv", mesh_size = mesh_size)
+            "meshes/torso_initial_points.csv", "meshes/ant_pos_table.csv"
+            , mesh_size = mesh_size
+            , output_name="meshes/torso_sim_mesh_initial")
+    
     fig, ax = plt.subplots(figsize=(10, 8))
-    plot_mesh(mesh_file, ax, title="Torso Domain with Dummy Obstacle")
+    plot_mesh(mesh_file, ax, title="Initial Torso Domain with Dummy Obstacle")
     plt.tight_layout()
-    plt.savefig("torso_mesh.png", dpi=150)
-    print("Mesh visualization saved to torso_mesh.png")
+    plt.savefig("torso_mesh_initial.png", dpi=150)
+    print("Mesh visualization saved to torso_mesh_initial.png")
     plt.show()
     plt.close()
+
+    convert_msh_to_xdmf(mesh_file)
