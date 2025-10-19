@@ -1,0 +1,383 @@
+[INFO] Module GCC/11.3.0 loaded.
+
+The following have been reloaded with a version change:
+  1) GCCcore/13.3.0 => GCCcore/11.3.0     3) zlib/1.3.1 => zlib/1.2.12
+  2) binutils/2.42 => binutils/2.38
+
+[INFO] Module OpenMPI/4.1.4 loaded.
+
+Lmod is automatically replacing "impi/2021.13.0" with "OpenMPI/4.1.4".
+
+[INFO] Module OpenMPI/4.1.4 loaded.
+
+Inactive Modules:
+  1) imkl-FFTW/2024.2.0
+
+Obtaining file:///rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: numpy==1.24.4 in /rwthfs/rz/cluster/home/nj616237/.local/lib/python3.10/site-packages (from HH_shape_opt==0.1.0) (1.24.4)
+Requirement already satisfied: pandas in /rwthfs/rz/cluster/home/nj616237/.local/lib/python3.10/site-packages (from HH_shape_opt==0.1.0) (2.3.1)
+Requirement already satisfied: meshio in /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages (from HH_shape_opt==0.1.0) (5.3.5)
+Requirement already satisfied: matplotlib in /rwthfs/rz/cluster/home/nj616237/.local/lib/python3.10/site-packages (from HH_shape_opt==0.1.0) (3.9.2)
+Requirement already satisfied: gmsh in /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages (from HH_shape_opt==0.1.0) (4.14.1)
+Requirement already satisfied: contourpy>=1.0.1 in /rwthfs/rz/cluster/home/nj616237/.local/lib/python3.10/site-packages (from matplotlib->HH_shape_opt==0.1.0) (1.2.1)
+Requirement already satisfied: cycler>=0.10 in /rwthfs/rz/cluster/home/nj616237/.local/lib/python3.10/site-packages (from matplotlib->HH_shape_opt==0.1.0) (0.12.1)
+Requirement already satisfied: fonttools>=4.22.0 in /rwthfs/rz/cluster/home/nj616237/.local/lib/python3.10/site-packages (from matplotlib->HH_shape_opt==0.1.0) (4.53.1)
+Requirement already satisfied: kiwisolver>=1.3.1 in /rwthfs/rz/cluster/home/nj616237/.local/lib/python3.10/site-packages (from matplotlib->HH_shape_opt==0.1.0) (1.4.5)
+Requirement already satisfied: packaging>=20.0 in /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages (from matplotlib->HH_shape_opt==0.1.0) (25.0)
+Requirement already satisfied: pillow>=8 in /rwthfs/rz/cluster/home/nj616237/.local/lib/python3.10/site-packages (from matplotlib->HH_shape_opt==0.1.0) (10.4.0)
+Requirement already satisfied: pyparsing>=2.3.1 in /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages (from matplotlib->HH_shape_opt==0.1.0) (3.2.3)
+Requirement already satisfied: python-dateutil>=2.7 in /rwthfs/rz/cluster/home/nj616237/.local/lib/python3.10/site-packages (from matplotlib->HH_shape_opt==0.1.0) (2.9.0.post0)
+Requirement already satisfied: six>=1.5 in /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages (from python-dateutil>=2.7->matplotlib->HH_shape_opt==0.1.0) (1.17.0)
+Requirement already satisfied: rich in /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages (from meshio->HH_shape_opt==0.1.0) (14.1.0)
+Requirement already satisfied: pytz>=2020.1 in /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages (from pandas->HH_shape_opt==0.1.0) (2025.2)
+Requirement already satisfied: tzdata>=2022.7 in /rwthfs/rz/cluster/home/nj616237/.local/lib/python3.10/site-packages (from pandas->HH_shape_opt==0.1.0) (2025.2)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages (from rich->meshio->HH_shape_opt==0.1.0) (3.0.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages (from rich->meshio->HH_shape_opt==0.1.0) (2.19.2)
+Requirement already satisfied: mdurl~=0.1 in /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages (from markdown-it-py>=2.2.0->rich->meshio->HH_shape_opt==0.1.0) (0.1.2)
+Building wheels for collected packages: HH_shape_opt
+  Building editable for HH_shape_opt (pyproject.toml): started
+  Building editable for HH_shape_opt (pyproject.toml): finished with status 'done'
+  Created wheel for HH_shape_opt: filename=hh_shape_opt-0.1.0-0.editable-py3-none-any.whl size=2851 sha256=97be5481aea14d75f8e5054ce4e48f966b1e732480e4208970780460c5a96ea2
+  Stored in directory: /w0/tmp/slurm_nj616237.61759528/pip-ephem-wheel-cache-jr48jxb9/wheels/39/70/7d/5e5508084c54e08a05fee6e869cc3da8d156967369f49dc757
+Successfully built HH_shape_opt
+Installing collected packages: HH_shape_opt
+  Attempting uninstall: HH_shape_opt
+    Found existing installation: HH_shape_opt 0.1.0
+    Uninstalling HH_shape_opt-0.1.0:
+      Successfully uninstalled HH_shape_opt-0.1.0
+Successfully installed HH_shape_opt-0.1.0
+[n23m0050.hpc.itc.rwth-aachen.de:4024445] SET PYTHONPATH=
+/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+L-BFGS method.
+------------------------------
+Line search:		 strong_wolfe
+Maximum iterations:	 20
+
+L-BFGS method.
+------------------------------
+Line search:		 strong_wolfe
+Maximum iterations:	 20
+
+L-BFGS method.
+------------------------------
+Line search:		 strong_wolfe
+Maximum iterations:	 20
+
+L-BFGS method.
+------------------------------
+Line search:		 strong_wolfe
+Maximum iterations:	 20
+
+L-BFGS method.
+------------------------------
+Line search:		 strong_wolfe
+Maximum iterations:	 20
+
+L-BFGS method.
+------------------------------
+Line search:		 strong_wolfe
+Maximum iterations:	 20
+
+L-BFGS method.
+------------------------------
+Line search:		 strong_wolfe
+Maximum iterations:	 20
+
+L-BFGS method.
+------------------------------
+Line search:		 strong_wolfe
+Maximum iterations:	 20
+
+iteration = 0:	objective = 1.0869753990604731:	grad_norm = 0.437105463664406:
+iteration = 0:	objective = 1.0869753990604731:	grad_norm = 0.437105463664406:
+iteration = 0:	objective = 1.0869753990604731:	grad_norm = 0.437105463664406:
+iteration = 0:	objective = 1.0869753990604731:	grad_norm = 0.437105463664406:
+iteration = 0:	objective = 1.0869753990604731:	grad_norm = 0.437105463664406:
+iteration = 0:	objective = 1.0869753990604731:	grad_norm = 0.437105463664406:
+iteration = 0:	objective = 1.0869753990604731:	grad_norm = 0.437105463664406:
+iteration = 0:	objective = 1.0869753990604731:	grad_norm = 0.437105463664406:
+-g 0.4371054636644477
+-g 0.4371054636644477
+-g 0.4371054636644477
+-g 0.4371054636644477
+-g 0.4371054636644477
+-g 0.4371054636644477
+-g 0.4371054636644477
+-g 0.4371054636644477
+iteration = 1:	objective = 0.9670408976692089:	grad_norm = 0.3590797059514718:	delta_J = 0.11993450139126427:
+iteration = 1:	objective = 0.9670408976692089:	grad_norm = 0.3590797059514718:	delta_J = 0.11993450139126427:
+iteration = 1:	objective = 0.9670408976692089:	grad_norm = 0.3590797059514718:	delta_J = 0.11993450139126427:
+iteration = 1:	objective = 0.9670408976692089:	grad_norm = 0.3590797059514718:	delta_J = 0.11993450139126427:
+iteration = 1:	objective = 0.9670408976692089:	grad_norm = 0.3590797059514718:	delta_J = 0.11993450139126427:
+iteration = 1:	objective = 0.9670408976692089:	grad_norm = 0.3590797059514718:	delta_J = 0.11993450139126427:
+iteration = 1:	objective = 0.9670408976692089:	grad_norm = 0.3590797059514718:	delta_J = 0.11993450139126427:
+iteration = 1:	objective = 0.9670408976692089:	grad_norm = 0.3590797059514718:	delta_J = 0.11993450139126427:
+-g 0.12746928119391743
+-g 0.12746928119391743
+-g 0.12746928119391743
+-g 0.12746928119391743
+-g 0.12746928119391743
+-g 0.12746928119391743
+-g 0.12746928119391743
+-g 0.12746928119391743
+iteration = 2:	objective = 0.5934282491037642:	grad_norm = 0.30734637501381373:	delta_J = 0.3736126485654446:
+iteration = 2:	objective = 0.5934282491037642:	grad_norm = 0.30734637501381373:	delta_J = 0.3736126485654446:
+iteration = 2:	objective = 0.5934282491037642:	grad_norm = 0.30734637501381373:	delta_J = 0.3736126485654446:
+iteration = 2:	objective = 0.5934282491037642:	grad_norm = 0.30734637501381373:	delta_J = 0.3736126485654446:
+iteration = 2:	objective = 0.5934282491037642:	grad_norm = 0.30734637501381373:	delta_J = 0.3736126485654446:
+iteration = 2:	objective = 0.5934282491037642:	grad_norm = 0.30734637501381373:	delta_J = 0.3736126485654446:
+iteration = 2:	objective = 0.5934282491037642:	grad_norm = 0.30734637501381373:	delta_J = 0.3736126485654446:
+iteration = 2:	objective = 0.5934282491037642:	grad_norm = 0.30734637501381373:	delta_J = 0.3736126485654446:
+-g 0.6776183434148442
+-g 0.6776183434148442
+-g 0.6776183434148442
+-g 0.6776183434148442
+-g 0.6776183434148442
+-g 0.6776183434148442
+-g 0.6776183434148442
+-g 0.6776183434148442
+iteration = 3:	objective = 0.017649774303148565:	grad_norm = 0.2026699879131881:	delta_J = 0.5757784748006157:
+iteration = 3:	objective = 0.017649774303148565:	grad_norm = 0.2026699879131881:	delta_J = 0.5757784748006157:
+iteration = 3:	objective = 0.017649774303148565:	grad_norm = 0.2026699879131881:	delta_J = 0.5757784748006157:
+iteration = 3:	objective = 0.017649774303148565:	grad_norm = 0.2026699879131881:	delta_J = 0.5757784748006157:
+iteration = 3:	objective = 0.017649774303148565:	grad_norm = 0.2026699879131881:	delta_J = 0.5757784748006157:
+iteration = 3:	objective = 0.017649774303148565:	grad_norm = 0.2026699879131881:	delta_J = 0.5757784748006157:
+iteration = 3:	objective = 0.017649774303148565:	grad_norm = 0.2026699879131881:	delta_J = 0.5757784748006157:
+iteration = 3:	objective = 0.017649774303148565:	grad_norm = 0.2026699879131881:	delta_J = 0.5757784748006157:
+-g 1.0045358800833775
+-g 1.0045358800833775
+-g 1.0045358800833775
+-g 1.0045358800833775
+-g 1.0045358800833775
+-g 1.0045358800833775
+-g 1.0045358800833775
+-g 1.0045358800833775
+iteration = 4:	objective = 0.014655466489201734:	grad_norm = 0.10579953030542111:	delta_J = 0.0029943078139468317:
+iteration = 4:	objective = 0.014655466489201734:	grad_norm = 0.10579953030542111:	delta_J = 0.0029943078139468317:
+iteration = 4:	objective = 0.014655466489201734:	grad_norm = 0.10579953030542111:	delta_J = 0.0029943078139468317:
+iteration = 4:	objective = 0.014655466489201734:	grad_norm = 0.10579953030542111:	delta_J = 0.0029943078139468317:
+iteration = 4:	objective = 0.014655466489201734:	grad_norm = 0.10579953030542111:	delta_J = 0.0029943078139468317:
+iteration = 4:	objective = 0.014655466489201734:	grad_norm = 0.10579953030542111:	delta_J = 0.0029943078139468317:
+iteration = 4:	objective = 0.014655466489201734:	grad_norm = 0.10579953030542111:	delta_J = 0.0029943078139468317:
+iteration = 4:	objective = 0.014655466489201734:	grad_norm = 0.10579953030542111:	delta_J = 0.0029943078139468317:
+-g 0.0023588480151180515
+-g 0.0023588480151180515
+-g 0.0023588480151180515
+-g 0.0023588480151180515
+-g 0.0023588480151180515
+-g 0.0023588480151180515
+-g 0.0023588480151180515
+-g 0.0023588480151180515
+iteration = 5:	objective = 0.011202718316303675:	grad_norm = 0.03132242945501773:	delta_J = 0.003452748172898059:
+iteration = 5:	objective = 0.011202718316303675:	grad_norm = 0.03132242945501773:	delta_J = 0.003452748172898059:
+iteration = 5:	objective = 0.011202718316303675:	grad_norm = 0.03132242945501773:	delta_J = 0.003452748172898059:
+iteration = 5:	objective = 0.011202718316303675:	grad_norm = 0.03132242945501773:	delta_J = 0.003452748172898059:
+iteration = 5:	objective = 0.011202718316303675:	grad_norm = 0.03132242945501773:	delta_J = 0.003452748172898059:
+iteration = 5:	objective = 0.011202718316303675:	grad_norm = 0.03132242945501773:	delta_J = 0.003452748172898059:
+iteration = 5:	objective = 0.011202718316303675:	grad_norm = 0.03132242945501773:	delta_J = 0.003452748172898059:
+iteration = 5:	objective = 0.011202718316303675:	grad_norm = 0.03132242945501773:	delta_J = 0.003452748172898059:
+-g 0.0028108929085151383
+-g 0.0028108929085151383
+-g 0.0028108929085151383
+-g 0.0028108929085151383
+-g 0.0028108929085151383
+-g 0.0028108929085151383
+-g 0.0028108929085151383
+-g 0.0028108929085151383
+iteration = 6:	objective = 0.00717203694869309:	grad_norm = 0.06425899136202097:	delta_J = 0.004030681367610585:
+iteration = 6:	objective = 0.00717203694869309:	grad_norm = 0.06425899136202097:	delta_J = 0.004030681367610585:
+iteration = 6:	objective = 0.00717203694869309:	grad_norm = 0.06425899136202097:	delta_J = 0.004030681367610585:
+iteration = 6:	objective = 0.00717203694869309:	grad_norm = 0.06425899136202097:	delta_J = 0.004030681367610585:
+iteration = 6:	objective = 0.00717203694869309:	grad_norm = 0.06425899136202097:	delta_J = 0.004030681367610585:
+iteration = 6:	objective = 0.00717203694869309:	grad_norm = 0.06425899136202097:	delta_J = 0.004030681367610585:
+iteration = 6:	objective = 0.00717203694869309:	grad_norm = 0.06425899136202097:	delta_J = 0.004030681367610585:
+iteration = 6:	objective = 0.00717203694869309:	grad_norm = 0.06425899136202097:	delta_J = 0.004030681367610585:
+-g 0.0020134178033028366
+-g 0.0020134178033028366
+-g 0.0020134178033028366
+-g 0.0020134178033028366
+-g 0.0020134178033028366
+-g 0.0020134178033028366
+-g 0.0020134178033028366
+-g 0.0020134178033028366
+iteration = 7:	objective = 0.00434255692077676:	grad_norm = 0.059393653079800116:	delta_J = 0.0028294800279163295:
+iteration = 7:	objective = 0.00434255692077676:	grad_norm = 0.059393653079800116:	delta_J = 0.0028294800279163295:
+iteration = 7:	objective = 0.00434255692077676:	grad_norm = 0.059393653079800116:	delta_J = 0.0028294800279163295:
+iteration = 7:	objective = 0.00434255692077676:	grad_norm = 0.059393653079800116:	delta_J = 0.0028294800279163295:
+iteration = 7:	objective = 0.00434255692077676:	grad_norm = 0.059393653079800116:	delta_J = 0.0028294800279163295:
+iteration = 7:	objective = 0.00434255692077676:	grad_norm = 0.059393653079800116:	delta_J = 0.0028294800279163295:
+iteration = 7:	objective = 0.00434255692077676:	grad_norm = 0.059393653079800116:	delta_J = 0.0028294800279163295:
+iteration = 7:	objective = 0.00434255692077676:	grad_norm = 0.059393653079800116:	delta_J = 0.0028294800279163295:
+-g 0.0028593910182363354
+-g 0.0028593910182363354
+-g 0.0028593910182363354
+-g 0.0028593910182363354
+-g 0.0028593910182363354
+-g 0.0028593910182363354
+-g 0.0028593910182363354
+-g 0.0028593910182363354
+iteration = 8:	objective = 0.004043010210253113:	grad_norm = 0.060739504747036085:	delta_J = 0.0002995467105236472:
+iteration = 8:	objective = 0.004043010210253113:	grad_norm = 0.060739504747036085:	delta_J = 0.0002995467105236472:
+iteration = 8:	objective = 0.004043010210253113:	grad_norm = 0.060739504747036085:	delta_J = 0.0002995467105236472:
+iteration = 8:	objective = 0.004043010210253113:	grad_norm = 0.060739504747036085:	delta_J = 0.0002995467105236472:
+iteration = 8:	objective = 0.004043010210253113:	grad_norm = 0.060739504747036085:	delta_J = 0.0002995467105236472:
+iteration = 8:	objective = 0.004043010210253113:	grad_norm = 0.060739504747036085:	delta_J = 0.0002995467105236472:
+iteration = 8:	objective = 0.004043010210253113:	grad_norm = 0.060739504747036085:	delta_J = 0.0002995467105236472:
+iteration = 8:	objective = 0.004043010210253113:	grad_norm = 0.060739504747036085:	delta_J = 0.0002995467105236472:
+-g 0.000910508322832649
+-g 0.000910508322832649
+-g 0.000910508322832649
+-g 0.000910508322832649
+-g 0.000910508322832649
+-g 0.000910508322832649
+-g 0.000910508322832649
+-g 0.000910508322832649
+iteration = 9:	objective = 0.002894947664097534:	grad_norm = 0.021292129086774546:	delta_J = 0.0011480625461555791:
+iteration = 9:	objective = 0.002894947664097534:	grad_norm = 0.021292129086774546:	delta_J = 0.0011480625461555791:
+iteration = 9:	objective = 0.002894947664097534:	grad_norm = 0.021292129086774546:	delta_J = 0.0011480625461555791:
+iteration = 9:	objective = 0.002894947664097534:	grad_norm = 0.021292129086774546:	delta_J = 0.0011480625461555791:
+iteration = 9:	objective = 0.002894947664097534:	grad_norm = 0.021292129086774546:	delta_J = 0.0011480625461555791:
+iteration = 9:	objective = 0.002894947664097534:	grad_norm = 0.021292129086774546:	delta_J = 0.0011480625461555791:
+iteration = 9:	objective = 0.002894947664097534:	grad_norm = 0.021292129086774546:	delta_J = 0.0011480625461555791:
+iteration = 9:	objective = 0.002894947664097534:	grad_norm = 0.021292129086774546:	delta_J = 0.0011480625461555791:
+-g 0.00010976340549455379
+-g 0.00010976340549455379
+-g 0.00010976340549455379
+-g 0.00010976340549455379
+-g 0.00010976340549455379
+-g 0.00010976340549455379
+-g 0.00010976340549455379
+-g 0.00010976340549455379
+iteration = 10:	objective = 0.0027535258673501684:	grad_norm = 0.007617841577414935:	delta_J = 0.00014142179674736565:
+iteration = 10:	objective = 0.0027535258673501684:	grad_norm = 0.007617841577414935:	delta_J = 0.00014142179674736565:
+iteration = 10:	objective = 0.0027535258673501684:	grad_norm = 0.007617841577414935:	delta_J = 0.00014142179674736565:
+iteration = 10:	objective = 0.0027535258673501684:	grad_norm = 0.007617841577414935:	delta_J = 0.00014142179674736565:
+iteration = 10:	objective = 0.0027535258673501684:	grad_norm = 0.007617841577414935:	delta_J = 0.00014142179674736565:
+iteration = 10:	objective = 0.0027535258673501684:	grad_norm = 0.007617841577414935:	delta_J = 0.00014142179674736565:
+iteration = 10:	objective = 0.0027535258673501684:	grad_norm = 0.007617841577414935:	delta_J = 0.00014142179674736565:
+iteration = 10:	objective = 0.0027535258673501684:	grad_norm = 0.007617841577414935:	delta_J = 0.00014142179674736565:
+-g 2.8746261770038e-05
+-g 2.8746261770038e-05
+-g 2.8746261770038e-05
+-g 2.8746261770038e-05
+-g 2.8746261770038e-05
+-g 2.8746261770038e-05
+-g 2.8746261770038e-05
+-g 2.8746261770038e-05
+
+Tolerance reached: delta_j < jtol.
+
+iteration = 11:	objective = 0.00270409540692158:	grad_norm = 0.010640905381087279:	delta_J = 4.943046042858853e-05:
+
+Tolerance reached: delta_j < jtol.
+
+iteration = 11:	objective = 0.00270409540692158:	grad_norm = 0.010640905381087279:	delta_J = 4.943046042858853e-05:
+
+Tolerance reached: delta_j < jtol.
+
+iteration = 11:	objective = 0.00270409540692158:	grad_norm = 0.010640905381087279:	delta_J = 4.943046042858853e-05:
+
+Tolerance reached: delta_j < jtol.
+
+iteration = 11:	objective = 0.00270409540692158:	grad_norm = 0.010640905381087279:	delta_J = 4.943046042858853e-05:
+
+Tolerance reached: delta_j < jtol.
+
+iteration = 11:	objective = 0.00270409540692158:	grad_norm = 0.010640905381087279:	delta_J = 4.943046042858853e-05:
+
+Tolerance reached: delta_j < jtol.
+
+iteration = 11:	objective = 0.00270409540692158:	grad_norm = 0.010640905381087279:	delta_J = 4.943046042858853e-05:
+
+Tolerance reached: delta_j < jtol.
+
+iteration = 11:	objective = 0.00270409540692158:	grad_norm = 0.010640905381087279:	delta_J = 4.943046042858853e-05:
+
+Tolerance reached: delta_j < jtol.
+
+iteration = 11:	objective = 0.00270409540692158:	grad_norm = 0.010640905381087279:	delta_J = 4.943046042858853e-05:
+h_opt min: -0.6876639885563738, h_opt max: 3.2233981314244518, mean|h_opt|: 1.4730554558324402
+Optimization result saved to outputs/result_sin0.5_amp2_scat.h5
+h_opt min: -0.6876639885563738, h_opt max: 3.2233981314244518, mean|h_opt|: 0.0
+Optimization result saved to outputs/result_sin0.5_amp2_scat.h5
+h_opt min: -0.6876639885563738, h_opt max: 3.2233981314244518, mean|h_opt|: 1.4209409282042176
+Optimization result saved to outputs/result_sin0.5_amp2_scat.h5
+h_opt min: -0.6876639885563738, h_opt max: 3.2233981314244518, mean|h_opt|: 0.12516256006851942
+Optimization result saved to outputs/result_sin0.5_amp2_scat.h5
+h_opt min: -0.6876639885563738, h_opt max: 3.2233981314244518, mean|h_opt|: 0.07377801140011751
+Optimization result saved to outputs/result_sin0.5_amp2_scat.h5
+h_opt min: -0.6876639885563738, h_opt max: 3.2233981314244518, mean|h_opt|: 0.0
+Optimization result saved to outputs/result_sin0.5_amp2_scat.h5
+h_opt min: -0.6876639885563738, h_opt max: 3.2233981314244518, mean|h_opt|: 0.08415351681279891
+Optimization result saved to outputs/result_sin0.5_amp2_scat.h5
+h_opt min: -0.6876639885563738, h_opt max: 3.2233981314244518, mean|h_opt|: 0.14699394333036883
+Optimization result saved to outputs/result_sin0.5_amp2_scat.h5
+
+Mesh deformation plot saved to outputs/mesh_deformation_sin0.5_amp2_scat.png
+Warning: Different number of boundary points (531 vs 530)
+Overlay mesh outline saved to outputs/mesh_overlay_sin0.5_amp2_scat.png
+
+=== Optimization Summary ===
+Initial design: all zeros
+
+=== Optimization Summary ===
+Initial design: all zeros
+
+=== Optimization Summary ===
+Initial design: all zeros
+
+=== Optimization Summary ===
+Initial design: all zeros
+
+=== Optimization Summary ===
+Initial design: all zeros
+
+=== Optimization Summary ===
+Initial design: all zeros
+Optimal design range: [-1.357185e-01, 3.223398e+00]
+Max displacement: 3.223398e+00
+
+=== Optimization Summary ===
+Initial design: all zeros
+Optimal design range: [0.000000e+00, 0.000000e+00]
+Max displacement: 0.000000e+00
+Optimal design range: [0.000000e+00, 1.559437e+00]
+Max displacement: 1.559437e+00
+Optimal design range: [-2.493848e-01, 6.974815e-01]
+Max displacement: 6.974815e-01
+Optimal design range: [0.000000e+00, 1.066446e+00]
+Max displacement: 1.066446e+00
+Optimal design range: [-6.876640e-01, 3.188111e+00]
+Max displacement: 3.188111e+00
+Optimal design range: [0.000000e+00, 0.000000e+00]
+Max displacement: 0.000000e+00
+Sum of magnitude error square: 0.08393596268322646
+Projected error plots saved to outputs/error_sin0.5_amp2_scat.png
+
+=== Optimization Summary ===
+Initial design: all zeros
+Optimal design range: [-4.054087e-01, 1.555746e+00]
+Max displacement: 1.555746e+00

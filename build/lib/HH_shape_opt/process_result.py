@@ -46,11 +46,14 @@ def calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, h5_file_path,
     with HDF5File(MPI.comm_world, h5_file_path, "r") as h5f:
         h5f.read(h, "/h_opt")
     
-    u_re_projected, u_im_projected, _, V_projection = forward_solve(
-        h, inc_wave_setup, initial_guess_mesh_util, use_u_scat, projection_degree
-    )
+    u_re_projected, u_im_projected, _, V_projection = forward_solve(h, 
+                                                    inc_wave_setup, initial_guess_mesh_util, use_u_scat, projection_degree)
     u_mag = sqrt(u_re_projected**2 + u_im_projected**2)
     u_mag_projected = project(u_mag, V_projection)
+
+    mag_vec = u_mag_projected.vector().get_local()
+    re_vec = u_re_projected.vector().get_local()
+    im_vec = u_im_projected.vector().get_local()
 
     # Read the data from matlab
     df = pd.read_csv(matlab_fullfield_csv_path)
@@ -61,70 +64,66 @@ def calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, h5_file_path,
 
     mesh = V_projection.mesh()
     tree = mesh.bounding_box_tree()
+    dofmap = V_projection.dofmap()
 
-    comm = MPI.comm_world
-    rank = comm.rank
+    # For CG spaces we need coordinates of dofs
+    dof_coords = None
+    if not V_projection.ufl_element().degree() == 0:
+        dof_coords = V_projection.tabulate_dof_coordinates().reshape(
+            (-1, mesh.geometry().dim()))
 
-    # Each rank evaluates only points that fall inside its local partition
-    local_idx = []
-    local_mag = []
-    local_re = []
-    local_im = []
+    projected_mag = np.empty(len(points))
+    projected_re = np.empty(len(points))
+    projected_im = np.empty(len(points))
+
+    assigned_cells = np.zeros(mesh.num_cells(
+    ), dtype=bool) if V_projection.ufl_element().degree() == 0 else None
+    assigned_dofs = set() if V_projection.ufl_element().degree() != 0 else None
 
     for i, (x, y) in enumerate(points):
         pt = Point(x, y)
         cell_id = tree.compute_first_entity_collision(pt)
+
         if cell_id >= mesh.num_cells():
-            continue  # not on this rank
-        try:
-            # Evaluate functions at the point (safe because cell is local)
-            m = float(u_mag_projected(pt))
-            r = float(u_re_projected(pt))
-            im = float(u_im_projected(pt))
-        except RuntimeError:
-            # Fallback: leave for other ranks or mark later as NaN
+            # point outside mesh: set NaN
+            projected_mag[i] = np.nan
+            projected_re[i] = np.nan
+            projected_im[i] = np.nan
             continue
-        local_idx.append(i)
-        local_mag.append(m)
-        local_re.append(r)
-        local_im.append(im)
 
-    # Gather (index, values) from all ranks
-    gathered = comm.gather(
-        (np.asarray(local_idx, dtype=np.int64),
-         np.asarray(local_mag, dtype=float),
-         np.asarray(local_re, dtype=float),
-         np.asarray(local_im, dtype=float)),
-        root=0
-    )
+        if V_projection.ufl_element().degree() == 0:
+            # Logic for DG0: one DOF per cell.
+            dof_idx = dofmap.cell_dofs(cell_id)[0]
+            projected_mag[i] = mag_vec[dof_idx]
+            projected_re[i] = re_vec[dof_idx]
+            projected_im[i] = im_vec[dof_idx]
+        else:
+            # Logic for CG > 0 or DG > 0: find the closest DOF within the cell.
+            cell_dofs = dofmap.cell_dofs(cell_id)
+            cell_dof_coords = dof_coords[cell_dofs]
 
-    # Root merges into full arrays
-    if rank == 0:
-        N = len(points)
-        projected_mag = np.full(N, np.nan, dtype=float)
-        projected_re  = np.full(N, np.nan, dtype=float)
-        projected_im  = np.full(N, np.nan, dtype=float)
-        for idxs, mags, res, ims in gathered:
-            if idxs.size == 0:
-                continue
-            projected_mag[idxs] = mags
-            projected_re[idxs]  = res
-            projected_im[idxs]  = ims
-    else:
-        projected_mag = projected_re = projected_im = None
+            # Find the closest DOF in this cell to the point
+            distances = np.linalg.norm(
+                cell_dof_coords - np.array([x, y]), axis=1)
+            closest_local_dof_idx = np.argmin(distances)
+            closest_global_dof = cell_dofs[closest_local_dof_idx]
 
-    # Broadcast merged arrays so all ranks have consistent results
-    projected_mag = comm.bcast(projected_mag, root=0)
-    projected_re  = comm.bcast(projected_re,  root=0)
-    projected_im  = comm.bcast(projected_im,  root=0)
+            projected_mag[i] = mag_vec[closest_global_dof]
+            projected_re[i] = re_vec[closest_global_dof]
+            projected_im[i] = im_vec[closest_global_dof]
 
-    # Compute errors (will be NaN where points lie outside the mesh)
+
+    # Now projected_* arrays are in the same order as csv points
+
+    # Compute magnitude error
     mag_error = projected_mag - mag_values_matlab
+
+    # Calculate phase error
     projected_u = projected_re + 1j * projected_im
     matlab_u = real_values_matlab + 1j * imag_values_matlab
     matlab_u_phase = np.angle(matlab_u)
     projected_u_phase = np.angle(projected_u)
-    phase_error = np.angle(projected_u * np.conjugate(matlab_u))  # rad
+    phase_error = np.angle(projected_u * np.conjugate(matlab_u))  # in rad
 
     results = {
         "points": points,
@@ -135,4 +134,5 @@ def calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, h5_file_path,
         "mag_error": mag_error,
         "phase_error": phase_error,
     }
+
     return results

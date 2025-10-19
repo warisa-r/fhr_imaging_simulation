@@ -44,126 +44,103 @@ def gather_and_plot_mesh(mesh, ax, color="k", linewidth=0.3, title=None):
 
 
 def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, plot_file_name="mesh_outlines.png", print_at_x = None):
-    # Parallel-safe version: gather boundary coordinates and cells on rank 0,
-    # then perform comparisons and plotting there.
-    comm = MPI.comm_world
+    #TODO: Make this compatible with parallel run
+    # Extract boundary meshes
+    boundary_original = BoundaryMesh(original_mesh, "exterior")
+    boundary_goal = BoundaryMesh(goal_mesh, "exterior")
+    boundary_optimized = BoundaryMesh(optimized_mesh, "exterior")
 
-    def gather_boundary_arrays(boundary_mesh):
-        coords = np.asarray(boundary_mesh.coordinates())
-        cells = np.asarray(boundary_mesh.cells(), dtype=np.int64)
-        packed = comm.gather((coords, cells), root=0)
-        if comm.rank != 0:
-            return None, None
-        # On root: concatenate with index offsets
-        global_coords_list = []
-        global_cells_list = []
-        offset = 0
-        for coords_part, cells_part in packed:
-            if coords_part.size == 0:
-                continue
-            global_coords_list.append(coords_part)
-            global_cells_list.append(cells_part + offset)
-            offset += coords_part.shape[0]
-        if len(global_coords_list) == 0:
-            return np.empty((0, 2)), np.empty((0, 2), dtype=int)
-        global_coords = np.vstack(global_coords_list)
-        global_cells = np.vstack(global_cells_list)
-        return global_coords, global_cells
-
-    # Build boundary meshes locally (works in parallel)
-    b_orig = BoundaryMesh(original_mesh, "exterior")
-    b_goal = BoundaryMesh(goal_mesh, "exterior")
-    b_opt = BoundaryMesh(optimized_mesh, "exterior")
-
-    # Gather arrays to rank 0
-    coords_orig, cells_orig = gather_boundary_arrays(b_orig)
-    coords_goal, cells_goal = gather_boundary_arrays(b_goal)
-    coords_opt, cells_opt = gather_boundary_arrays(b_opt)
-
-    if comm.rank != 0:
-        # nothing else to do on non-root ranks
-        return
-
-    # Helper: calculate boundary difference using assembled coordinate arrays
-    def calculate_boundary_difference_arrays(coords1, coords2, print_at_x=None, tolerance=0.01):
-        if coords1.shape[0] == 0 or coords2.shape[0] == 0:
-            print("Warning: one of the boundaries is empty.")
-            return None
-
-        if coords1.shape[0] == coords2.shape[0]:
+    # Calculate boundary difference metric
+    def calculate_boundary_difference(boundary1, boundary2, print_at_x=None, tolerance=0.01):
+        coords1 = boundary1.coordinates()
+        coords2 = boundary2.coordinates()
+        
+        # Compare coordinates if SAME number of points
+        if len(coords1) == len(coords2):
             # Sort by x-coordinate for consistent comparison
             sorted_idx1 = np.argsort(coords1[:, 0])
             sorted_idx2 = np.argsort(coords2[:, 0])
-
+            
             coords1_sorted = coords1[sorted_idx1]
             coords2_sorted = coords2[sorted_idx2]
-
+            
+            # Print specific point if requested -> To analyze the wrong local minimum case
             if print_at_x is not None:
+                # Find all points within tolerance of print_at_x
                 mask1 = np.abs(coords1_sorted[:, 0] - print_at_x) < tolerance
                 mask2 = np.abs(coords2_sorted[:, 0] - print_at_x) < tolerance
-
+                
                 points1_near = coords1_sorted[mask1]
                 points2_near = coords2_sorted[mask2]
-
+                
                 print(f"\n{'='*60}")
                 print(f"Points near x = {print_at_x} (tolerance = {tolerance})")
                 print(f"{'='*60}")
-
+                
                 print(f"\nGoal boundary points ({len(points1_near)} found):")
                 print(f"{'Index':<8} {'x':<12} {'y':<12}")
                 print(f"{'-'*32}")
                 for i, pt in enumerate(points1_near):
                     print(f"{i:<8} {pt[0]:<12.6f} {pt[1]:<12.6f}")
-
+                
                 print(f"\nOptimized boundary points ({len(points2_near)} found):")
                 print(f"{'Index':<8} {'x':<12} {'y':<12}")
                 print(f"{'-'*32}")
                 for i, pt in enumerate(points2_near):
                     print(f"{i:<8} {pt[0]:<12.6f} {pt[1]:<12.6f}")
-
+                
+                # Calculate differences for matching points
                 if len(points1_near) > 0 and len(points2_near) > 0:
                     print(f"\nPairwise differences (closest matches):")
                     print(f"{'Goal (x,y)':<28} {'Opt (x,y)':<28} {'Δx':<12} {'Δy':<12} {'|Δ|²':<12}")
                     print(f"{'-'*92}")
-
+                    
                     for pt1 in points1_near:
+                        # Find closest point in optimized boundary
                         distances = np.linalg.norm(points2_near - pt1, axis=1)
                         closest_idx = np.argmin(distances)
                         pt2 = points2_near[closest_idx]
                         diff = pt1 - pt2
-
+                        
                         print(f"({pt1[0]:.6f}, {pt1[1]:.6f})  ({pt2[0]:.6f}, {pt2[1]:.6f})  "
                               f"{diff[0]:+.6e}  {diff[1]:+.6e}  {np.sum(diff**2):.6e}")
-
+                
                 print(f"{'='*60}\n")
-
+            
+            # Calculate squared differences
             diff = coords1_sorted - coords2_sorted
             squared_diff = np.sum(diff**2)
-            return squared_diff / coords1.shape[0]
+            return squared_diff / len(coords1) # Normalize the error
         else:
-            print(f"Warning: Different number of boundary points ({coords1.shape[0]} vs {coords2.shape[0]})")
-            return None
+            print(f"Warning: Different number of boundary points ({len(coords1)} vs {len(coords2)})")
+        return None
 
-    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
+    # Calculate difference between goal and optimized boundaries
+    boundary_diff = calculate_boundary_difference(boundary_goal, boundary_optimized, print_at_x, tolerance=0.01)
+    
     if boundary_diff is not None:
         print(f"Normalized sum of squared boundary differences (goal vs optimized): {boundary_diff:.6e}")
 
-    # Helper to plot using assembled arrays
-    def plot_boundary_from_arrays(ax, coords, cells, color, label):
-        if coords.shape[0] == 0 or cells.shape[0] == 0:
-            return
-        for i, cell in enumerate(cells):
-            pts = coords[cell]
-            ax.plot(pts[:, 0], pts[:, 1], color=color, linewidth=1.0, label=label if i == 0 else None)
+    # Helper function to plot a boundary mesh
+    def plot_boundary(ax, boundary_mesh, color, label):
+        coords = boundary_mesh.coordinates()
+        cells = boundary_mesh.cells()
 
-    # Create figure and plot outlines
+        for cell in cells:
+            pts = coords[cell]
+            ax.plot(pts[:, 0], pts[:, 1], color=color, linewidth=1.0, label=label)
+            label = None
+
+    # Create the figure
     plt.figure(figsize=(8, 8))
     ax = plt.gca()
 
-    plot_boundary_from_arrays(ax, coords_orig, cells_orig, "blue", "Original")
-    plot_boundary_from_arrays(ax, coords_goal, cells_goal, "red", "Goal")
-    plot_boundary_from_arrays(ax, coords_opt, cells_opt, "green", "Optimized")
+    # Plot outlines
+    plot_boundary(ax, boundary_original, "blue", "Original")
+    plot_boundary(ax, boundary_goal, "red", "Goal")
+    plot_boundary(ax, boundary_optimized, "green", "Optimized")
 
+    # Add legend and styling
     ax.set_aspect('equal', 'box')
     title = "Overlay of Mesh Outlines"
     if boundary_diff is not None:
@@ -171,9 +148,11 @@ def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, 
     ax.set_title(title)
     ax.legend()
 
-    plt.savefig(plot_file_name, dpi=300)
-    plt.close()
-    print(f"Overlay mesh outline saved to {plot_file_name}")
+    # Save or show the figure
+    if MPI.comm_world.rank == 0:
+        plt.savefig(plot_file_name, dpi=300)
+        plt.close()
+        print(f"Overlay mesh outline saved to {plot_file_name}")
 
 def plot_mesh_deformation_from_result(
     h5_file_path,
