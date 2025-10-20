@@ -161,29 +161,35 @@ def assign_ref_value(data_frame, V_ref, projection_degree):
                 print(
                     f"Warning: cell {cell_id} already assigned, skipping duplicate point.")
     else:
-        # Logic for CG > 0 or DG > 0: find the closest DOF within the cell.
         dof_coords = V_ref.tabulate_dof_coordinates()
+        local_size = len(dof_coords)
         assigned_dofs = set()
+
         for (x, y), val_real, val_imag in zip(points, values_real, values_imag):
             point = Point(x, y)
             cell_id = tree.compute_first_entity_collision(point)
-            if cell_id < mesh.num_cells():
-                cell_dofs = dofmap.cell_dofs(cell_id)
-                cell_dof_coords = dof_coords[cell_dofs]
 
-                # Find the closest DOF in this cell to the point
-                distances = np.linalg.norm(
-                    cell_dof_coords - np.array([x, y]), axis=1)
-                closest_local_dof_idx = np.argmin(distances)
-                closest_global_dof = cell_dofs[closest_local_dof_idx]
+            if cell_id < 0 or cell_id >= mesh.num_cells():
+                # Skip or snap to nearest cell
+                nearest = tree.compute_closest_entity(point)[0]
+                if nearest < 0:
+                    print(f"Warning: point ({x:.4g},{y:.4g}) outside mesh; skipping")
+                    continue
+                cell_id = nearest
 
-                if closest_global_dof not in assigned_dofs:
-                    u_vec_real[closest_global_dof] = val_real
-                    u_vec_imag[closest_global_dof] = val_imag
-                    assigned_dofs.add(closest_global_dof)
-                else:
-                    # This can happen if a DOF is shared by multiple cells that contain points
-                    pass
+            cell_dofs = dofmap.cell_dofs(cell_id)
+            valid_dofs = [d for d in cell_dofs if 0 <= d < local_size]
+            if not valid_dofs:
+                continue  # This cell is not owned locally
+
+            cell_dof_coords = dof_coords[valid_dofs]
+            distances = np.linalg.norm(cell_dof_coords - np.array([x, y]), axis=1)
+            closest_global_dof = valid_dofs[np.argmin(distances)]
+
+            if closest_global_dof not in assigned_dofs:
+                u_vec_real[closest_global_dof] = val_real
+                u_vec_imag[closest_global_dof] = val_imag
+                assigned_dofs.add(closest_global_dof)
 
     # Push the updated values into the Functions
     u_ref_re.vector().set_local(u_vec_real)

@@ -20,13 +20,13 @@ set_log_level(LogLevel.ERROR)
 
 frequency = 5e9
 offset = 1e-8
-wave_sources = [(-0.1, -0), (0.1, offset)]
+wave_sources = [(-0.1, -offset), (0.1, -offset)]
 amp = 1
 
 measurement_data_file_path = "measurements/scattering_results.csv"
 df_measurement = pd.read_csv(measurement_data_file_path)
 
-msh_file_path = "meshes/torso_sim_mesh_solution.msh"
+msh_file_path = "meshes/torso_sim_mesh_initial.msh"
 markers_dict = {
     "obstacle": OBSTACLE_MARKER, # Markers imported from our mesh generation module
     "side_wall": SIDE_WALL_MARKER,
@@ -53,23 +53,29 @@ h_V = transfer_from_boundary(h, mesh)
 h_V.rename("Volume extension of h", "")
 ##########################
 
+scale_fac = 500
+
 for tx_i, tx in enumerate(wave_sources):
     inc_wave_setup = IncidentWaveSetup(frequency, cylindrical_wave(amp, tx))
     # Solve the forward problem
     u_scat_re, u_scat_im, ds_receiver, V_CG1 = forward_solve(
                                     h, inc_wave_setup, initial_guess_mesh_util, True, 1)
     
-    df_tx = df_measurement.loc[(df_measurement["tx_x"] == tx[0]) &
-                                 (df_measurement["tx_y"] == tx[1])]
+    tol = 1e-7
+    mask = (
+        np.isclose(df_measurement["tx_x"].to_numpy(), tx[0], atol=tol, rtol=0.0) &
+        np.isclose(df_measurement["tx_y"].to_numpy(), tx[1], atol=tol, rtol=0.0)
+    )
+    df_tx = df_measurement.loc[mask]
 
     u_ref_re, u_ref_im, _ = assign_ref_value(df_tx, V_CG1, 1)
     
     if tx_i == 0:
         J = assemble(
-            (((u_scat_re - u_ref_re)**2 + (u_scat_im - u_ref_im)**2) * ds_receiver))
+            (scale_fac * ((u_scat_re - u_ref_re)**2 + (u_scat_im - u_ref_im)**2) * ds_receiver))
     else:
         J += assemble(
-            (((u_scat_re - u_ref_re)**2 + (u_scat_im - u_ref_im)**2) * ds_receiver))
+            (scale_fac * ((u_scat_re - u_ref_re)**2 + (u_scat_im - u_ref_im)**2) * ds_receiver))
 
 Jhat = ReducedFunctional(J, Control(h))
 
@@ -79,7 +85,9 @@ h_moola = moola.DolfinPrimalVector(h)
 
 solver = moola.BFGS(problem, h_moola,
                     options={
-                        "maxiter": 20
+                        "maxiter": 20,
+                        "line_search_options": {"ftol": 1e-3, "gtol": 0.9, "xtol": 1e-1, "start_stp": 1
+                                                    , "ignore_warnings": True}
                     })
 
 sol = solver.solve()

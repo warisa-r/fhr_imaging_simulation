@@ -126,6 +126,8 @@ def generate_torso_sim_mesh(
         else:
             # Close the loop
             obstacle_l = gmsh.model.geo.addLine(obstacle_ps[i], obstacle_ps[0])
+        #TODO: One can remove this line it would not make a lot of difference
+        gmsh.model.geo.mesh.setTransfiniteCurve(obstacle_l, 20)
         obstacle_ls.append(obstacle_l)
     
     # Curve loops
@@ -186,7 +188,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.savefig("torso_mesh_initial.png", dpi=150)
     print("Mesh visualization saved to torso_mesh_initial.png")
-    plt.show()
-    plt.close()
+    #plt.show()
+    #plt.close()
 
     convert_msh_to_xdmf(mesh_file)
