@@ -23,7 +23,7 @@ offset = 1e-8
 wave_sources = [(-0.1, -offset), (0.1, -offset)]
 amp = 1
 
-measurement_data_file_path = "measurements/scattering_results.csv"
+measurement_data_file_path = "measurements/scattering_results_5per_noise.csv"
 df_measurement = pd.read_csv(measurement_data_file_path)
 
 msh_file_path = "meshes/torso_sim_mesh_initial.msh"
@@ -93,7 +93,7 @@ solver = moola.BFGS(problem, h_moola,
 sol = solver.solve()
 h_opt = sol['control'].data
 
-result_path = "outputs/result.h5"
+result_path = "outputs/result_5per_noise.h5"
 goal_geometry_msh_path = "meshes/torso_sim_mesh_solution.msh"
 
 save_optimization_result(
@@ -106,6 +106,6 @@ plot_mesh_deformation_from_result(
     result_path,
     goal_geometry_msh_path,
     initial_guess_mesh_util,
-    plot_file_name="outputs/mesh_deformation.png",
-    mesh_overlay_plot_file_name = "outputs/mesh_overlay.png"
+    plot_file_name="outputs/mesh_deformation_5per_noise.png",
+    mesh_overlay_plot_file_name = "outputs/mesh_overlay_5per_noise.png"
 )
