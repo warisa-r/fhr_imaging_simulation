@@ -21,10 +21,10 @@ set_log_level(LogLevel.ERROR)
 frequency = 5e9
 inc_wave_setup = IncidentWaveSetup(frequency, plane_wave)
 
-measurement_data_file_path = "measurements/matlab_fullfield_sin0.5_amp2_scatter.csv"
+measurement_data_file_path = "measurements/matlab_fullfield_sin0.5_scatter_noisy.csv"
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
 markers_dict = {
-    "obstacle": OBSTACLE_MARKER, # Markers importee from our mesh generation module
+    "obstacle": OBSTACLE_MARKER, # Markers imported from our mesh generation module
     "side_wall": SIDE_WALL_MARKER,
     "bottom_wall": RECEIVER_EDGE_MARKER,
     "obstacle_opt": None
@@ -79,8 +79,8 @@ solver = moola.BFGS(problem, h_moola,
 sol = solver.solve()
 h_opt = sol['control'].data
 
-result_path = "outputs/result_sin0.5_amp2_scat.h5"
-goal_geometry_msh_path = "meshes/square_with_halfsin2_perturbed_rect_obstacle.msh"
+result_path = "outputs/result_sin0.5_5per_noise_scat.h5"
+goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
 
 save_optimization_result(
     sol,
@@ -92,15 +92,15 @@ plot_mesh_deformation_from_result(
     result_path,
     goal_geometry_msh_path,
     initial_guess_mesh_util,
-    plot_file_name="outputs/mesh_deformation_sin0.5_amp2_scat.png",
-    mesh_overlay_plot_file_name = "outputs/mesh_overlay_sin0.5_amp2_scat.png"
+    plot_file_name="outputs/mesh_deformation_sin0.5_5per_noise_scat.png",
+    mesh_overlay_plot_file_name = "outputs/mesh_overlay_sin0.5_5per_noise_scat.png"
 )
 
-matlab_fullfield_csv_path = "measurements/matlab_fullfield_sin0.5_amp2_scatter.csv"
-results = calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, result_path,
+matlab_fullfield_exact_csv_path = "measurements/matlab_fullfield_sin0.5_scatter.csv"
+results = calculate_magnitude_and_phase_error(matlab_fullfield_exact_csv_path, result_path,
                                         initial_guess_mesh_util, inc_wave_setup, True)
 
-plot_projected_errors(results, "outputs/error_sin0.5_amp2_scat.png")
+plot_projected_errors(results, "outputs/error_sin0.5_5per_noise_scat.png")
 
 # Print optimization summary
 print("\n=== Optimization Summary ===")
