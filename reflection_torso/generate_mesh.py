@@ -10,7 +10,7 @@ import math
 # Generate solution mesh
 def generate_torso_sim_mesh(
     boundary_point_coordinate, torso_coordinate_csv, ant_pos_csv, mesh_size=0.05,
-    output_name="torso_sim_mesh_solution"
+    output_name="torso_sim_mesh_solution", make_solution = True
 ):
 
     gmsh.initialize()
@@ -127,7 +127,7 @@ def generate_torso_sim_mesh(
             # Close the loop
             obstacle_l = gmsh.model.geo.addLine(obstacle_ps[i], obstacle_ps[0])
         #TODO: One can remove this line it would not make a lot of difference
-        gmsh.model.geo.mesh.setTransfiniteCurve(obstacle_l, 20)
+        #gmsh.model.geo.mesh.setTransfiniteCurve(obstacle_l, 20)
         obstacle_ls.append(obstacle_l)
     
     # Curve loops
@@ -170,6 +170,7 @@ if __name__ == "__main__":
     # Parameters
     wavelength = c / freq_max  # Physical wavelength
     mesh_size = wavelength / 5
+    
     """
     # Generate and visualize mesh
     mesh_file = generate_torso_sim_mesh("meshes/boundary_points.csv",
@@ -177,16 +178,19 @@ if __name__ == "__main__":
                 , output_name="meshes/torso_sim_mesh_solution")
     """
 
+
     # Generate an initial mesh
     mesh_file = generate_torso_sim_mesh("meshes/boundary_points.csv", 
             "meshes/torso_initial_points.csv", "meshes/ant_pos_table.csv"
             , mesh_size = mesh_size
             , output_name="meshes/torso_sim_mesh_initial")
-    
+
     fig, ax = plt.subplots(figsize=(10, 8))
-    plot_mesh(mesh_file, ax, title="Initial Torso Domain with Dummy Obstacle")
+    plot_mesh(mesh_file, ax)
+    
     plt.tight_layout()
-    plt.savefig("torso_mesh_initial.png", dpi=150)
+    ax.get_legend().remove() 
+    plt.savefig("torso_initial.png", bbox_inches='tight', pad_inches=0.1)
     print("Mesh visualization saved to torso_mesh_initial.png")
     #plt.show()
     #plt.close()
