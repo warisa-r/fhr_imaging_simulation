@@ -45,19 +45,20 @@ Requirement already satisfied: mdurl~=0.1 in /rwthfs/rz/cluster/home/nj616237/mi
 Building wheels for collected packages: HH_shape_opt
   Building editable for HH_shape_opt (pyproject.toml): started
   Building editable for HH_shape_opt (pyproject.toml): finished with status 'done'
-  Created wheel for HH_shape_opt: filename=hh_shape_opt-0.1.0-0.editable-py3-none-any.whl size=2851 sha256=cfc3d957c0980b9a11269c567de81060d4a5642899ce8480fcd74b61dc660866
-  Stored in directory: /w0/tmp/slurm_nj616237.62642170/pip-ephem-wheel-cache-zimxqls4/wheels/39/70/7d/5e5508084c54e08a05fee6e869cc3da8d156967369f49dc757
+  Created wheel for HH_shape_opt: filename=hh_shape_opt-0.1.0-0.editable-py3-none-any.whl size=2851 sha256=a9232723165f16e5bc95f820897a5ca5c0e7e8c1ebd51d1661a663c0ce4ca9e9
+  Stored in directory: /w0/tmp/slurm_nj616237.62642771/pip-ephem-wheel-cache-wjti4hav/wheels/39/70/7d/5e5508084c54e08a05fee6e869cc3da8d156967369f49dc757
 Successfully built HH_shape_opt
 Installing collected packages: HH_shape_opt
   Attempting uninstall: HH_shape_opt
     Found existing installation: HH_shape_opt 0.1.0
     Uninstalling HH_shape_opt-0.1.0:
       Successfully uninstalled HH_shape_opt-0.1.0
+WARNING: Ignoring invalid distribution - (/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages)
 Successfully installed HH_shape_opt-0.1.0
 
 [notice] A new release of pip is available: 25.2 -> 25.3
 [notice] To update, run: pip install --upgrade pip
-[n23m0290.hpc.itc.rwth-aachen.de:338384] SET PYTHONPATH=
+[n23m0261.hpc.itc.rwth-aachen.de:197142] SET PYTHONPATH=
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
   import pkg_resources
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
@@ -74,6 +75,26 @@ Successfully installed HH_shape_opt-0.1.0
   import pkg_resources
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
   import pkg_resources
+L-BFGS method.
+------------------------------
+Line search:		 strong_wolfe
+Maximum iterations:	 20
+
+L-BFGS method.
+------------------------------
+Line search:		 strong_wolfe
+Maximum iterations:	 20
+
+L-BFGS method.
+------------------------------
+Line search:		 strong_wolfe
+Maximum iterations:	 20
+
+L-BFGS method.
+------------------------------
+Line search:		 strong_wolfe
+Maximum iterations:	 20
+
 L-BFGS method.
 ------------------------------
 Line search:		 strong_wolfe
@@ -91,274 +112,181 @@ L-BFGS method.
 Line search:		 strong_wolfe
 Maximum iterations:	 20
 
-	L-BFGS method.
-------------------------------
-Line search:	L-BFGS method.
-------------------------------
-Line search:		 strong_wolfe
+		 strong_wolfe
 Maximum iterations:	 20
 
- strong_wolfe
-Maximum iterations:L-BFGS method.
-------------------------------
-Line search:		 strong_wolfe
-Maximum iterations:	 20
+iteration = 0:	objective = 1.0863795168289698:	grad_norm = 0.437359651063633:
+iteration = 0:	objective = 1.0863795168289698:	grad_norm = 0.437359651063633:
+iteration = 0:	objective = 1.0863795168289698:	grad_norm = 0.437359651063633:
+iteration = 0:	objective = 1.0863795168289698:	grad_norm = 0.437359651063633:
+iteration = 0:	objective = 1.0863795168289698:	grad_norm = 0.437359651063633:
+iteration = 0:	objective = 1.0863795168289698:	grad_norm = 0.437359651063633:
+iteration = 0:	objective = 1.0863795168289698:	grad_norm = 0.437359651063633:
+iteration = 0:	objective = 1.0863795168289698:	grad_norm = 0.437359651063633:
+-g 0.43735965106346103
+-g 0.43735965106346103
+-g 0.43735965106346103
+-g 0.43735965106346103
+-g 0.43735965106346103
+-g 0.43735965106346103
+-g 0.43735965106346103
+-g 0.43735965106346103
+iteration = 1:	objective = 0.9682929120821733:	grad_norm = 0.35959463803792263:	delta_J = 0.11808660474679655:
+iteration = 1:	objective = 0.9682929120821733:	grad_norm = 0.35959463803792263:	delta_J = 0.11808660474679655:
+iteration = 1:	objective = 0.9682929120821733:	grad_norm = 0.35959463803792263:	delta_J = 0.11808660474679655:
+iteration = 1:	objective = 0.9682929120821733:	grad_norm = 0.35959463803792263:	delta_J = 0.11808660474679655:
+iteration = 1:	objective = 0.9682929120821733:	grad_norm = 0.35959463803792263:	delta_J = 0.11808660474679655:
+iteration = 1:	objective = 0.9682929120821733:	grad_norm = 0.35959463803792263:	delta_J = 0.11808660474679655:
+iteration = 1:	objective = 0.9682929120821733:	grad_norm = 0.35959463803792263:	delta_J = 0.11808660474679655:
+iteration = 1:	objective = 0.9682929120821733:	grad_norm = 0.35959463803792263:	delta_J = 0.11808660474679655:
+-g 0.12798864445104416
+-g 0.12798864445104416
+-g 0.12798864445104416
+-g 0.12798864445104416
+-g 0.12798864445104416
+-g 0.12798864445104416
+-g 0.12798864445104416
+-g 0.12798864445104416
+iteration = 2:	objective = 0.592702462957653:	grad_norm = 0.3067737589971475:	delta_J = 0.3755904491245202:
+iteration = 2:	objective = 0.592702462957653:	grad_norm = 0.3067737589971475:	delta_J = 0.3755904491245202:
+iteration = 2:	objective = 0.592702462957653:	grad_norm = 0.3067737589971475:	delta_J = 0.3755904491245202:
+iteration = 2:	objective = 0.592702462957653:	grad_norm = 0.3067737589971475:	delta_J = 0.3755904491245202:
+iteration = 2:	objective = 0.592702462957653:	grad_norm = 0.3067737589971475:	delta_J = 0.3755904491245202:
+iteration = 2:	objective = 0.592702462957653:	grad_norm = 0.3067737589971475:	delta_J = 0.3755904491245202:
+iteration = 2:	objective = 0.592702462957653:	grad_norm = 0.3067737589971475:	delta_J = 0.3755904491245202:
+iteration = 2:	objective = 0.592702462957653:	grad_norm = 0.3067737589971475:	delta_J = 0.3755904491245202:
+-g 0.6579380469225163
+-g 0.6579380469225163
+-g 0.6579380469225163
+-g 0.6579380469225163
+-g 0.6579380469225163
+-g 0.6579380469225163
+-g 0.6579380469225163
+-g 0.6579380469225163
+Warning in line search: xtol test satisfied.
+Warning in line search: xtol test satisfied.
+Warning in line search: xtol test satisfied.
+Warning in line search: xtol test satisfied.
+Warning in line search: xtol test satisfied.
+Warning in line search: xtol test satisfied.
+Warning in line search: xtol test satisfied.
+Warning in line search: xtol test satisfied.
+iteration = 3:	objective = 0.03395128848796674:	grad_norm = 0.43496020184440587:	delta_J = 0.5587511744696864:
+iteration = 3:	objective = 0.03395128848796674:	grad_norm = 0.43496020184440587:	delta_J = 0.5587511744696864:
+iteration = 3:	objective = 0.03395128848796674:	grad_norm = 0.43496020184440587:	delta_J = 0.5587511744696864:
+iteration = 3:	objective = 0.03395128848796674:	grad_norm = 0.43496020184440587:	delta_J = 0.5587511744696864:
+iteration = 3:	objective = 0.03395128848796674:	grad_norm = 0.43496020184440587:	delta_J = 0.5587511744696864:
+iteration = 3:	objective = 0.03395128848796674:	grad_norm = 0.43496020184440587:	delta_J = 0.5587511744696864:
+iteration = 3:	objective = 0.03395128848796674:	grad_norm = 0.43496020184440587:	delta_J = 0.5587511744696864:
+iteration = 3:	objective = 0.03395128848796674:	grad_norm = 0.43496020184440587:	delta_J = 0.5587511744696864:
+-g -4.265372890108493
+-g -4.265372890108493
+-g -4.265372890108493
+-g -4.265372890108493
+-g -4.265372890108493
+-g -4.265372890108493
+-g -4.265372890108493
+-g -4.265372890108493
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_plane_wave/opt_script.py", line 80, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_plane_wave/opt_script.py", line 80, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_plane_wave/opt_script.py", line 80, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_plane_wave/opt_script.py", line 80, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_plane_wave/opt_script.py", line 80, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_plane_wave/opt_script.py", line 80, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_plane_wave/opt_script.py", line 80, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_plane_wave/opt_script.py", line 80, in <module>
+    sol = solver.solve()
+    sol = solver.solve()
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/pyadjoint/tape.py", line 99, in wrapper
+    sol = solver.solve()
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/pyadjoint/tape.py", line 99, in wrapper
+    sol = solver.solve()
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/pyadjoint/tape.py", line 99, in wrapper
+    sol = solver.solve()
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/pyadjoint/tape.py", line 99, in wrapper
+    sol = solver.solve()
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/pyadjoint/tape.py", line 99, in wrapper
+    sol = solver.solve()
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/pyadjoint/tape.py", line 99, in wrapper
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/pyadjoint/tape.py", line 99, in wrapper
+    sol = solver.solve()
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/pyadjoint/tape.py", line 99, in wrapper
+    return function(*args, **kwargs)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
+    return function(*args, **kwargs)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
+    return function(*args, **kwargs)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
+    return function(*args, **kwargs)
+    return function(*args, **kwargs)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
+    return function(*args, **kwargs)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
+    return function(*args, **kwargs)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
+    return function(*args, **kwargs)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
+    xk, ak = self.do_linesearch(objective, xk, pk)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/optimisation_algorithm.py", line 90, in do_linesearch
+    xk, ak = self.do_linesearch(objective, xk, pk)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/optimisation_algorithm.py", line 90, in do_linesearch
+    xk, ak = self.do_linesearch(objective, xk, pk)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/optimisation_algorithm.py", line 90, in do_linesearch
+    xk, ak = self.do_linesearch(objective, xk, pk)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/optimisation_algorithm.py", line 90, in do_linesearch
+    xk, ak = self.do_linesearch(objective, xk, pk)
+    xk, ak = self.do_linesearch(objective, xk, pk)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/optimisation_algorithm.py", line 90, in do_linesearch
+    xk, ak = self.do_linesearch(objective, xk, pk)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/optimisation_algorithm.py", line 90, in do_linesearch
+    xk, ak = self.do_linesearch(objective, xk, pk)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/optimisation_algorithm.py", line 90, in do_linesearch
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/optimisation_algorithm.py", line 90, in do_linesearch
+    alpha = self.linesearch.search(phi, phi_dphi, phi_dphi0)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/linesearch/strong_wolfe.py", line 97, in search
+    alpha = self.linesearch.search(phi, phi_dphi, phi_dphi0)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/linesearch/strong_wolfe.py", line 97, in search
+    alpha = self.linesearch.search(phi, phi_dphi, phi_dphi0)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/linesearch/strong_wolfe.py", line 97, in search
+    alpha = self.linesearch.search(phi, phi_dphi, phi_dphi0)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/linesearch/strong_wolfe.py", line 97, in search
+    alpha = self.linesearch.search(phi, phi_dphi, phi_dphi0)
+    alpha = self.linesearch.search(phi, phi_dphi, phi_dphi0)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/linesearch/strong_wolfe.py", line 97, in search
+    alpha = self.linesearch.search(phi, phi_dphi, phi_dphi0)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/linesearch/strong_wolfe.py", line 97, in search
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/linesearch/strong_wolfe.py", line 97, in search
+    alpha = self.linesearch.search(phi, phi_dphi, phi_dphi0)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/linesearch/strong_wolfe.py", line 97, in search
+    raise RuntimeError(task)
+RuntimeError: Error: initial g >= 0 (4.265373e+00)
+    raise RuntimeError(task)
+RuntimeError: Error: initial g >= 0 (4.265373e+00)
+    raise RuntimeError(task)
+RuntimeError: Error: initial g >= 0 (4.265373e+00)
+    raise RuntimeError(task)
+RuntimeError: Error: initial g >= 0 (4.265373e+00)
+    raise RuntimeError(task)
+RuntimeError: Error: initial g >= 0 (4.265373e+00)
+    raise RuntimeError(task)
+RuntimeError: Error: initial g >= 0 (4.265373e+00)
+    raise RuntimeError(task)
+RuntimeError: Error: initial g >= 0 (4.265373e+00)
+    raise RuntimeError(task)
+RuntimeError: Error: initial g >= 0 (4.265373e+00)
+--------------------------------------------------------------------------
+prterun detected that one or more processes exited with non-zero status,
+thus causing the job to be terminated. The first process to do so was:
 
-	L-BFGS method.
-------------------------------
-Line search:		 strong_wolfe
-Maximum iterations:	 20
-
- 20
-	
-	 strong_wolfe
-Maximum iterations:	 20
-
-iteration = 0:	objective = 1.0863795168289558:	grad_norm = 0.023256336428616086:
-iteration = 0:	objective = 1.0863795168289558:	grad_norm = 0.023256336428616086:
-iteration = 0:	objective = 1.0863795168289558:	grad_norm = 0.023256336428616086:
-iteration = 0:	objective = 1.0863795168289558:	grad_norm = 0.023256336428616086:
-iteration = 0:	objective = 1.0863795168289558:	grad_norm = 0.023256336428616086:
-iteration = 0:	objective = 1.0863795168289558:	grad_norm = 0.023256336428616086:
-iteration = 0:	objective = 1.0863795168289558:	grad_norm = 0.023256336428616086:
-iteration = 0:	objective = 1.0863795168289558:	grad_norm = 0.023256336428616086:
--g 0.023256336428625398
--g 0.023256336428625398
--g 0.023256336428625398
--g 0.023256336428625398
--g 0.023256336428625398
--g 0.023256336428625398
--g 0.023256336428625398
--g 0.023256336428625398
-iteration = 1:	objective = 0.6102938110043862:	grad_norm = 0.011657810043226541:	delta_J = 0.47608570582456966:
-iteration = 1:	objective = 0.6102938110043862:	grad_norm = 0.011657810043226541:	delta_J = 0.47608570582456966:
-iteration = 1:	objective = 0.6102938110043862:	grad_norm = 0.011657810043226541:	delta_J = 0.47608570582456966:
-iteration = 1:	objective = 0.6102938110043862:	grad_norm = 0.011657810043226541:	delta_J = 0.47608570582456966:
-iteration = 1:	objective = 0.6102938110043862:	grad_norm = 0.011657810043226541:	delta_J = 0.47608570582456966:
-iteration = 1:	objective = 0.6102938110043862:	grad_norm = 0.011657810043226541:	delta_J = 0.47608570582456966:
-iteration = 1:	objective = 0.6102938110043862:	grad_norm = 0.011657810043226541:	delta_J = 0.47608570582456966:
-iteration = 1:	objective = 0.6102938110043862:	grad_norm = 0.011657810043226541:	delta_J = 0.47608570582456966:
--g 0.08690180064610756
--g 0.08690180064610756
--g 0.08690180064610756
--g 0.08690180064610756
--g 0.08690180064610756
--g 0.08690180064610756
--g 0.08690180064610756
--g 0.08690180064610756
-iteration = 2:	objective = 0.6045475269530214:	grad_norm = 0.008555836103257938:	delta_J = 0.005746284051364792:
-iteration = 2:	objective = 0.6045475269530214:	grad_norm = 0.008555836103257938:	delta_J = 0.005746284051364792:
-iteration = 2:	objective = 0.6045475269530214:	grad_norm = 0.008555836103257938:	delta_J = 0.005746284051364792:
-iteration = 2:	objective = 0.6045475269530214:	grad_norm = 0.008555836103257938:	delta_J = 0.005746284051364792:
-iteration = 2:	objective = 0.6045475269530214:	grad_norm = 0.008555836103257938:	delta_J = 0.005746284051364792:
-iteration = 2:	objective = 0.6045475269530214:	grad_norm = 0.008555836103257938:	delta_J = 0.005746284051364792:
-iteration = 2:	objective = 0.6045475269530214:	grad_norm = 0.008555836103257938:	delta_J = 0.005746284051364792:
-iteration = 2:	objective = 0.6045475269530214:	grad_norm = 0.008555836103257938:	delta_J = 0.005746284051364792:
--g 0.012453543648420459
--g 0.012453543648420459
--g 0.012453543648420459
--g 0.012453543648420459
--g 0.012453543648420459
--g 0.012453543648420459
--g 0.012453543648420459
--g 0.012453543648420459
-iteration = 3:	objective = 0.5854418383207357:	grad_norm = 0.00879370620367846:	delta_J = 0.019105688632285678:
-iteration = 3:	objective = 0.5854418383207357:	grad_norm = 0.00879370620367846:	delta_J = 0.019105688632285678:
-iteration = 3:	objective = 0.5854418383207357:	grad_norm = 0.00879370620367846:	delta_J = 0.019105688632285678:
-iteration = 3:	objective = 0.5854418383207357:	grad_norm = 0.00879370620367846:	delta_J = 0.019105688632285678:
-iteration = 3:iteration = 3:	objective = 0.5854418383207357:	grad_norm = 0.00879370620367846:	delta_J = 0.019105688632285678:
-	objective = 0.5854418383207357:	grad_norm = 0.00879370620367846:	delta_J = 0.019105688632285678:
-iteration = 3:	objective = 0.5854418383207357:	grad_norm = 0.00879370620367846:	delta_J = 0.019105688632285678:
-iteration = 3:	objective = 0.5854418383207357:	grad_norm = 0.00879370620367846:	delta_J = 0.019105688632285678:
--g 0.03290263631045098
--g 0.03290263631045098
--g 0.03290263631045098
--g 0.03290263631045098
--g 0.03290263631045098
--g 0.03290263631045098
--g 0.03290263631045098
--g 0.03290263631045098
-iteration = 4:	objective = 0.5471715156552079:	grad_norm = 0.02735810275245367:	delta_J = 0.03827032266552777:
-iteration = 4:	objective = 0.5471715156552079:	grad_norm = 0.02735810275245367:	delta_J = 0.03827032266552777:
-iteration = 4:	objective = 0.5471715156552079:	grad_norm = 0.02735810275245367:	delta_J = 0.03827032266552777:
-iteration = 4:	objective = 0.5471715156552079:	grad_norm = 0.02735810275245367:	delta_J = 0.03827032266552777:
-iteration = 4:	objective = 0.5471715156552079:	grad_norm = 0.02735810275245367:	delta_J = 0.03827032266552777:
-iteration = 4:	objective = 0.5471715156552079:	grad_norm = 0.02735810275245367:	delta_J = 0.03827032266552777:
-iteration = 4:	objective = 0.5471715156552079:	grad_norm = 0.02735810275245367:	delta_J = 0.03827032266552777:
-iteration = 4:	objective = 0.5471715156552079:	grad_norm = 0.02735810275245367:	delta_J = 0.03827032266552777:
--g 0.030304283686173508
--g 0.030304283686173508
--g 0.030304283686173508
--g 0.030304283686173508
--g 0.030304283686173508
--g 0.030304283686173508
--g 0.030304283686173508
--g 0.030304283686173508
-iteration = 5:	objective = 0.4982852890222502:	grad_norm = 0.035674302436393725:	delta_J = 0.04888622663295772:
-iteration = 5:	objective = 0.4982852890222502:	grad_norm = 0.035674302436393725:	delta_J = 0.04888622663295772:
-iteration = 5:	objective = 0.4982852890222502:	grad_norm = 0.035674302436393725:	delta_J = 0.04888622663295772:
-iteration = 5:	objective = 0.4982852890222502:	grad_norm = 0.035674302436393725:	delta_J = 0.04888622663295772:
-iteration = 5:	objective = 0.4982852890222502:	grad_norm = 0.035674302436393725:	delta_J = 0.04888622663295772:
-iteration = 5:	objective = 0.4982852890222502:	grad_norm = 0.035674302436393725:	delta_J = 0.04888622663295772:
-iteration = 5:	objective = 0.4982852890222502:	grad_norm = 0.035674302436393725:	delta_J = 0.04888622663295772:
-iteration = 5:	objective = 0.4982852890222502:	grad_norm = 0.035674302436393725:	delta_J = 0.04888622663295772:
--g 0.1607266897783882
--g 0.1607266897783882
--g 0.1607266897783882
--g 0.1607266897783882
--g 0.1607266897783882
--g 0.1607266897783882
--g 0.1607266897783882
--g 0.1607266897783882
-iteration = 6:	objective = 0.3472585684500844:	grad_norm = 0.025876862681807875:	delta_J = 0.15102672057216582:
-iteration = 6:	objective = 0.3472585684500844:	grad_norm = 0.025876862681807875:	delta_J = 0.15102672057216582:
-iteration = 6:	objective = 0.3472585684500844:	grad_norm = 0.025876862681807875:	delta_J = 0.15102672057216582:
-iteration = 6:	objective = 0.3472585684500844:	grad_norm = 0.025876862681807875:	delta_J = 0.15102672057216582:
-iteration = 6:	objective = 0.3472585684500844:	grad_norm = 0.025876862681807875:	delta_J = 0.15102672057216582:
-iteration = 6:	objective = 0.3472585684500844:	grad_norm = 0.025876862681807875:	delta_J = 0.15102672057216582:
-iteration = 6:	objective = 0.3472585684500844:	grad_norm = 0.025876862681807875:	delta_J = 0.15102672057216582:
-iteration = 6:	objective = 0.3472585684500844:	grad_norm = 0.025876862681807875:	delta_J = 0.15102672057216582:
--g 0.039098685669802756
--g 0.039098685669802756
--g 0.039098685669802756
--g 0.039098685669802756
--g 0.039098685669802756
--g 0.039098685669802756
--g 0.039098685669802756
--g 0.039098685669802756
-iteration = 7:	objective = 0.30204057126585415:	grad_norm = 0.014410163518667323:	delta_J = 0.04521799718423025:
-iteration = 7:	objective = 0.30204057126585415:	grad_norm = 0.014410163518667323:	delta_J = 0.04521799718423025:
-iteration = 7:	objective = 0.30204057126585415:	grad_norm = 0.014410163518667323:	delta_J = 0.04521799718423025:
-iteration = 7:	objective = 0.30204057126585415:	grad_norm = 0.014410163518667323:	delta_J = 0.04521799718423025:
-iteration = 7:	objective = 0.30204057126585415:	grad_norm = 0.014410163518667323:	delta_J = 0.04521799718423025:
-iteration = 7:	objective = 0.30204057126585415:	grad_norm = 0.014410163518667323:	delta_J = 0.04521799718423025:
-iteration = 7:	objective = 0.30204057126585415:	grad_norm = 0.014410163518667323:	delta_J = 0.04521799718423025:
-iteration = 7:	objective = 0.30204057126585415:	grad_norm = 0.014410163518667323:	delta_J = 0.04521799718423025:
--g 0.005328090693095235
--g 0.005328090693095235
--g 0.005328090693095235
--g 0.005328090693095235
--g 0.005328090693095235
--g 0.005328090693095235
--g 0.005328090693095235
--g 0.005328090693095235
-iteration = 8:	objective = 0.29162133062503903:	grad_norm = 0.013861270100770295:	delta_J = 0.01041924064081512:
-iteration = 8:	objective = 0.29162133062503903:	grad_norm = 0.013861270100770295:	delta_J = 0.01041924064081512:
-iteration = 8:	objective = 0.29162133062503903:	grad_norm = 0.013861270100770295:	delta_J = 0.01041924064081512:
-iteration = 8:	objective = 0.29162133062503903:	grad_norm = 0.013861270100770295:	delta_J = 0.01041924064081512:
-iteration = 8:	objective = 0.29162133062503903:	grad_norm = 0.013861270100770295:	delta_J = 0.01041924064081512:
-iteration = 8:	objective = 0.29162133062503903:	grad_norm = 0.013861270100770295:	delta_J = 0.01041924064081512:
-iteration = 8:	objective = 0.29162133062503903:	grad_norm = 0.013861270100770295:	delta_J = 0.01041924064081512:
-iteration = 8:	objective = 0.29162133062503903:	grad_norm = 0.013861270100770295:	delta_J = 0.01041924064081512:
--g 0.05388990125715247
--g 0.05388990125715247
--g 0.05388990125715247
--g 0.05388990125715247
--g 0.05388990125715247
--g 0.05388990125715247
--g 0.05388990125715247
--g 0.05388990125715247
-iteration = 9:	objective = 0.24879969446737182:	grad_norm = 0.024962983987892793:	delta_J = 0.04282163615766721:
-iteration = 9:	objective = 0.24879969446737182:	grad_norm = 0.024962983987892793:	delta_J = 0.04282163615766721:
-iteration = 9:	objective = 0.24879969446737182:	grad_norm = 0.024962983987892793:	delta_J = 0.04282163615766721:
-iteration = 9:	objective = 0.24879969446737182:	grad_norm = 0.024962983987892793:	delta_J = 0.04282163615766721:
-iteration = 9:	objective = 0.24879969446737182:	grad_norm = 0.024962983987892793:	delta_J = 0.04282163615766721:
-iteration = 9:	objective = 0.24879969446737182:	grad_norm = 0.024962983987892793:	delta_J = 0.04282163615766721:
-iteration = 9:	objective = 0.24879969446737182:	grad_norm = 0.024962983987892793:	delta_J = 0.04282163615766721:
-iteration = 9:	objective = 0.24879969446737182:	grad_norm = 0.024962983987892793:	delta_J = 0.04282163615766721:
--g 0.03821206717264065
--g 0.03821206717264065
--g 0.03821206717264065
--g 0.03821206717264065
--g 0.03821206717264065
--g 0.03821206717264065
--g 0.03821206717264065
--g 0.03821206717264065
-iteration = 10:	objective = 0.1985099484619506:	grad_norm = 0.0045077510443548435:	delta_J = 0.050289746005421215:
-iteration = 10:	objective = 0.1985099484619506:	grad_norm = 0.0045077510443548435:	delta_J = 0.050289746005421215:
-iteration = 10:	objective = 0.1985099484619506:	grad_norm = 0.0045077510443548435:	delta_J = 0.050289746005421215:
-iteration = 10:	objective = 0.1985099484619506:	grad_norm = 0.0045077510443548435:	delta_J = 0.050289746005421215:
-iteration = 10:	objective = 0.1985099484619506:	grad_norm = 0.0045077510443548435:	delta_J = 0.050289746005421215:
-iteration = 10:	objective = 0.1985099484619506:	grad_norm = 0.0045077510443548435:	delta_J = 0.050289746005421215:
-iteration = 10:	objective = 0.1985099484619506:	grad_norm = 0.0045077510443548435:	delta_J = 0.050289746005421215:
-iteration = 10:	objective = 0.1985099484619506:	grad_norm = 0.0045077510443548435:	delta_J = 0.050289746005421215:
--g 0.03285487649599697
--g 0.03285487649599697
--g 0.03285487649599697
--g 0.03285487649599697
--g 0.03285487649599697
--g 0.03285487649599697
--g 0.03285487649599697
--g 0.03285487649599697
-iteration = 11:	objective = 0.16740835122046077:	grad_norm = 0.015751050574867732:	delta_J = 0.031101597241489837:
-iteration = 11:	objective = 0.16740835122046077:	grad_norm = 0.015751050574867732:	delta_J = 0.031101597241489837:
-iteration = 11:	objective = 0.16740835122046077:	grad_norm = 0.015751050574867732:	delta_J = 0.031101597241489837:
-iteration = 11:	objective = 0.16740835122046077:	grad_norm = 0.015751050574867732:	delta_J = 0.031101597241489837:
-iteration = 11:	objective = 0.16740835122046077:	grad_norm = 0.015751050574867732:	delta_J = 0.031101597241489837:
-iteration = 11:	objective = 0.16740835122046077:	grad_norm = 0.015751050574867732:	delta_J = 0.031101597241489837:
-iteration = 11:	objective = 0.16740835122046077:	grad_norm = 0.015751050574867732:	delta_J = 0.031101597241489837:
-iteration = 11:	objective = 0.16740835122046077:	grad_norm = 0.015751050574867732:	delta_J = 0.031101597241489837:
--g 0.010316426186796646
--g 0.010316426186796646
--g 0.010316426186796646
--g 0.010316426186796646
--g 0.010316426186796646
--g 0.010316426186796646
--g 0.010316426186796646
--g 0.010316426186796646
-iteration = 12:	objective = 0.15490172569223676:	grad_norm = 0.009783545162495123:	delta_J = 0.012506625528224014:
-iteration = 12:	objective = 0.15490172569223676:	grad_norm = 0.009783545162495123:	delta_J = 0.012506625528224014:
-iteration = 12:	objective = 0.15490172569223676:	grad_norm = 0.009783545162495123:	delta_J = 0.012506625528224014:
-iteration = 12:	objective = 0.15490172569223676:	grad_norm = 0.009783545162495123:	delta_J = 0.012506625528224014:
-iteration = 12:	objective = 0.15490172569223676:	grad_norm = 0.009783545162495123:	delta_J = 0.012506625528224014:
-iteration = 12:	objective = 0.15490172569223676:	grad_norm = 0.009783545162495123:	delta_J = 0.012506625528224014:
-iteration = 12:	objective = 0.15490172569223676:	grad_norm = 0.009783545162495123:	delta_J = 0.012506625528224014:
-iteration = 12:	objective = 0.15490172569223676:	grad_norm = 0.009783545162495123:	delta_J = 0.012506625528224014:
--g 0.008267172597722791
--g 0.008267172597722791
--g 0.008267172597722791
--g 0.008267172597722791
--g 0.008267172597722791
--g 0.008267172597722791
--g 0.008267172597722791
--g 0.008267172597722791
-iteration = 13:	objective = 0.15168669946156657:	grad_norm = 0.005400100538198847:	delta_J = 0.003215026230670187:
-iteration = 13:	objective = 0.15168669946156657:	grad_norm = 0.005400100538198847:	delta_J = 0.003215026230670187:
-iteration = 13:	objective = 0.15168669946156657:	grad_norm = 0.005400100538198847:	delta_J = 0.003215026230670187:
-iteration = 13:	objective = 0.15168669946156657:	grad_norm = 0.005400100538198847:	delta_J = 0.003215026230670187:
-iteration = 13:	objective = 0.15168669946156657:	grad_norm = 0.005400100538198847:	delta_J = 0.003215026230670187:
-iteration = 13:	objective = 0.15168669946156657:	grad_norm = 0.005400100538198847:	delta_J = 0.003215026230670187:
-iteration = 13:	objective = 0.15168669946156657:	grad_norm = 0.005400100538198847:	delta_J = 0.003215026230670187:
-iteration = 13:	objective = 0.15168669946156657:	grad_norm = 0.005400100538198847:	delta_J = 0.003215026230670187:
--g 0.005171087280579341
--g 0.005171087280579341
--g 0.005171087280579341
--g 0.005171087280579341
--g 0.005171087280579341
--g 0.005171087280579341
--g 0.005171087280579341
--g 0.005171087280579341
-iteration = 14:	objective = 0.1448232391560627:	grad_norm = 0.00871763169321292:	delta_J = 0.00686346030550386:
-iteration = 14:	objective = 0.1448232391560627:	grad_norm = 0.00871763169321292:	delta_J = 0.00686346030550386:
-iteration = 14:	objective = 0.1448232391560627:	grad_norm = 0.00871763169321292:	delta_J = 0.00686346030550386:
-iteration = 14:	objective = 0.1448232391560627:	grad_norm = 0.00871763169321292:	delta_J = 0.00686346030550386:
-iteration = 14:	objective = 0.1448232391560627:	grad_norm = 0.00871763169321292:	delta_J = 0.00686346030550386:
-iteration = 14:	objective = 0.1448232391560627:	grad_norm = 0.00871763169321292:	delta_J = 0.00686346030550386:
-iteration = 14:	objective = 0.1448232391560627:	grad_norm = 0.00871763169321292:	delta_J = 0.00686346030550386:
-iteration = 14:	objective = 0.1448232391560627:	grad_norm = 0.00871763169321292:	delta_J = 0.00686346030550386:
--g 0.009489186755440367
--g 0.009489186755440367
--g 0.009489186755440367
--g 0.009489186755440367
--g 0.009489186755440367
--g 0.009489186755440367
--g 0.009489186755440367
--g 0.009489186755440367
-iteration = 15:	objective = 0.1334270353559298:	grad_norm = 0.008933098406112836:	delta_J = 0.011396203800132898:
-iteration = 15:	objective = 0.1334270353559298:	grad_norm = 0.008933098406112836:	delta_J = 0.011396203800132898:
-iteration = 15:	objective = 0.1334270353559298:	grad_norm = 0.008933098406112836:	delta_J = 0.011396203800132898:
-iteration = 15:	objective = 0.1334270353559298:	grad_norm = 0.008933098406112836:	delta_J = 0.011396203800132898:
-iteration = 15:	objective = 0.1334270353559298:	grad_norm = 0.008933098406112836:	delta_J = 0.011396203800132898:
-iteration = 15:	objective = 0.1334270353559298:	grad_norm = 0.008933098406112836:	delta_J = 0.011396203800132898:
-iteration = 15:	objective = 0.1334270353559298:	grad_norm = 0.008933098406112836:	delta_J = 0.011396203800132898:
-iteration = 15:	objective = 0.1334270353559298:	grad_norm = 0.008933098406112836:	delta_J = 0.011396203800132898:
+   Process name: [prterun-n23m0261-197142@1,7]
+   Exit code:    1
+--------------------------------------------------------------------------

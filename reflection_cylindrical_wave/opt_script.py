@@ -31,7 +31,7 @@ markers_dict = {
     "bottom_wall": RECEIVER_EDGE_MARKER,
     "obstacle_opt": None
 }
-obstacle_stiffness = 500
+obstacle_stiffness = 25
 
 initial_guess_mesh_util = MeshUtil(
     msh_file_path, markers_dict, obstacle_stiffness)
