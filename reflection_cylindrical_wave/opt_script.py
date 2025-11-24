@@ -52,12 +52,12 @@ h_V.rename("Volume extension of h", "")
 ##########################
 
 # Solve the forward problem
-u_scat_re, u_scat_im, ds_receiver, V_CG1 = forward_solve(
-    h, inc_wave_setup, initial_guess_mesh_util, True, 1)
+u_scat_re, u_scat_im, ds_receiver, V_DG0 = forward_solve(
+    h, inc_wave_setup, initial_guess_mesh_util, True)
 
 # Load the reference data in the same function space as the projected result of the forward solve
 u_ref_re, u_ref_im, _ = load_forward_simulation_data_bottomwall(
-    measurement_data_file_path, V_CG1, 1)
+    measurement_data_file_path, V_DG0)
 
 J = assemble(
     (((u_scat_re - u_ref_re)**2 + (u_scat_im - u_ref_im)**2) * ds_receiver))
