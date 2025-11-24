@@ -21,7 +21,7 @@ set_log_level(LogLevel.ERROR)
 frequency = 5e9
 inc_wave_setup = IncidentWaveSetup(frequency, plane_wave)
 
-measurement_data_file_path = "measurements/matlab_fullfield_sin0.5_scatter_noisy.csv"
+measurement_data_file_path = "measurements/matlab_fullfield_sin0.5_amp2_scatter_noisy.csv"
 msh_file_path = "meshes/square_with_rect_obstacle.msh"
 markers_dict = {
     "obstacle": OBSTACLE_MARKER, # Markers imported from our mesh generation module
@@ -29,7 +29,7 @@ markers_dict = {
     "bottom_wall": RECEIVER_EDGE_MARKER,
     "obstacle_opt": None
 }
-obstacle_stiffness = 25
+obstacle_stiffness = 500
 
 initial_guess_mesh_util = MeshUtil(
     msh_file_path, markers_dict, obstacle_stiffness)
@@ -73,14 +73,15 @@ h_moola = moola.DolfinPrimalVector(h)
 
 solver = moola.BFGS(problem, h_moola,
                     options={
-                        "maxiter": 20
+                        "maxiter": 20,
+                        "line_search_options" : {"ftol": 1e-3, "gtol": 0.9, "xtol": 1e-1, "start_stp": 1, "ignore_warnings": True}
                     })
 
 sol = solver.solve()
 h_opt = sol['control'].data
 
-result_path = "outputs/result_sin0.5_noisy.h5"
-goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
+result_path = "outputs/result_sin0.5_amp2_scat_noisy.h5"
+goal_geometry_msh_path = "meshes/square_with_halfsin2_perturbed_rect_obstacle.msh"
 
 save_optimization_result(
     sol,
@@ -92,15 +93,15 @@ plot_mesh_deformation_from_result(
     result_path,
     goal_geometry_msh_path,
     initial_guess_mesh_util,
-    plot_file_name="outputs/mesh_deformation_sin0.5.png",
-    mesh_overlay_plot_file_name = "outputs/mesh_overlay_sin0.5.png"
+    plot_file_name="outputs/mesh_deformation_sin0.5_amp2_scat_noisy.png",
+    mesh_overlay_plot_file_name = "outputs/mesh_overlay_sin0.5_amp2_scat_noisy.png"
 )
 
-matlab_fullfield_exact_csv_path = "measurements/matlab_fullfield_sin0.5_scatter.csv"
+matlab_fullfield_exact_csv_path = "measurements/matlab_fullfield_sin0.5_amp2_scatter.csv"
 results = calculate_magnitude_and_phase_error(matlab_fullfield_exact_csv_path, result_path,
                                         initial_guess_mesh_util, inc_wave_setup, True)
 
-plot_projected_errors(results, "outputs/error_sin0.5.png")
+plot_projected_errors(results, "outputs/error_sin0.5_amp2_scat_noisy.png")
 
 # Print optimization summary
 print("\n=== Optimization Summary ===")
