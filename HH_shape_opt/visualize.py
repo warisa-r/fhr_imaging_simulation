@@ -283,7 +283,13 @@ def plot_projected_errors(results, error_plot_file,
         proj_phase = np.degrees(np.asarray(results["projected_phase"]))
         mag_err = np.asarray(results["mag_error"])
         phase_err_rad = np.asarray(results["phase_error"])
+
+        # Convert to degree and do phase unwrapping
         phase_err_deg = np.degrees(phase_err_rad)
+        if phase_err_deg < -90:
+            phase_err_deg = phase_err_deg + 180
+        elif phase_err_deg > 90
+            phase_err_deg = phase_err_deg - 180
 
         # Sort by x for a clean plot
         order = np.argsort(x)
