@@ -45,8 +45,8 @@ Requirement already satisfied: mdurl~=0.1 in /rwthfs/rz/cluster/home/nj616237/mi
 Building wheels for collected packages: HH_shape_opt
   Building editable for HH_shape_opt (pyproject.toml): started
   Building editable for HH_shape_opt (pyproject.toml): finished with status 'done'
-  Created wheel for HH_shape_opt: filename=hh_shape_opt-0.1.0-0.editable-py3-none-any.whl size=2851 sha256=5f4dc625aa6c64886fd65b1d99f28ac3b7a27dc8172b9065504cff0802912b84
-  Stored in directory: /w0/tmp/slurm_nj616237.62637758/pip-ephem-wheel-cache-d4saqdxo/wheels/39/70/7d/5e5508084c54e08a05fee6e869cc3da8d156967369f49dc757
+  Created wheel for HH_shape_opt: filename=hh_shape_opt-0.1.0-0.editable-py3-none-any.whl size=2851 sha256=700a24b793bd058504046edaa32c65d9187cfb94ccb6b2b322af732c0208a5d1
+  Stored in directory: /w0/tmp/slurm_nj616237.62639365/pip-ephem-wheel-cache-6ukr5swm/wheels/39/70/7d/5e5508084c54e08a05fee6e869cc3da8d156967369f49dc757
 Successfully built HH_shape_opt
 Installing collected packages: HH_shape_opt
   Attempting uninstall: HH_shape_opt
@@ -57,7 +57,7 @@ Successfully installed HH_shape_opt-0.1.0
 
 [notice] A new release of pip is available: 25.2 -> 25.3
 [notice] To update, run: pip install --upgrade pip
-[n23m0167.hpc.itc.rwth-aachen.de:485939] SET PYTHONPATH=
+[n23m0406.hpc.itc.rwth-aachen.de:76806] SET PYTHONPATH=
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
   import pkg_resources
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
@@ -76,17 +76,12 @@ Successfully installed HH_shape_opt-0.1.0
   import pkg_resources
 L-BFGS method.
 ------------------------------
-Line search:L-BFGS method.
-------------------------------
 Line search:		 strong_wolfe
 Maximum iterations:	 20
 
 L-BFGS method.
 ------------------------------
 Line search:		 strong_wolfe
-Maximum iterations:	 20
-
-		 strong_wolfe
 Maximum iterations:	 20
 
 L-BFGS method.
@@ -114,181 +109,186 @@ L-BFGS method.
 Line search:		 strong_wolfe
 Maximum iterations:	 20
 
-iteration = 0:	objective = 0.8185700295650947:	grad_norm = 1.5921706757504812:
-iteration = 0:	objective = 0.8185700295650947:	grad_norm = 1.5921706757504812:
-iteration = 0:	objective = 0.8185700295650947:	grad_norm = 1.5921706757504812:
-iteration = 0:	objective = 0.8185700295650947:	grad_norm = 1.5921706757504812:
-iteration = 0:	objective = 0.8185700295650947:	grad_norm = 1.5921706757504812:
-iteration = 0:	objective = 0.8185700295650947:	grad_norm = 1.5921706757504812:
-iteration = 0:	objective = 0.8185700295650947:	grad_norm = 1.5921706757504812:
-iteration = 0:	objective = 0.8185700295650947:	grad_norm = 1.5921706757504812:
--g 1.592170675750094
--g 1.592170675750094
--g 1.592170675750094
--g 1.592170675750094
--g 1.592170675750094
--g 1.592170675750094
--g 1.592170675750094
--g 1.592170675750094
-iteration = 1:	objective = 0.3131315812723432:	grad_norm = 1.355200577286604:	delta_J = 0.5054384482927515:
-iteration = 1:	objective = 0.3131315812723432:	grad_norm = 1.355200577286604:	delta_J = 0.5054384482927515:
-iteration = 1:	objective = 0.3131315812723432:	grad_norm = 1.355200577286604:	delta_J = 0.5054384482927515:
-iteration = 1:	objective = 0.3131315812723432:	grad_norm = 1.355200577286604:	delta_J = 0.5054384482927515:
-iteration = 1:	objective = 0.3131315812723432:	grad_norm = 1.355200577286604:	delta_J = 0.5054384482927515:
-iteration = 1:	objective = 0.3131315812723432:	grad_norm = 1.355200577286604:	delta_J = 0.5054384482927515:
-iteration = 1:	objective = 0.3131315812723432:	grad_norm = 1.355200577286604:	delta_J = 0.5054384482927515:
-iteration = 1:	objective = 0.3131315812723432:	grad_norm = 1.355200577286604:	delta_J = 0.5054384482927515:
--g 1.6239777659985881
--g 1.6239777659985881
--g 1.6239777659985881
--g 1.6239777659985881
--g 1.6239777659985881
--g 1.6239777659985881
--g 1.6239777659985881
--g 1.6239777659985881
-iteration = 2:	objective = 0.05705274091356214:	grad_norm = 0.49658993279030245:	delta_J = 0.25607884035878103:
-iteration = 2:	objective = 0.05705274091356214:	grad_norm = 0.49658993279030245:	delta_J = 0.25607884035878103:
-iteration = 2:	objective = 0.05705274091356214:	grad_norm = 0.49658993279030245:	delta_J = 0.25607884035878103:
-iteration = 2:	objective = 0.05705274091356214:	grad_norm = 0.49658993279030245:	delta_J = 0.25607884035878103:
-iteration = 2:	objective = 0.05705274091356214:	grad_norm = 0.49658993279030245:	delta_J = 0.25607884035878103:
-iteration = 2:	objective = 0.05705274091356214:	grad_norm = 0.49658993279030245:	delta_J = 0.25607884035878103:
-iteration = 2:	objective = 0.05705274091356214:	grad_norm = 0.49658993279030245:	delta_J = 0.25607884035878103:
-iteration = 2:	objective = 0.05705274091356214:	grad_norm = 0.49658993279030245:	delta_J = 0.25607884035878103:
--g 0.026039886885150517
--g 0.026039886885150517
--g 0.026039886885150517
--g 0.026039886885150517
--g 0.026039886885150517
--g 0.026039886885150517
--g 0.026039886885150517
--g 0.026039886885150517
-iteration = 3:	objective = 0.03300926926710159:	grad_norm = 0.12519118524529585:	delta_J = 0.02404347164646055:
-iteration = 3:	objective = 0.03300926926710159:	grad_norm = 0.12519118524529585:	delta_J = 0.02404347164646055:
-iteration = 3:	objective = 0.03300926926710159:	grad_norm = 0.12519118524529585:	delta_J = 0.02404347164646055:
-iteration = 3:	objective = 0.03300926926710159:	grad_norm = 0.12519118524529585:	delta_J = 0.02404347164646055:
-iteration = 3:	objective = 0.03300926926710159:	grad_norm = 0.12519118524529585:	delta_J = 0.02404347164646055:
-iteration = 3:	objective = 0.03300926926710159:	grad_norm = 0.12519118524529585:	delta_J = 0.02404347164646055:
-iteration = 3:	objective = 0.03300926926710159:	grad_norm = 0.12519118524529585:	delta_J = 0.02404347164646055:
-iteration = 3:	objective = 0.03300926926710159:	grad_norm = 0.12519118524529585:	delta_J = 0.02404347164646055:
--g 0.002527839521086824
--g 0.002527839521086824
--g 0.002527839521086824
--g 0.002527839521086824
--g 0.002527839521086824
--g 0.002527839521086824
--g 0.002527839521086824
--g 0.002527839521086824
-iteration = 4:	objective = 0.02818502960223459:	grad_norm = 0.10846194485157973:	delta_J = 0.004824239664867003:
-iteration = 4:	objective = 0.02818502960223459:	grad_norm = 0.10846194485157973:	delta_J = 0.004824239664867003:
-iteration = 4:	objective = 0.02818502960223459:	grad_norm = 0.10846194485157973:	delta_J = 0.004824239664867003:
-iteration = 4:	objective = 0.02818502960223459:	grad_norm = 0.10846194485157973:	delta_J = 0.004824239664867003:
-iteration = 4:	objective = 0.02818502960223459:	grad_norm = 0.10846194485157973:	delta_J = 0.004824239664867003:
-iteration = 4:	objective = 0.02818502960223459:	grad_norm = 0.10846194485157973:	delta_J = 0.004824239664867003:
-iteration = 4:	objective = 0.02818502960223459:	grad_norm = 0.10846194485157973:	delta_J = 0.004824239664867003:
-iteration = 4:	objective = 0.02818502960223459:	grad_norm = 0.10846194485157973:	delta_J = 0.004824239664867003:
--g 0.01960322070376122
--g 0.01960322070376122
--g 0.01960322070376122
--g 0.01960322070376122
--g 0.01960322070376122
--g 0.01960322070376122
--g 0.01960322070376122
--g 0.01960322070376122
-iteration = 5:	objective = 0.004540373018382105:	grad_norm = 0.11809059178714006:	delta_J = 0.023644656583852484:
-iteration = 5:	objective = 0.004540373018382105:	grad_norm = 0.11809059178714006:	delta_J = 0.023644656583852484:
-iteration = 5:	objective = 0.004540373018382105:	grad_norm = 0.11809059178714006:	delta_J = 0.023644656583852484:
-iteration = 5:	objective = 0.004540373018382105:	grad_norm = 0.11809059178714006:	delta_J = 0.023644656583852484:
-iteration = 5:	objective = 0.004540373018382105:	grad_norm = 0.11809059178714006:	delta_J = 0.023644656583852484:
-iteration = 5:	objective = 0.004540373018382105:	grad_norm = 0.11809059178714006:	delta_J = 0.023644656583852484:
-iteration = 5:	objective = 0.004540373018382105:	grad_norm = 0.11809059178714006:	delta_J = 0.023644656583852484:
-iteration = 5:	objective = 0.004540373018382105:	grad_norm = 0.11809059178714006:	delta_J = 0.023644656583852484:
--g 0.0020234822404122553
--g 0.0020234822404122553
--g 0.0020234822404122553
--g 0.0020234822404122553
--g 0.0020234822404122553
--g 0.0020234822404122553
--g 0.0020234822404122553
--g 0.0020234822404122553
-iteration = 6:	objective = 0.0019221723672469076:	grad_norm = 0.033877624548743164:	delta_J = 0.0026182006511351976:
-iteration = 6:	objective = 0.0019221723672469076:	grad_norm = 0.033877624548743164:	delta_J = 0.0026182006511351976:
-iteration = 6:	objective = 0.0019221723672469076:	grad_norm = 0.033877624548743164:	delta_J = 0.0026182006511351976:
-iteration = 6:	objective = 0.0019221723672469076:	grad_norm = 0.033877624548743164:	delta_J = 0.0026182006511351976:
-iteration = 6:	objective = 0.0019221723672469076:	grad_norm = 0.033877624548743164:	delta_J = 0.0026182006511351976:
-iteration = 6:	objective = 0.0019221723672469076:	grad_norm = 0.033877624548743164:	delta_J = 0.0026182006511351976:
-iteration = 6:	objective = 0.0019221723672469076:	grad_norm = 0.033877624548743164:	delta_J = 0.0026182006511351976:
-iteration = 6:	objective = 0.0019221723672469076:	grad_norm = 0.033877624548743164:	delta_J = 0.0026182006511351976:
--g 0.0001565857198771062
--g 0.0001565857198771062
--g 0.0001565857198771062
--g 0.0001565857198771062
--g 0.0001565857198771062
--g 0.0001565857198771062
--g 0.0001565857198771062
--g 0.0001565857198771062
-iteration = 7:	objective = 0.0017470899653122458:	grad_norm = 0.006013667287238333:	delta_J = 0.00017508240193466178:
-iteration = 7:	objective = 0.0017470899653122458:	grad_norm = 0.006013667287238333:	delta_J = 0.00017508240193466178:
-iteration = 7:	objective = 0.0017470899653122458:	grad_norm = 0.006013667287238333:	delta_J = 0.00017508240193466178:
-iteration = 7:	objective = 0.0017470899653122458:	grad_norm = 0.006013667287238333:	delta_J = 0.00017508240193466178:
-iteration = 7:	objective = 0.0017470899653122458:	grad_norm = 0.006013667287238333:	delta_J = 0.00017508240193466178:
-iteration = 7:	objective = 0.0017470899653122458:	grad_norm = 0.006013667287238333:	delta_J = 0.00017508240193466178:
-iteration = 7:	objective = 0.0017470899653122458:	grad_norm = 0.006013667287238333:	delta_J = 0.00017508240193466178:
-iteration = 7:	objective = 0.0017470899653122458:	grad_norm = 0.006013667287238333:	delta_J = 0.00017508240193466178:
--g 6.26478743330397e-06
--g 6.26478743330397e-06
--g 6.26478743330397e-06
--g 6.26478743330397e-06
--g 6.26478743330397e-06
--g 6.26478743330397e-06
--g 6.26478743330397e-06
--g 6.26478743330397e-06
+L-BFGS method.
+------------------------------
+Line search:		 strong_wolfe
+Maximum iterations:	 20
+
+iteration = 0:	objective = 0.8185700295650934:	grad_norm = 1.59217067575042:
+iteration = 0:	objective = 0.8185700295650934:	grad_norm = 1.59217067575042:
+iteration = 0:	objective = 0.8185700295650934:	grad_norm = 1.59217067575042:
+iteration = 0:	objective = 0.8185700295650934:	grad_norm = 1.59217067575042:
+iteration = 0:	objective = 0.8185700295650934:	grad_norm = 1.59217067575042:
+iteration = 0:	objective = 0.8185700295650934:	grad_norm = 1.59217067575042:
+iteration = 0:	objective = 0.8185700295650934:	grad_norm = 1.59217067575042:
+iteration = 0:	objective = 0.8185700295650934:	grad_norm = 1.59217067575042:
+-g 1.5921706757504563
+-g 1.5921706757504563
+-g 1.5921706757504563
+-g 1.5921706757504563
+-g 1.5921706757504563
+-g 1.5921706757504563
+-g 1.5921706757504563
+-g 1.5921706757504563
+iteration = 1:	objective = 0.31313158127230917:	grad_norm = 1.3552005772865503:	delta_J = 0.5054384482927843:
+iteration = 1:	objective = 0.31313158127230917:	grad_norm = 1.3552005772865503:	delta_J = 0.5054384482927843:
+iteration = 1:	objective = 0.31313158127230917:	grad_norm = 1.3552005772865503:	delta_J = 0.5054384482927843:
+iteration = 1:	objective = 0.31313158127230917:	grad_norm = 1.3552005772865503:	delta_J = 0.5054384482927843:
+iteration = 1:	objective = 0.31313158127230917:	grad_norm = 1.3552005772865503:	delta_J = 0.5054384482927843:
+iteration = 1:	objective = 0.31313158127230917:	grad_norm = 1.3552005772865503:	delta_J = 0.5054384482927843:
+iteration = 1:	objective = 0.31313158127230917:	grad_norm = 1.3552005772865503:	delta_J = 0.5054384482927843:
+iteration = 1:	objective = 0.31313158127230917:	grad_norm = 1.3552005772865503:	delta_J = 0.5054384482927843:
+-g 1.6239777659988233
+-g 1.6239777659988233
+-g 1.6239777659988233
+-g 1.6239777659988233
+-g 1.6239777659988233
+-g 1.6239777659988233
+-g 1.6239777659988233
+-g 1.6239777659988233
+iteration = 2:	objective = 0.0570527409136843:	grad_norm = 0.4965899327915643:	delta_J = 0.2560788403586249:
+iteration = 2:	objective = 0.0570527409136843:	grad_norm = 0.4965899327915643:	delta_J = 0.2560788403586249:
+iteration = 2:	objective = 0.0570527409136843:	grad_norm = 0.4965899327915643:	delta_J = 0.2560788403586249:
+iteration = 2:	objective = 0.0570527409136843:	grad_norm = 0.4965899327915643:	delta_J = 0.2560788403586249:
+iteration = 2:	objective = 0.0570527409136843:	grad_norm = 0.4965899327915643:	delta_J = 0.2560788403586249:
+iteration = 2:	objective = 0.0570527409136843:	grad_norm = 0.4965899327915643:	delta_J = 0.2560788403586249:
+iteration = 2:	objective = 0.0570527409136843:	grad_norm = 0.4965899327915643:	delta_J = 0.2560788403586249:
+iteration = 2:	objective = 0.0570527409136843:	grad_norm = 0.4965899327915643:	delta_J = 0.2560788403586249:
+-g 0.02603988688531606
+-g 0.02603988688531606
+-g 0.02603988688531606
+-g 0.02603988688531606
+-g 0.02603988688531606
+-g 0.02603988688531606
+-g 0.02603988688531606
+-g 0.02603988688531606
+iteration = 3:	objective = 0.03300926926710688:	grad_norm = 0.12519118524527248:	delta_J = 0.02404347164657742:
+iteration = 3:	objective = 0.03300926926710688:	grad_norm = 0.12519118524527248:	delta_J = 0.02404347164657742:
+iteration = 3:	objective = 0.03300926926710688:	grad_norm = 0.12519118524527248:	delta_J = 0.02404347164657742:
+iteration = 3:	objective = 0.03300926926710688:	grad_norm = 0.12519118524527248:	delta_J = 0.02404347164657742:
+iteration = 3:	objective = 0.03300926926710688:	grad_norm = 0.12519118524527248:	delta_J = 0.02404347164657742:
+iteration = 3:	objective = 0.03300926926710688:	grad_norm = 0.12519118524527248:	delta_J = 0.02404347164657742:
+iteration = 3:	objective = 0.03300926926710688:	grad_norm = 0.12519118524527248:	delta_J = 0.02404347164657742:
+iteration = 3:	objective = 0.03300926926710688:	grad_norm = 0.12519118524527248:	delta_J = 0.02404347164657742:
+-g 0.0025278395210873205
+-g 0.0025278395210873205
+-g 0.0025278395210873205
+-g 0.0025278395210873205
+-g 0.0025278395210873205
+-g 0.0025278395210873205
+-g 0.0025278395210873205
+-g 0.0025278395210873205
+iteration = 4:	objective = 0.028185029602244525:	grad_norm = 0.10846194485159939:	delta_J = 0.004824239664862354:
+iteration = 4:	objective = 0.028185029602244525:	grad_norm = 0.10846194485159939:	delta_J = 0.004824239664862354:
+iteration = 4:	objective = 0.028185029602244525:	grad_norm = 0.10846194485159939:	delta_J = 0.004824239664862354:
+iteration = 4:	objective = 0.028185029602244525:	grad_norm = 0.10846194485159939:	delta_J = 0.004824239664862354:
+iteration = 4:	objective = 0.028185029602244525:	grad_norm = 0.10846194485159939:	delta_J = 0.004824239664862354:
+iteration = 4:	objective = 0.028185029602244525:	grad_norm = 0.10846194485159939:	delta_J = 0.004824239664862354:
+iteration = 4:	objective = 0.028185029602244525:	grad_norm = 0.10846194485159939:	delta_J = 0.004824239664862354:
+iteration = 4:	objective = 0.028185029602244525:	grad_norm = 0.10846194485159939:	delta_J = 0.004824239664862354:
+-g 0.019603220703770532
+-g 0.019603220703770532
+-g 0.019603220703770532
+-g 0.019603220703770532
+-g 0.019603220703770532
+-g 0.019603220703770532
+-g 0.019603220703770532
+-g 0.019603220703770532
+iteration = 5:	objective = 0.004540373018386034:	grad_norm = 0.11809059178746698:	delta_J = 0.02364465658385849:
+iteration = 5:	objective = 0.004540373018386034:	grad_norm = 0.11809059178746698:	delta_J = 0.02364465658385849:
+iteration = 5:	objective = 0.004540373018386034:	grad_norm = 0.11809059178746698:	delta_J = 0.02364465658385849:
+iteration = 5:	objective = 0.004540373018386034:	grad_norm = 0.11809059178746698:	delta_J = 0.02364465658385849:
+iteration = 5:	objective = 0.004540373018386034:	grad_norm = 0.11809059178746698:	delta_J = 0.02364465658385849:
+iteration = 5:	objective = 0.004540373018386034:	grad_norm = 0.11809059178746698:	delta_J = 0.02364465658385849:
+iteration = 5:	objective = 0.004540373018386034:	grad_norm = 0.11809059178746698:	delta_J = 0.02364465658385849:
+iteration = 5:	objective = 0.004540373018386034:	grad_norm = 0.11809059178746698:	delta_J = 0.02364465658385849:
+-g 0.002023482240414886
+-g 0.002023482240414886
+-g 0.002023482240414886
+-g 0.002023482240414886
+-g 0.002023482240414886
+-g 0.002023482240414886
+-g 0.002023482240414886
+-g 0.002023482240414886
+iteration = 6:	objective = 0.0019221723672509883:	grad_norm = 0.033877624549250335:	delta_J = 0.0026182006511350463:
+iteration = 6:	objective = 0.0019221723672509883:	grad_norm = 0.033877624549250335:	delta_J = 0.0026182006511350463:
+iteration = 6:	objective = 0.0019221723672509883:	grad_norm = 0.033877624549250335:	delta_J = 0.0026182006511350463:
+iteration = 6:	objective = 0.0019221723672509883:	grad_norm = 0.033877624549250335:	delta_J = 0.0026182006511350463:
+iteration = 6:	objective = 0.0019221723672509883:	grad_norm = 0.033877624549250335:	delta_J = 0.0026182006511350463:
+iteration = 6:	objective = 0.0019221723672509883:	grad_norm = 0.033877624549250335:	delta_J = 0.0026182006511350463:
+iteration = 6:	objective = 0.0019221723672509883:	grad_norm = 0.033877624549250335:	delta_J = 0.0026182006511350463:
+iteration = 6:	objective = 0.0019221723672509883:	grad_norm = 0.033877624549250335:	delta_J = 0.0026182006511350463:
+-g 0.00015658571988022883
+-g 0.00015658571988022883
+-g 0.00015658571988022883
+-g 0.00015658571988022883
+-g 0.00015658571988022883
+-g 0.00015658571988022883
+-g 0.00015658571988022883
+-g 0.00015658571988022883
+iteration = 7:	objective = 0.0017470899653126686:	grad_norm = 0.006013667287247631:	delta_J = 0.00017508240193831967:
+iteration = 7:	objective = 0.0017470899653126686:	grad_norm = 0.006013667287247631:	delta_J = 0.00017508240193831967:
+iteration = 7:	objective = 0.0017470899653126686:	grad_norm = 0.006013667287247631:	delta_J = 0.00017508240193831967:
+iteration = 7:	objective = 0.0017470899653126686:	grad_norm = 0.006013667287247631:	delta_J = 0.00017508240193831967:
+iteration = 7:	objective = 0.0017470899653126686:	grad_norm = 0.006013667287247631:	delta_J = 0.00017508240193831967:
+iteration = 7:	objective = 0.0017470899653126686:	grad_norm = 0.006013667287247631:	delta_J = 0.00017508240193831967:
+iteration = 7:	objective = 0.0017470899653126686:	grad_norm = 0.006013667287247631:	delta_J = 0.00017508240193831967:
+iteration = 7:	objective = 0.0017470899653126686:	grad_norm = 0.006013667287247631:	delta_J = 0.00017508240193831967:
+-g 6.264787433101677e-06
+-g 6.264787433101677e-06
+-g 6.264787433101677e-06
+-g 6.264787433101677e-06
+-g 6.264787433101677e-06
+-g 6.264787433101677e-06
+-g 6.264787433101677e-06
+-g 6.264787433101677e-06
 
 Tolerance reached: delta_j < jtol.
 
+iteration = 8:	objective = 0.001735803656603431:	grad_norm = 0.0068611441455230845:	delta_J = 1.1286308709237535e-05:
 
 Tolerance reached: delta_j < jtol.
 
-iteration = 8:	objective = 0.0017358036566024583:	grad_norm = 0.006861144145280716:	delta_J = 1.1286308709787442e-05:
+iteration = 8:	objective = 0.001735803656603431:	grad_norm = 0.0068611441455230845:	delta_J = 1.1286308709237535e-05:
 
 Tolerance reached: delta_j < jtol.
 
-iteration = 8:	objective = 0.0017358036566024583:	grad_norm = 0.006861144145280716:	delta_J = 1.1286308709787442e-05:
-iteration = 8:	objective = 0.0017358036566024583:	grad_norm = 0.006861144145280716:	delta_J = 1.1286308709787442e-05:
+iteration = 8:	objective = 0.001735803656603431:	grad_norm = 0.0068611441455230845:	delta_J = 1.1286308709237535e-05:
 
 Tolerance reached: delta_j < jtol.
 
-iteration = 8:	objective = 0.0017358036566024583:	grad_norm = 0.006861144145280716:	delta_J = 1.1286308709787442e-05:
+iteration = 8:	objective = 0.001735803656603431:	grad_norm = 0.0068611441455230845:	delta_J = 1.1286308709237535e-05:
 
 Tolerance reached: delta_j < jtol.
 
-iteration = 8:	objective = 0.0017358036566024583:	grad_norm = 0.006861144145280716:	delta_J = 1.1286308709787442e-05:
+iteration = 8:	objective = 0.001735803656603431:	grad_norm = 0.0068611441455230845:	delta_J = 1.1286308709237535e-05:
 
 Tolerance reached: delta_j < jtol.
 
-iteration = 8:	objective = 0.0017358036566024583:	grad_norm = 0.006861144145280716:	delta_J = 1.1286308709787442e-05:
+iteration = 8:	objective = 0.001735803656603431:	grad_norm = 0.0068611441455230845:	delta_J = 1.1286308709237535e-05:
 
 Tolerance reached: delta_j < jtol.
 
-iteration = 8:	objective = 0.0017358036566024583:	grad_norm = 0.006861144145280716:	delta_J = 1.1286308709787442e-05:
+iteration = 8:	objective = 0.001735803656603431:	grad_norm = 0.0068611441455230845:	delta_J = 1.1286308709237535e-05:
 
 Tolerance reached: delta_j < jtol.
 
-iteration = 8:	objective = 0.0017358036566024583:	grad_norm = 0.006861144145280716:	delta_J = 1.1286308709787442e-05:
-h_opt min: -0.4048455707576952, h_opt max: 1.097463852310218, mean|h_opt|: 0.00879729335759396
+iteration = 8:	objective = 0.001735803656603431:	grad_norm = 0.0068611441455230845:	delta_J = 1.1286308709237535e-05:
+h_opt min: -0.4048455707576819, h_opt max: 1.0974638523102147, mean|h_opt|: 0.007630539814846389
 Optimization result saved to outputs/result_sin0.5_noisy.h5
-h_opt min: -0.4048455707576952, h_opt max: 1.097463852310218, mean|h_opt|: 0.0
+h_opt min: -0.4048455707576819, h_opt max: 1.0974638523102147, mean|h_opt|: 0.004700494164453122
 Optimization result saved to outputs/result_sin0.5_noisy.h5
-h_opt min: -0.4048455707576952, h_opt max: 1.097463852310218, mean|h_opt|: 0.42443478090509756
+h_opt min: -0.4048455707576819, h_opt max: 1.0974638523102147, mean|h_opt|: 0.00879729335759455
 Optimization result saved to outputs/result_sin0.5_noisy.h5
-h_opt min: -0.4048455707576952, h_opt max: 1.097463852310218, mean|h_opt|: 0.3757807312537423
+h_opt min: -0.4048455707576819, h_opt max: 1.0974638523102147, mean|h_opt|: 0.008566973097248312
 Optimization result saved to outputs/result_sin0.5_noisy.h5
-h_opt min: -0.4048455707576952, h_opt max: 1.097463852310218, mean|h_opt|: 0.0
+h_opt min: -0.4048455707576819, h_opt max: 1.0974638523102147, mean|h_opt|: 0.0
 Optimization result saved to outputs/result_sin0.5_noisy.h5
-h_opt min: -0.4048455707576952, h_opt max: 1.097463852310218, mean|h_opt|: 0.004700494164455188
+h_opt min: -0.4048455707576819, h_opt max: 1.0974638523102147, mean|h_opt|: 0.37578073125372635
 Optimization result saved to outputs/result_sin0.5_noisy.h5
-h_opt min: -0.4048455707576952, h_opt max: 1.097463852310218, mean|h_opt|: 0.00763053981484932
+h_opt min: -0.4048455707576819, h_opt max: 1.0974638523102147, mean|h_opt|: 0.4244347809050667
 Optimization result saved to outputs/result_sin0.5_noisy.h5
-h_opt min: -0.4048455707576952, h_opt max: 1.097463852310218, mean|h_opt|: 0.008566973097248532
+h_opt min: -0.4048455707576819, h_opt max: 1.0974638523102147, mean|h_opt|: 0.0
 Optimization result saved to outputs/result_sin0.5_noisy.h5
 
 Mesh deformation plot saved to outputs/mesh_deformation_sin0.5.png
@@ -297,8 +297,23 @@ Overlay mesh outline saved to outputs/mesh_overlay_sin0.5.png
 
 === Optimization Summary ===
 Initial design: all zeros
-Optimal design range: [-4.443335e-02, 3.220063e-03]
-Max displacement: 4.443335e-02
+Optimal design range: [0.000000e+00, 0.000000e+00]
+Max displacement: 0.000000e+00
+
+=== Optimization Summary ===
+Initial design: all zeros
+Optimal design range: [0.000000e+00, 0.000000e+00]
+Max displacement: 0.000000e+00
+
+=== Optimization Summary ===
+Initial design: all zeros
+Optimal design range: [-4.048456e-01, 1.067496e+00]
+Max displacement: 1.067496e+00
+
+=== Optimization Summary ===
+Initial design: all zeros
+Optimal design range: [-1.957748e-01, 1.097464e+00]
+Max displacement: 1.097464e+00
 
 === Optimization Summary ===
 Initial design: all zeros
@@ -307,29 +322,14 @@ Max displacement: 1.297803e-01
 
 === Optimization Summary ===
 Initial design: all zeros
+Optimal design range: [-4.443335e-02, 3.220063e-03]
+Max displacement: 4.443335e-02
 
 === Optimization Summary ===
 Initial design: all zeros
-
-=== Optimization Summary ===
-Initial design: all zeros
-
-=== Optimization Summary ===
-Initial design: all zeros
-
-=== Optimization Summary ===
-Initial design: all zeros
-Optimal design range: [0.000000e+00, 0.000000e+00]
-Optimal design range: [-1.957748e-01, 1.097464e+00]
-Max displacement: 1.097464e+00
-Optimal design range: [-4.048456e-01, 1.067496e+00]
-Max displacement: 1.067496e+00
 Optimal design range: [-7.650974e-02, 2.996209e-02]
 Max displacement: 7.650974e-02
-Max displacement: 0.000000e+00
-Optimal design range: [0.000000e+00, 0.000000e+00]
-Max displacement: 0.000000e+00
-Sum of magnitude error square: 0.05325045866344162
+Sum of magnitude error square: 0.053250458663469544
 Projected error plots saved to outputs/error_sin0.5.png
 
 === Optimization Summary ===

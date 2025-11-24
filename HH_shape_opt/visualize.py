@@ -166,8 +166,6 @@ def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, 
 
     ax.set_aspect('equal', 'box')
     title = "Overlay of Mesh Outlines"
-    if boundary_diff is not None:
-        title += f"\nBoundary diff²: {boundary_diff:.4e}"
     ax.set_title(title)
     ax.legend()
 

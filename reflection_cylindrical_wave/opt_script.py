@@ -76,7 +76,7 @@ sol = solver.solve()
 h_opt = sol['control'].data
 
 result_path = "outputs/result_sin0.5_scat_noisy.h5"
-goal_geometry_msh_path = "meshes/square_with_halfsin2_perturbed_rect_obstacle.msh"
+goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
 
 save_optimization_result(
     sol,
