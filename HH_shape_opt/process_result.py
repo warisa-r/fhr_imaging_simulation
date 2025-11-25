@@ -34,10 +34,18 @@ def save_optimization_result(
     print(f"h_opt min: {h_min}, h_opt max: {h_max}, mean|h_opt|: {h_mean_abs}")
     print(f"Optimization result saved to {result_file}")
 
+def calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, h5_file_path, initial_guess_mesh_util, inc_wave_setup, 
+                                        use_u_scat = True, projection_degree = 0):
+    df = pd.read_csv(matlab_fullfield_csv_path)
 
-def calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, h5_file_path,
+    return calculate_magnitude_and_phase_error_from_dataframe(df, h5_file_path,
                                         initial_guess_mesh_util, inc_wave_setup, 
-                                        use_u_scat = False, projection_degree = 0):
+                                        use_u_scat, projection_degree)
+
+
+def calculate_magnitude_and_phase_error_from_dataframe(df, h5_file_path,
+                                        initial_guess_mesh_util, inc_wave_setup, 
+                                        use_u_scat = True, projection_degree = 0):
 
     mesh, markers = initial_guess_mesh_util.get_mesh_and_markers()
     b_mesh = BoundaryMesh(mesh, "exterior")
@@ -53,11 +61,16 @@ def calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, h5_file_path,
     u_mag_projected = project(u_mag, V_projection)
 
     # Read the data from matlab
-    df = pd.read_csv(matlab_fullfield_csv_path)
     points = df[["x", "y"]].values
-    mag_values_matlab = df["mag_u"].values
+    
     real_values_matlab = df["real_u"].values
     imag_values_matlab = df["imag_u"].values
+
+    # Calculate magnitude if not present in dataframe
+    if "mag_u" in df.columns:
+        mag_values_matlab = df["mag_u"].values
+    else:
+        mag_values_matlab = np.sqrt(real_values_matlab**2 + imag_values_matlab**2)
 
     mesh = V_projection.mesh()
     tree = mesh.bounding_box_tree()

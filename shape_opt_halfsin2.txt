@@ -45,20 +45,19 @@ Requirement already satisfied: mdurl~=0.1 in /rwthfs/rz/cluster/home/nj616237/mi
 Building wheels for collected packages: HH_shape_opt
   Building editable for HH_shape_opt (pyproject.toml): started
   Building editable for HH_shape_opt (pyproject.toml): finished with status 'done'
-  Created wheel for HH_shape_opt: filename=hh_shape_opt-0.1.0-0.editable-py3-none-any.whl size=2851 sha256=a9232723165f16e5bc95f820897a5ca5c0e7e8c1ebd51d1661a663c0ce4ca9e9
-  Stored in directory: /w0/tmp/slurm_nj616237.62642771/pip-ephem-wheel-cache-wjti4hav/wheels/39/70/7d/5e5508084c54e08a05fee6e869cc3da8d156967369f49dc757
+  Created wheel for HH_shape_opt: filename=hh_shape_opt-0.1.0-0.editable-py3-none-any.whl size=2851 sha256=de83beb29e7051c1d62f8b2f10a42e51b8c04b263fc4a5e3417510b8f96d4cfe
+  Stored in directory: /w0/tmp/slurm_nj616237.62659239/pip-ephem-wheel-cache-sewab2l3/wheels/39/70/7d/5e5508084c54e08a05fee6e869cc3da8d156967369f49dc757
 Successfully built HH_shape_opt
 Installing collected packages: HH_shape_opt
   Attempting uninstall: HH_shape_opt
     Found existing installation: HH_shape_opt 0.1.0
     Uninstalling HH_shape_opt-0.1.0:
       Successfully uninstalled HH_shape_opt-0.1.0
-WARNING: Ignoring invalid distribution - (/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages)
 Successfully installed HH_shape_opt-0.1.0
 
 [notice] A new release of pip is available: 25.2 -> 25.3
 [notice] To update, run: pip install --upgrade pip
-[n23m0261.hpc.itc.rwth-aachen.de:197142] SET PYTHONPATH=
+[n23m0114.hpc.itc.rwth-aachen.de:130183] SET PYTHONPATH=
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
   import pkg_resources
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
@@ -78,91 +77,91 @@ Successfully installed HH_shape_opt-0.1.0
 L-BFGS method.
 ------------------------------
 Line search:		 strong_wolfe
-Maximum iterations:	 20
+Maximum iterations:	 50
 
 L-BFGS method.
 ------------------------------
 Line search:		 strong_wolfe
-Maximum iterations:	 20
+Maximum iterations:	 50
 
 L-BFGS method.
 ------------------------------
 Line search:		 strong_wolfe
-Maximum iterations:	 20
+Maximum iterations:	 50
 
 L-BFGS method.
 ------------------------------
 Line search:		 strong_wolfe
-Maximum iterations:	 20
+Maximum iterations:	 50
 
 L-BFGS method.
 ------------------------------
 Line search:		 strong_wolfe
-Maximum iterations:	 20
-
-L-BFGS method.
-------------------------------
-Line search:L-BFGS method.
-------------------------------
-Line search:		 strong_wolfe
-Maximum iterations:	 20
+Maximum iterations:	 50
 
 L-BFGS method.
 ------------------------------
 Line search:		 strong_wolfe
-Maximum iterations:	 20
+Maximum iterations:	 50
 
-		 strong_wolfe
-Maximum iterations:	 20
+L-BFGS method.
+------------------------------
+Line search:		 strong_wolfe
+Maximum iterations:	 50
 
-iteration = 0:	objective = 1.0863795168289698:	grad_norm = 0.437359651063633:
-iteration = 0:	objective = 1.0863795168289698:	grad_norm = 0.437359651063633:
-iteration = 0:	objective = 1.0863795168289698:	grad_norm = 0.437359651063633:
-iteration = 0:	objective = 1.0863795168289698:	grad_norm = 0.437359651063633:
-iteration = 0:	objective = 1.0863795168289698:	grad_norm = 0.437359651063633:
-iteration = 0:	objective = 1.0863795168289698:	grad_norm = 0.437359651063633:
-iteration = 0:	objective = 1.0863795168289698:	grad_norm = 0.437359651063633:
-iteration = 0:	objective = 1.0863795168289698:	grad_norm = 0.437359651063633:
--g 0.43735965106346103
--g 0.43735965106346103
--g 0.43735965106346103
--g 0.43735965106346103
--g 0.43735965106346103
--g 0.43735965106346103
--g 0.43735965106346103
--g 0.43735965106346103
-iteration = 1:	objective = 0.9682929120821733:	grad_norm = 0.35959463803792263:	delta_J = 0.11808660474679655:
-iteration = 1:	objective = 0.9682929120821733:	grad_norm = 0.35959463803792263:	delta_J = 0.11808660474679655:
-iteration = 1:	objective = 0.9682929120821733:	grad_norm = 0.35959463803792263:	delta_J = 0.11808660474679655:
-iteration = 1:	objective = 0.9682929120821733:	grad_norm = 0.35959463803792263:	delta_J = 0.11808660474679655:
-iteration = 1:	objective = 0.9682929120821733:	grad_norm = 0.35959463803792263:	delta_J = 0.11808660474679655:
-iteration = 1:	objective = 0.9682929120821733:	grad_norm = 0.35959463803792263:	delta_J = 0.11808660474679655:
-iteration = 1:	objective = 0.9682929120821733:	grad_norm = 0.35959463803792263:	delta_J = 0.11808660474679655:
-iteration = 1:	objective = 0.9682929120821733:	grad_norm = 0.35959463803792263:	delta_J = 0.11808660474679655:
--g 0.12798864445104416
--g 0.12798864445104416
--g 0.12798864445104416
--g 0.12798864445104416
--g 0.12798864445104416
--g 0.12798864445104416
--g 0.12798864445104416
--g 0.12798864445104416
-iteration = 2:	objective = 0.592702462957653:	grad_norm = 0.3067737589971475:	delta_J = 0.3755904491245202:
-iteration = 2:	objective = 0.592702462957653:	grad_norm = 0.3067737589971475:	delta_J = 0.3755904491245202:
-iteration = 2:	objective = 0.592702462957653:	grad_norm = 0.3067737589971475:	delta_J = 0.3755904491245202:
-iteration = 2:	objective = 0.592702462957653:	grad_norm = 0.3067737589971475:	delta_J = 0.3755904491245202:
-iteration = 2:	objective = 0.592702462957653:	grad_norm = 0.3067737589971475:	delta_J = 0.3755904491245202:
-iteration = 2:	objective = 0.592702462957653:	grad_norm = 0.3067737589971475:	delta_J = 0.3755904491245202:
-iteration = 2:	objective = 0.592702462957653:	grad_norm = 0.3067737589971475:	delta_J = 0.3755904491245202:
-iteration = 2:	objective = 0.592702462957653:	grad_norm = 0.3067737589971475:	delta_J = 0.3755904491245202:
--g 0.6579380469225163
--g 0.6579380469225163
--g 0.6579380469225163
--g 0.6579380469225163
--g 0.6579380469225163
--g 0.6579380469225163
--g 0.6579380469225163
--g 0.6579380469225163
+L-BFGS method.
+------------------------------
+Line search:		 strong_wolfe
+Maximum iterations:	 50
+
+iteration = 0:	objective = 1.0863795168290895:	grad_norm = 0.4373596510636103:
+iteration = 0:	objective = 1.0863795168290895:	grad_norm = 0.4373596510636103:
+iteration = 0:	objective = 1.0863795168290895:	grad_norm = 0.4373596510636103:
+iteration = 0:	objective = 1.0863795168290895:	grad_norm = 0.4373596510636103:
+iteration = 0:	objective = 1.0863795168290895:	grad_norm = 0.4373596510636103:
+iteration = 0:	objective = 1.0863795168290895:	grad_norm = 0.4373596510636103:
+iteration = 0:	objective = 1.0863795168290895:	grad_norm = 0.4373596510636103:
+iteration = 0:	objective = 1.0863795168290895:	grad_norm = 0.4373596510636103:
+-g 0.4373596510634217
+-g 0.4373596510634217
+-g 0.4373596510634217
+-g 0.4373596510634217
+-g 0.4373596510634217
+-g 0.4373596510634217
+-g 0.4373596510634217
+-g 0.4373596510634217
+iteration = 1:	objective = 0.9682929120823176:	grad_norm = 0.3595946380372764:	delta_J = 0.1180866047467719:
+iteration = 1:	objective = 0.9682929120823176:	grad_norm = 0.3595946380372764:	delta_J = 0.1180866047467719:
+iteration = 1:	objective = 0.9682929120823176:	grad_norm = 0.3595946380372764:	delta_J = 0.1180866047467719:
+iteration = 1:	objective = 0.9682929120823176:	grad_norm = 0.3595946380372764:	delta_J = 0.1180866047467719:
+iteration = 1:	objective = 0.9682929120823176:	grad_norm = 0.3595946380372764:	delta_J = 0.1180866047467719:
+iteration = 1:	objective = 0.9682929120823176:	grad_norm = 0.3595946380372764:	delta_J = 0.1180866047467719:
+iteration = 1:	objective = 0.9682929120823176:	grad_norm = 0.3595946380372764:	delta_J = 0.1180866047467719:
+iteration = 1:	objective = 0.9682929120823176:	grad_norm = 0.3595946380372764:	delta_J = 0.1180866047467719:
+-g 0.1279886444508145
+-g 0.1279886444508145
+-g 0.1279886444508145
+-g 0.1279886444508145
+-g 0.1279886444508145
+-g 0.1279886444508145
+-g 0.1279886444508145
+-g 0.1279886444508145
+iteration = 2:	objective = 0.5927024629579679:	grad_norm = 0.3067737589983999:	delta_J = 0.3755904491243497:
+iteration = 2:	objective = 0.5927024629579679:	grad_norm = 0.3067737589983999:	delta_J = 0.3755904491243497:
+iteration = 2:	objective = 0.5927024629579679:	grad_norm = 0.3067737589983999:	delta_J = 0.3755904491243497:
+iteration = 2:	objective = 0.5927024629579679:	grad_norm = 0.3067737589983999:	delta_J = 0.3755904491243497:
+iteration = 2:	objective = 0.5927024629579679:	grad_norm = 0.3067737589983999:	delta_J = 0.3755904491243497:
+iteration = 2:	objective = 0.5927024629579679:	grad_norm = 0.3067737589983999:	delta_J = 0.3755904491243497:
+iteration = 2:	objective = 0.5927024629579679:	grad_norm = 0.3067737589983999:	delta_J = 0.3755904491243497:
+iteration = 2:	objective = 0.5927024629579679:	grad_norm = 0.3067737589983999:	delta_J = 0.3755904491243497:
+-g 0.6579380469441244
+-g 0.6579380469441244
+-g 0.6579380469441244
+-g 0.6579380469441244
+-g 0.6579380469441244
+-g 0.6579380469441244
+-g 0.6579380469441244
+-g 0.6579380469441244
 Warning in line search: xtol test satisfied.
 Warning in line search: xtol test satisfied.
 Warning in line search: xtol test satisfied.
@@ -171,22 +170,22 @@ Warning in line search: xtol test satisfied.
 Warning in line search: xtol test satisfied.
 Warning in line search: xtol test satisfied.
 Warning in line search: xtol test satisfied.
-iteration = 3:	objective = 0.03395128848796674:	grad_norm = 0.43496020184440587:	delta_J = 0.5587511744696864:
-iteration = 3:	objective = 0.03395128848796674:	grad_norm = 0.43496020184440587:	delta_J = 0.5587511744696864:
-iteration = 3:	objective = 0.03395128848796674:	grad_norm = 0.43496020184440587:	delta_J = 0.5587511744696864:
-iteration = 3:	objective = 0.03395128848796674:	grad_norm = 0.43496020184440587:	delta_J = 0.5587511744696864:
-iteration = 3:	objective = 0.03395128848796674:	grad_norm = 0.43496020184440587:	delta_J = 0.5587511744696864:
-iteration = 3:	objective = 0.03395128848796674:	grad_norm = 0.43496020184440587:	delta_J = 0.5587511744696864:
-iteration = 3:	objective = 0.03395128848796674:	grad_norm = 0.43496020184440587:	delta_J = 0.5587511744696864:
-iteration = 3:	objective = 0.03395128848796674:	grad_norm = 0.43496020184440587:	delta_J = 0.5587511744696864:
--g -4.265372890108493
--g -4.265372890108493
--g -4.265372890108493
--g -4.265372890108493
--g -4.265372890108493
--g -4.265372890108493
--g -4.265372890108493
--g -4.265372890108493
+iteration = 3:	objective = 0.03395128845983221:	grad_norm = 0.43496020154161685:	delta_J = 0.5587511744981357:
+iteration = 3:	objective = 0.03395128845983221:	grad_norm = 0.43496020154161685:	delta_J = 0.5587511744981357:
+iteration = 3:	objective = 0.03395128845983221:	grad_norm = 0.43496020154161685:	delta_J = 0.5587511744981357:
+iteration = 3:	objective = 0.03395128845983221:	grad_norm = 0.43496020154161685:	delta_J = 0.5587511744981357:
+iteration = 3:	objective = 0.03395128845983221:	grad_norm = 0.43496020154161685:	delta_J = 0.5587511744981357:
+iteration = 3:	objective = 0.03395128845983221:	grad_norm = 0.43496020154161685:	delta_J = 0.5587511744981357:
+iteration = 3:	objective = 0.03395128845983221:	grad_norm = 0.43496020154161685:	delta_J = 0.5587511744981357:
+iteration = 3:	objective = 0.03395128845983221:	grad_norm = 0.43496020154161685:	delta_J = 0.5587511744981357:
+-g -4.265372897412228
+-g -4.265372897412228
+-g -4.265372897412228
+-g -4.265372897412228
+-g -4.265372897412228
+-g -4.265372897412228
+-g -4.265372897412228
+-g -4.265372897412228
 Traceback (most recent call last):
   File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_plane_wave/opt_script.py", line 80, in <module>
 Traceback (most recent call last):
@@ -200,8 +199,8 @@ Traceback (most recent call last):
 Traceback (most recent call last):
   File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_plane_wave/opt_script.py", line 80, in <module>
 Traceback (most recent call last):
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_plane_wave/opt_script.py", line 80, in <module>
 Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_plane_wave/opt_script.py", line 80, in <module>
   File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_plane_wave/opt_script.py", line 80, in <module>
     sol = solver.solve()
     sol = solver.solve()
@@ -222,18 +221,18 @@ Traceback (most recent call last):
     return function(*args, **kwargs)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
     return function(*args, **kwargs)
-  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
     return function(*args, **kwargs)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
-    return function(*args, **kwargs)
-    return function(*args, **kwargs)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
     return function(*args, **kwargs)
-  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
     return function(*args, **kwargs)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
     return function(*args, **kwargs)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
+    return function(*args, **kwargs)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
+    return function(*args, **kwargs)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/bfgs.py", line 191, in solve
     xk, ak = self.do_linesearch(objective, xk, pk)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/optimisation_algorithm.py", line 90, in do_linesearch
@@ -244,12 +243,12 @@ Traceback (most recent call last):
     xk, ak = self.do_linesearch(objective, xk, pk)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/optimisation_algorithm.py", line 90, in do_linesearch
     xk, ak = self.do_linesearch(objective, xk, pk)
-    xk, ak = self.do_linesearch(objective, xk, pk)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/optimisation_algorithm.py", line 90, in do_linesearch
     xk, ak = self.do_linesearch(objective, xk, pk)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/optimisation_algorithm.py", line 90, in do_linesearch
     xk, ak = self.do_linesearch(objective, xk, pk)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/optimisation_algorithm.py", line 90, in do_linesearch
+    xk, ak = self.do_linesearch(objective, xk, pk)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/algorithms/optimisation_algorithm.py", line 90, in do_linesearch
     alpha = self.linesearch.search(phi, phi_dphi, phi_dphi0)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/linesearch/strong_wolfe.py", line 97, in search
@@ -260,33 +259,33 @@ Traceback (most recent call last):
     alpha = self.linesearch.search(phi, phi_dphi, phi_dphi0)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/linesearch/strong_wolfe.py", line 97, in search
     alpha = self.linesearch.search(phi, phi_dphi, phi_dphi0)
+  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/linesearch/strong_wolfe.py", line 97, in search
+    alpha = self.linesearch.search(phi, phi_dphi, phi_dphi0)
     alpha = self.linesearch.search(phi, phi_dphi, phi_dphi0)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/linesearch/strong_wolfe.py", line 97, in search
     alpha = self.linesearch.search(phi, phi_dphi, phi_dphi0)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/linesearch/strong_wolfe.py", line 97, in search
-  File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/linesearch/strong_wolfe.py", line 97, in search
-    alpha = self.linesearch.search(phi, phi_dphi, phi_dphi0)
   File "/rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/moola/linesearch/strong_wolfe.py", line 97, in search
     raise RuntimeError(task)
+RuntimeError: Error: initial g >= 0 (4.265373e+00)
+    raise RuntimeError(task)
+    raise RuntimeError(task)
+RuntimeError: Error: initial g >= 0 (4.265373e+00)
 RuntimeError: Error: initial g >= 0 (4.265373e+00)
     raise RuntimeError(task)
 RuntimeError: Error: initial g >= 0 (4.265373e+00)
     raise RuntimeError(task)
 RuntimeError: Error: initial g >= 0 (4.265373e+00)
     raise RuntimeError(task)
-RuntimeError: Error: initial g >= 0 (4.265373e+00)
+    raise RuntimeError(task)
     raise RuntimeError(task)
 RuntimeError: Error: initial g >= 0 (4.265373e+00)
-    raise RuntimeError(task)
 RuntimeError: Error: initial g >= 0 (4.265373e+00)
-    raise RuntimeError(task)
-RuntimeError: Error: initial g >= 0 (4.265373e+00)
-    raise RuntimeError(task)
 RuntimeError: Error: initial g >= 0 (4.265373e+00)
 --------------------------------------------------------------------------
 prterun detected that one or more processes exited with non-zero status,
 thus causing the job to be terminated. The first process to do so was:
 
-   Process name: [prterun-n23m0261-197142@1,7]
+   Process name: [prterun-n23m0114-130183@1,7]
    Exit code:    1
 --------------------------------------------------------------------------
