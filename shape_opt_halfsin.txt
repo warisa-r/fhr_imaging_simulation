@@ -45,8 +45,8 @@ Requirement already satisfied: mdurl~=0.1 in /rwthfs/rz/cluster/home/nj616237/mi
 Building wheels for collected packages: HH_shape_opt
   Building editable for HH_shape_opt (pyproject.toml): started
   Building editable for HH_shape_opt (pyproject.toml): finished with status 'done'
-  Created wheel for HH_shape_opt: filename=hh_shape_opt-0.1.0-0.editable-py3-none-any.whl size=2851 sha256=c359eb55880086336bc8966b499778e8f3077fa68a40d90fa5462e4dce0be0ac
-  Stored in directory: /w0/tmp/slurm_nj616237.62677614/pip-ephem-wheel-cache-elj4pug8/wheels/39/70/7d/5e5508084c54e08a05fee6e869cc3da8d156967369f49dc757
+  Created wheel for HH_shape_opt: filename=hh_shape_opt-0.1.0-0.editable-py3-none-any.whl size=2851 sha256=7ce3a93a802aa2ffa41e754ccca639aa73378e3c474cf15360980e6212604e80
+  Stored in directory: /w0/tmp/slurm_nj616237.62969745/pip-ephem-wheel-cache-nfrl9aen/wheels/39/70/7d/5e5508084c54e08a05fee6e869cc3da8d156967369f49dc757
 Successfully built HH_shape_opt
 Installing collected packages: HH_shape_opt
   Attempting uninstall: HH_shape_opt
@@ -57,7 +57,7 @@ Successfully installed HH_shape_opt-0.1.0
 
 [notice] A new release of pip is available: 25.2 -> 25.3
 [notice] To update, run: pip install --upgrade pip
-[n23m0031.hpc.itc.rwth-aachen.de:58437] SET PYTHONPATH=
+[r23m0195.hpc.itc.rwth-aachen.de:426888] SET PYTHONPATH=
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
   import pkg_resources
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
@@ -75,70 +75,70 @@ Successfully installed HH_shape_opt-0.1.0
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
   import pkg_resources
 Process 0: Solving linear variational problem.
-Process 3: Solving linear variational problem.
 Process 2: Solving linear variational problem.
-Process 1: Solving linear variational problem.
-Process 7: Solving linear variational problem.
-Process 6: Solving linear variational problem.
-Process 5: Solving linear variational problem.
 Process 4: Solving linear variational problem.
+Process 6: Solving linear variational problem.
+Process 1: Solving linear variational problem.
+Process 3: Solving linear variational problem.
+Process 5: Solving linear variational problem.
+Process 7: Solving linear variational problem.
 Process 0: Solving linear variational problem.
 Process 3: Solving linear variational problem.
-Process 5: Solving linear variational problem.
-Process 7: Solving linear variational problem.
 Process 4: Solving linear variational problem.
-Process 1: Solving linear variational problem.
 Process 6: Solving linear variational problem.
 Process 2: Solving linear variational problem.
+Process 5: Solving linear variational problem.
+Process 7: Solving linear variational problem.
+Process 1: Solving linear variational problem.
 Process 0: Solving linear variational problem.
+Process 5: Solving linear variational problem.
+Process 6: Solving linear variational problem.
 Process 7: Solving linear variational problem.
 Process 3: Solving linear variational problem.
-Process 2: Solving linear variational problem.
-Process 5: Solving linear variational problem.
-Process 6: Solving linear variational problem.
-Process 1: Solving linear variational problem.
 Process 4: Solving linear variational problem.
-Process 1: Computed global bounding box tree with 15 boxes.
-Process 3: Computed global bounding box tree with 15 boxes.
-Process 2: Computed global bounding box tree with 15 boxes.
-Process 0: Computed global bounding box tree with 15 boxes.
-Process 7: Computed global bounding box tree with 15 boxes.
-Process 5: Computed global bounding box tree with 15 boxes.
-Process 4: Computed global bounding box tree with 15 boxes.
+Process 1: Solving linear variational problem.
+Process 2: Solving linear variational problem.
 Process 6: Computed global bounding box tree with 15 boxes.
-Sum of magnitude error square: 3.22430153950115e-06
+Process 3: Computed global bounding box tree with 15 boxes.
+Process 4: Computed global bounding box tree with 15 boxes.
+Process 5: Computed global bounding box tree with 15 boxes.
+Process 7: Computed global bounding box tree with 15 boxes.
+Process 1: Computed global bounding box tree with 15 boxes.
+Process 0: Computed global bounding box tree with 15 boxes.
+Process 2: Computed global bounding box tree with 15 boxes.
+Sum of magnitude error square: 5.456387807533761e-05
 Projected error plots saved to outputs/error_5per_noise_0.png
 Process 0: Solving linear variational problem.
 Process 2: Solving linear variational problem.
 Process 1: Solving linear variational problem.
 Process 3: Solving linear variational problem.
+Process 6: Solving linear variational problem.
 Process 5: Solving linear variational problem.
 Process 7: Solving linear variational problem.
-Process 6: Solving linear variational problem.
 Process 4: Solving linear variational problem.
 Process 0: Solving linear variational problem.
 Process 1: Solving linear variational problem.
 Process 2: Solving linear variational problem.
-Process 3: Solving linear variational problem.
-Process 7: Solving linear variational problem.
-Process 5: Solving linear variational problem.
 Process 6: Solving linear variational problem.
+Process 5: Solving linear variational problem.
+Process 7: Solving linear variational problem.
+Process 3: Solving linear variational problem.
 Process 4: Solving linear variational problem.
 Process 0: Solving linear variational problem.
-Process 1: Solving linear variational problem.
-Process 2: Solving linear variational problem.
-Process 3: Solving linear variational problem.
+Process 6: Solving linear variational problem.
 Process 7: Solving linear variational problem.
 Process 5: Solving linear variational problem.
+Process 3: Solving linear variational problem.
+Process 2: Solving linear variational problem.
+Process 1: Solving linear variational problem.
 Process 4: Solving linear variational problem.
-Process 6: Solving linear variational problem.
-Process 7: Computed global bounding box tree with 15 boxes.
-Process 6: Computed global bounding box tree with 15 boxes.
-Process 2: Computed global bounding box tree with 15 boxes.
-Process 5: Computed global bounding box tree with 15 boxes.
 Process 3: Computed global bounding box tree with 15 boxes.
+Process 5: Computed global bounding box tree with 15 boxes.
+Process 6: Computed global bounding box tree with 15 boxes.
+Process 7: Computed global bounding box tree with 15 boxes.
 Process 4: Computed global bounding box tree with 15 boxes.
-Process 1: Computed global bounding box tree with 15 boxes.
+Process 2: Computed global bounding box tree with 15 boxes.
 Process 0: Computed global bounding box tree with 15 boxes.
-Sum of magnitude error square: 1.623718586843986e-06
+Process 1: Computed global bounding box tree with 15 boxes.
+Sum of magnitude error square: 2.8611150288708556e-05
 Projected error plots saved to outputs/error_5per_noise_1.png
