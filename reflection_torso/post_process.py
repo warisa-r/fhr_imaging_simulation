@@ -17,7 +17,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
 
-frequency = 5e9
+frequency = 5.5e9
 amp = 1
 offset = 1e-8
 
