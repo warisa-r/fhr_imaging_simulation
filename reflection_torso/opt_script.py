@@ -18,7 +18,7 @@ os.chdir(script_dir)
 
 set_log_level(LogLevel.ERROR)
 
-frequency = 5.5e9
+frequency = 6.5e9
 offset = 1e-8
 wave_sources = [(-0.1, -offset), (0.1, -offset)]
 amp = 1

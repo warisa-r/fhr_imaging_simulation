@@ -165,7 +165,7 @@ if __name__ == "__main__":
     print("Generating square with hole mesh...")
 
     c = 299792458
-    freq_max = 5.5e9  # 5GHz
+    freq_max = 6.5e9  # 5GHz
 
     # Parameters
     wavelength = c / freq_max  # Physical wavelength
