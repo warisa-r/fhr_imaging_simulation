@@ -53,7 +53,7 @@ h_V = transfer_from_boundary(h, mesh)
 h_V.rename("Volume extension of h", "")
 ##########################
 
-scale_fac = 500
+scale_fac = 50
 
 for tx_i, tx in enumerate(wave_sources):
     inc_wave_setup = IncidentWaveSetup(frequency, cylindrical_wave(amp, tx))
