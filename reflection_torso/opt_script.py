@@ -53,7 +53,7 @@ h_V = transfer_from_boundary(h, mesh)
 h_V.rename("Volume extension of h", "")
 ##########################
 
-scale_fac = 50
+scale_fac = 500
 
 for tx_i, tx in enumerate(wave_sources):
     inc_wave_setup = IncidentWaveSetup(frequency, cylindrical_wave(amp, tx))
@@ -85,7 +85,7 @@ h_moola = moola.DolfinPrimalVector(h)
 
 solver = moola.BFGS(problem, h_moola,
                     options={
-                        "maxiter": 30
+                        "maxiter": 17
                     })
 
 sol = solver.solve()

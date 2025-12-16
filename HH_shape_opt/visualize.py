@@ -80,9 +80,20 @@ def extract_and_overlay_mesh_outlines(original_mesh, goal_mesh, optimized_mesh, 
     coords_goal, cells_goal = gather_boundary_arrays(b_goal)
     coords_opt, cells_opt = gather_boundary_arrays(b_opt)
 
-    if comm.rank != 0:
-        # nothing else to do on non-root ranks
-        return
+    if comm.rank == 0:
+        import csv
+        
+        def save_boundary_to_csv(coords, filename):
+            with open(filename, 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(['x', 'y'])
+                for coord in coords:
+                    writer.writerow([coord[0], coord[1]])
+            print(f"Saved boundary points to {filename}")
+        
+        save_boundary_to_csv(coords_orig, "boundary_original.csv")
+        save_boundary_to_csv(coords_goal, "boundary_goal.csv")
+        save_boundary_to_csv(coords_opt, "boundary_optimized.csv")
 
     # Helper: calculate boundary difference using assembled coordinate arrays
     def calculate_boundary_difference_arrays(coords1, coords2, print_at_x=None, tolerance=0.01):

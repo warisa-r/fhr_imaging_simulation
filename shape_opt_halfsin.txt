@@ -45,8 +45,8 @@ Requirement already satisfied: mdurl~=0.1 in /rwthfs/rz/cluster/home/nj616237/mi
 Building wheels for collected packages: HH_shape_opt
   Building editable for HH_shape_opt (pyproject.toml): started
   Building editable for HH_shape_opt (pyproject.toml): finished with status 'done'
-  Created wheel for HH_shape_opt: filename=hh_shape_opt-0.1.0-0.editable-py3-none-any.whl size=2851 sha256=2083687cee3810a655fd18f038f72846f90018ebbbd5429f15d2315bdcc24ae5
-  Stored in directory: /w0/tmp/slurm_nj616237.63068435/pip-ephem-wheel-cache-9bbrplqs/wheels/39/70/7d/5e5508084c54e08a05fee6e869cc3da8d156967369f49dc757
+  Created wheel for HH_shape_opt: filename=hh_shape_opt-0.1.0-0.editable-py3-none-any.whl size=2851 sha256=0bbe170bf99498381d47b25c68d6a621142e97665cc98b89b3ab92f1dcb63f5f
+  Stored in directory: /w0/tmp/slurm_nj616237.63142993/pip-ephem-wheel-cache-j_a53_ov/wheels/39/70/7d/5e5508084c54e08a05fee6e869cc3da8d156967369f49dc757
 Successfully built HH_shape_opt
 Installing collected packages: HH_shape_opt
   Attempting uninstall: HH_shape_opt
@@ -57,7 +57,7 @@ Successfully installed HH_shape_opt-0.1.0
 
 [notice] A new release of pip is available: 25.2 -> 25.3
 [notice] To update, run: pip install --upgrade pip
-[n23m0172.hpc.itc.rwth-aachen.de:496475] SET PYTHONPATH=
+[n23m0174.hpc.itc.rwth-aachen.de:163570] SET PYTHONPATH=
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
   import pkg_resources
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
@@ -76,161 +76,449 @@ Successfully installed HH_shape_opt-0.1.0
   import pkg_resources
 L-BFGS method.
 ------------------------------
+Line search:L-BFGS method.
+------------------------------
 Line search:		 strong_wolfe
-Maximum iterations:	 30
+Maximum iterations:	 17
 
 L-BFGS method.
 ------------------------------
 Line search:		 strong_wolfe
-Maximum iterations:	 30
+Maximum iterations:	 17
 
 L-BFGS method.
 ------------------------------
 Line search:		 strong_wolfe
-Maximum iterations:	 30
+Maximum iterations:	 17
 
 L-BFGS method.
 ------------------------------
 Line search:		 strong_wolfe
-Maximum iterations:	 30
+Maximum iterations:	 17
 
 L-BFGS method.
 ------------------------------
 Line search:		 strong_wolfe
-Maximum iterations:	 30
+Maximum iterations:	 17
 
 L-BFGS method.
 ------------------------------
 Line search:		 strong_wolfe
-Maximum iterations:	 30
+Maximum iterations:	 17
 
 L-BFGS method.
 ------------------------------
 Line search:		 strong_wolfe
-Maximum iterations:	 30
+Maximum iterations:	 17
 
-L-BFGS method.
-------------------------------
-Line search:		 strong_wolfe
-Maximum iterations:	 30
+		 strong_wolfe
+Maximum iterations:	 17
 
-iteration = 0:	objective = 0.013185023927191631:	grad_norm = 0.02807550509589149:
-iteration = 0:	objective = 0.013185023927191631:	grad_norm = 0.02807550509589149:
-iteration = 0:	objective = 0.013185023927191631:	grad_norm = 0.02807550509589149:
-iteration = 0:	objective = 0.013185023927191631:	grad_norm = 0.02807550509589149:
-iteration = 0:	objective = 0.013185023927191631:	grad_norm = 0.02807550509589149:
-iteration = 0:	objective = 0.013185023927191631:	grad_norm = 0.02807550509589149:
-iteration = 0:	objective = 0.013185023927191631:	grad_norm = 0.02807550509589149:
-iteration = 0:	objective = 0.013185023927191631:	grad_norm = 0.02807550509589149:
--g 0.02807550509589264
--g 0.02807550509589264
--g 0.02807550509589264
--g 0.02807550509589264
--g 0.02807550509589264
--g 0.02807550509589264
--g 0.02807550509589264
--g 0.02807550509589264
-iteration = 1:	objective = 0.00793941334266744:	grad_norm = 0.021456965672722553:	delta_J = 0.005245610584524191:
-iteration = 1:	objective = 0.00793941334266744:	grad_norm = 0.021456965672722553:	delta_J = 0.005245610584524191:
-iteration = 1:	objective = 0.00793941334266744:	grad_norm = 0.021456965672722553:	delta_J = 0.005245610584524191:
-iteration = 1:	objective = 0.00793941334266744:	grad_norm = 0.021456965672722553:	delta_J = 0.005245610584524191:
-iteration = 1:	objective = 0.00793941334266744:	grad_norm = 0.021456965672722553:	delta_J = 0.005245610584524191:
-iteration = 1:	objective = 0.00793941334266744:	grad_norm = 0.021456965672722553:	delta_J = 0.005245610584524191:
-iteration = 1:	objective = 0.00793941334266744:	grad_norm = 0.021456965672722553:	delta_J = 0.005245610584524191:
-iteration = 1:	objective = 0.00793941334266744:	grad_norm = 0.021456965672722553:	delta_J = 0.005245610584524191:
--g 0.07866275534586384
--g 0.07866275534586384
--g 0.07866275534586384
--g 0.07866275534586384
--g 0.07866275534586384
--g 0.07866275534586384
--g 0.07866275534586384
--g 0.07866275534586384
-iteration = 2:	objective = 0.004710663086442943:	grad_norm = 0.0043468121924425535:	delta_J = 0.003228750256224497:
-iteration = 2:	objective = 0.004710663086442943:	grad_norm = 0.0043468121924425535:	delta_J = 0.003228750256224497:
-iteration = 2:	objective = 0.004710663086442943:	grad_norm = 0.0043468121924425535:	delta_J = 0.003228750256224497:
-iteration = 2:	objective = 0.004710663086442943:	grad_norm = 0.0043468121924425535:	delta_J = 0.003228750256224497:
-iteration = 2:	objective = 0.004710663086442943:	grad_norm = 0.0043468121924425535:	delta_J = 0.003228750256224497:
-iteration = 2:	objective = 0.004710663086442943:	grad_norm = 0.0043468121924425535:	delta_J = 0.003228750256224497:
-iteration = 2:	objective = 0.004710663086442943:	grad_norm = 0.0043468121924425535:	delta_J = 0.003228750256224497:
-iteration = 2:	objective = 0.004710663086442943:	grad_norm = 0.0043468121924425535:	delta_J = 0.003228750256224497:
--g 0.0037159238029507626
--g 0.0037159238029507626
--g 0.0037159238029507626
--g 0.0037159238029507626
--g 0.0037159238029507626
--g 0.0037159238029507626
--g 0.0037159238029507626
--g 0.0037159238029507626
-iteration = 3:	objective = 0.003029845070395564:	grad_norm = 0.004217656512369093:	delta_J = 0.0016808180160473793:
-iteration = 3:	objective = 0.003029845070395564:	grad_norm = 0.004217656512369093:	delta_J = 0.0016808180160473793:
-iteration = 3:	objective = 0.003029845070395564:	grad_norm = 0.004217656512369093:	delta_J = 0.0016808180160473793:
-iteration = 3:	objective = 0.003029845070395564:	grad_norm = 0.004217656512369093:	delta_J = 0.0016808180160473793:
-iteration = 3:	objective = 0.003029845070395564:	grad_norm = 0.004217656512369093:	delta_J = 0.0016808180160473793:
-iteration = 3:	objective = 0.003029845070395564:	grad_norm = 0.004217656512369093:	delta_J = 0.0016808180160473793:
-iteration = 3:	objective = 0.003029845070395564:	grad_norm = 0.004217656512369093:	delta_J = 0.0016808180160473793:
-iteration = 3:	objective = 0.003029845070395564:	grad_norm = 0.004217656512369093:	delta_J = 0.0016808180160473793:
--g 0.0314796656945478
--g 0.0314796656945478
--g 0.0314796656945478
--g 0.0314796656945478
--g 0.0314796656945478
--g 0.0314796656945478
--g 0.0314796656945478
--g 0.0314796656945478
+iteration = 0:	objective = 0.13277476886299472:	grad_norm = 0.27415953539162047:
+iteration = 0:	objective = 0.13277476886299472:	grad_norm = 0.27415953539162047:
+iteration = 0:	objective = 0.13277476886299472:	grad_norm = 0.27415953539162047:
+iteration = 0:	objective = 0.13277476886299472:	grad_norm = 0.27415953539162047:
+iteration = 0:	objective = 0.13277476886299472:	grad_norm = 0.27415953539162047:
+iteration = 0:	objective = 0.13277476886299472:	grad_norm = 0.27415953539162047:
+iteration = 0:	objective = 0.13277476886299472:	grad_norm = 0.27415953539162047:
+iteration = 0:	objective = 0.13277476886299472:	grad_norm = 0.27415953539162047:
+-g 0.2741595353916104
+-g 0.2741595353916104
+-g 0.2741595353916104
+-g 0.2741595353916104
+-g 0.2741595353916104
+-g 0.2741595353916104
+-g 0.2741595353916104
+-g 0.2741595353916104
+iteration = 1:	objective = 0.08026495416889666:	grad_norm = 0.21489355358962903:	delta_J = 0.05250981469409806:
+iteration = 1:	objective = 0.08026495416889666:	grad_norm = 0.21489355358962903:	delta_J = 0.05250981469409806:
+iteration = 1:	objective = 0.08026495416889666:	grad_norm = 0.21489355358962903:	delta_J = 0.05250981469409806:
+iteration = 1:	objective = 0.08026495416889666:	grad_norm = 0.21489355358962903:	delta_J = 0.05250981469409806:
+iteration = 1:	objective = 0.08026495416889666:	grad_norm = 0.21489355358962903:	delta_J = 0.05250981469409806:
+iteration = 1:	objective = 0.08026495416889666:	grad_norm = 0.21489355358962903:	delta_J = 0.05250981469409806:
+iteration = 1:	objective = 0.08026495416889666:	grad_norm = 0.21489355358962903:	delta_J = 0.05250981469409806:
+iteration = 1:	objective = 0.08026495416889666:	grad_norm = 0.21489355358962903:	delta_J = 0.05250981469409806:
+-g 0.8949313492967169
+-g 0.8949313492967169
+-g 0.8949313492967169
+-g 0.8949313492967169
+-g 0.8949313492967169
+-g 0.8949313492967169
+-g 0.8949313492967169
+-g 0.8949313492967169
+iteration = 2:	objective = 0.07717387001816023:	grad_norm = 0.14942048663891883:	delta_J = 0.003091084150736431:
+iteration = 2:	objective = 0.07717387001816023:	grad_norm = 0.14942048663891883:	delta_J = 0.003091084150736431:
+iteration = 2:	objective = 0.07717387001816023:	grad_norm = 0.14942048663891883:	delta_J = 0.003091084150736431:
+iteration = 2:	objective = 0.07717387001816023:	grad_norm = 0.14942048663891883:	delta_J = 0.003091084150736431:
+iteration = 2:	objective = 0.07717387001816023:	grad_norm = 0.14942048663891883:	delta_J = 0.003091084150736431:
+iteration = 2:	objective = 0.07717387001816023:	grad_norm = 0.14942048663891883:	delta_J = 0.003091084150736431:
+iteration = 2:	objective = 0.07717387001816023:	grad_norm = 0.14942048663891883:	delta_J = 0.003091084150736431:
+iteration = 2:	objective = 0.07717387001816023:	grad_norm = 0.14942048663891883:	delta_J = 0.003091084150736431:
+-g 0.07438303999874003
+-g 0.07438303999874003
+-g 0.07438303999874003
+-g 0.07438303999874003
+-g 0.07438303999874003
+-g 0.07438303999874003
+-g 0.07438303999874003
+-g 0.07438303999874003
+iteration = 3:	objective = 0.05361103193376274:	grad_norm = 0.10994587329918791:	delta_J = 0.02356283808439749:
+iteration = 3:	objective = 0.05361103193376274:	grad_norm = 0.10994587329918791:	delta_J = 0.02356283808439749:
+iteration = 3:	objective = 0.05361103193376274:	grad_norm = 0.10994587329918791:	delta_J = 0.02356283808439749:
+iteration = 3:	objective = 0.05361103193376274:	grad_norm = 0.10994587329918791:	delta_J = 0.02356283808439749:
+iteration = 3:	objective = 0.05361103193376274:	grad_norm = 0.10994587329918791:	delta_J = 0.02356283808439749:
+iteration = 3:	objective = 0.05361103193376274:	grad_norm = 0.10994587329918791:	delta_J = 0.02356283808439749:
+iteration = 3:	objective = 0.05361103193376274:	grad_norm = 0.10994587329918791:	delta_J = 0.02356283808439749:
+iteration = 3:	objective = 0.05361103193376274:	grad_norm = 0.10994587329918791:	delta_J = 0.02356283808439749:
+-g 0.03465049788687099
+-g 0.03465049788687099
+-g 0.03465049788687099
+-g 0.03465049788687099
+-g 0.03465049788687099
+-g 0.03465049788687099
+-g 0.03465049788687099
+-g 0.03465049788687099
+iteration = 4:	objective = 0.043073852695530386:	grad_norm = 0.062047597328376086:	delta_J = 0.010537179238232351:
+iteration = 4:	objective = 0.043073852695530386:	grad_norm = 0.062047597328376086:	delta_J = 0.010537179238232351:
+iteration = 4:	objective = 0.043073852695530386:	grad_norm = 0.062047597328376086:	delta_J = 0.010537179238232351:
+iteration = 4:	objective = 0.043073852695530386:	grad_norm = 0.062047597328376086:	delta_J = 0.010537179238232351:
+iteration = 4:	objective = 0.043073852695530386:	grad_norm = 0.062047597328376086:	delta_J = 0.010537179238232351:
+iteration = 4:	objective = 0.043073852695530386:	grad_norm = 0.062047597328376086:	delta_J = 0.010537179238232351:
+iteration = 4:	objective = 0.043073852695530386:	grad_norm = 0.062047597328376086:	delta_J = 0.010537179238232351:
+iteration = 4:	objective = 0.043073852695530386:	grad_norm = 0.062047597328376086:	delta_J = 0.010537179238232351:
+-g 0.009258123789927465
+-g 0.009258123789927465
+-g 0.009258123789927465
+-g 0.009258123789927465
+-g 0.009258123789927465
+-g 0.009258123789927465
+-g 0.009258123789927465
+-g 0.009258123789927465
+iteration = 5:	objective = 0.03762621604606418:	grad_norm = 0.07890355859499158:	delta_J = 0.005447636649466209:
+iteration = 5:	objective = 0.03762621604606418:	grad_norm = 0.07890355859499158:	delta_J = 0.005447636649466209:
+iteration = 5:	objective = 0.03762621604606418:	grad_norm = 0.07890355859499158:	delta_J = 0.005447636649466209:
+iteration = 5:	objective = 0.03762621604606418:	grad_norm = 0.07890355859499158:	delta_J = 0.005447636649466209:
+iteration = 5:	objective = 0.03762621604606418:	grad_norm = 0.07890355859499158:	delta_J = 0.005447636649466209:
+iteration = 5:	objective = 0.03762621604606418:	grad_norm = 0.07890355859499158:	delta_J = 0.005447636649466209:
+iteration = 5:	objective = 0.03762621604606418:	grad_norm = 0.07890355859499158:	delta_J = 0.005447636649466209:
+iteration = 5:	objective = 0.03762621604606418:	grad_norm = 0.07890355859499158:	delta_J = 0.005447636649466209:
+-g 0.0029605672883899056
+-g 0.0029605672883899056
+-g 0.0029605672883899056
+-g 0.0029605672883899056
+-g 0.0029605672883899056
+-g 0.0029605672883899056
+-g 0.0029605672883899056
+-g 0.0029605672883899056
+iteration = 6:	objective = 0.03262483236109842:	grad_norm = 0.05057179460404275:	delta_J = 0.005001383684965756:
+iteration = 6:	objective = 0.03262483236109842:	grad_norm = 0.05057179460404275:	delta_J = 0.005001383684965756:
+iteration = 6:	objective = 0.03262483236109842:	grad_norm = 0.05057179460404275:	delta_J = 0.005001383684965756:
+iteration = 6:	objective = 0.03262483236109842:	grad_norm = 0.05057179460404275:	delta_J = 0.005001383684965756:
+iteration = 6:	objective = 0.03262483236109842:	grad_norm = 0.05057179460404275:	delta_J = 0.005001383684965756:
+iteration = 6:	objective = 0.03262483236109842:	grad_norm = 0.05057179460404275:	delta_J = 0.005001383684965756:
+iteration = 6:	objective = 0.03262483236109842:	grad_norm = 0.05057179460404275:	delta_J = 0.005001383684965756:
+iteration = 6:	objective = 0.03262483236109842:	grad_norm = 0.05057179460404275:	delta_J = 0.005001383684965756:
+-g 0.013921267054229348
+-g 0.013921267054229348
+-g 0.013921267054229348
+-g 0.013921267054229348
+-g 0.013921267054229348
+-g 0.013921267054229348
+-g 0.013921267054229348
+-g 0.013921267054229348
+iteration = 7:	objective = 0.018394705320789885:	grad_norm = 0.06065099658399575:	delta_J = 0.014230127040308536:
+iteration = 7:	objective = 0.018394705320789885:	grad_norm = 0.06065099658399575:	delta_J = 0.014230127040308536:
+iteration = 7:	objective = 0.018394705320789885:	grad_norm = 0.06065099658399575:	delta_J = 0.014230127040308536:
+iteration = 7:	objective = 0.018394705320789885:	grad_norm = 0.06065099658399575:	delta_J = 0.014230127040308536:
+iteration = 7:	objective = 0.018394705320789885:	grad_norm = 0.06065099658399575:	delta_J = 0.014230127040308536:
+iteration = 7:	objective = 0.018394705320789885:	grad_norm = 0.06065099658399575:	delta_J = 0.014230127040308536:
+iteration = 7:	objective = 0.018394705320789885:	grad_norm = 0.06065099658399575:	delta_J = 0.014230127040308536:
+iteration = 7:	objective = 0.018394705320789885:	grad_norm = 0.06065099658399575:	delta_J = 0.014230127040308536:
+-g 0.002918772237856365
+-g 0.002918772237856365
+-g 0.002918772237856365
+-g 0.002918772237856365
+-g 0.002918772237856365
+-g 0.002918772237856365
+-g 0.002918772237856365
+-g 0.002918772237856365
+iteration = 8:	objective = 0.014106658971052281:	grad_norm = 0.030266480243046345:	delta_J = 0.004288046349737604:
+iteration = 8:	objective = 0.014106658971052281:	grad_norm = 0.030266480243046345:	delta_J = 0.004288046349737604:
+iteration = 8:	objective = 0.014106658971052281:	grad_norm = 0.030266480243046345:	delta_J = 0.004288046349737604:
+iteration = 8:	objective = 0.014106658971052281:	grad_norm = 0.030266480243046345:	delta_J = 0.004288046349737604:
+iteration = 8:	objective = 0.014106658971052281:	grad_norm = 0.030266480243046345:	delta_J = 0.004288046349737604:
+iteration = 8:	objective = 0.014106658971052281:	grad_norm = 0.030266480243046345:	delta_J = 0.004288046349737604:
+iteration = 8:	objective = 0.014106658971052281:	grad_norm = 0.030266480243046345:	delta_J = 0.004288046349737604:
+iteration = 8:	objective = 0.014106658971052281:	grad_norm = 0.030266480243046345:	delta_J = 0.004288046349737604:
+-g 0.0012138239702514273
+-g 0.0012138239702514273
+-g 0.0012138239702514273
+-g 0.0012138239702514273
+-g 0.0012138239702514273
+-g 0.0012138239702514273
+-g 0.0012138239702514273
+-g 0.0012138239702514273
+iteration = 9:iteration = 9:	objective = 0.012659981126906854:	grad_norm = 0.008199838942092506:	delta_J = 0.0014466778441454275:
+iteration = 9:	objective = 0.012659981126906854:	grad_norm = 0.008199838942092506:	delta_J = 0.0014466778441454275:
+iteration = 9:	objective = 0.012659981126906854:	grad_norm = 0.008199838942092506:	delta_J = 0.0014466778441454275:
+	objective = 0.012659981126906854:	grad_norm = 0.008199838942092506:	delta_J = 0.0014466778441454275:
+iteration = 9:	objective = 0.012659981126906854:	grad_norm = 0.008199838942092506:	delta_J = 0.0014466778441454275:
+iteration = 9:	objective = 0.012659981126906854:	grad_norm = 0.008199838942092506:	delta_J = 0.0014466778441454275:
+iteration = 9:	objective = 0.012659981126906854:	grad_norm = 0.008199838942092506:	delta_J = 0.0014466778441454275:
+iteration = 9:	objective = 0.012659981126906854:	grad_norm = 0.008199838942092506:	delta_J = 0.0014466778441454275:
+-g 8.474591377842877e-05
+-g 8.474591377842877e-05
+-g 8.474591377842877e-05
+-g 8.474591377842877e-05
+-g 8.474591377842877e-05
+-g 8.474591377842877e-05
+-g 8.474591377842877e-05
+-g 8.474591377842877e-05
+iteration = 10:	objective = 0.01251017790044686:	grad_norm = 0.007179572971585585:	delta_J = 0.00014980322645999355:
+iteration = 10:	objective = 0.01251017790044686:	grad_norm = 0.007179572971585585:	delta_J = 0.00014980322645999355:
+iteration = 10:	objective = 0.01251017790044686:	grad_norm = 0.007179572971585585:	delta_J = 0.00014980322645999355:
+iteration = 10:	objective = 0.01251017790044686:	grad_norm = 0.007179572971585585:	delta_J = 0.00014980322645999355:
+iteration = 10:	objective = 0.01251017790044686:	grad_norm = 0.007179572971585585:	delta_J = 0.00014980322645999355:
+iteration = 10:	objective = 0.01251017790044686:	grad_norm = 0.007179572971585585:	delta_J = 0.00014980322645999355:
+iteration = 10:	objective = 0.01251017790044686:	grad_norm = 0.007179572971585585:	delta_J = 0.00014980322645999355:
+iteration = 10:	objective = 0.01251017790044686:	grad_norm = 0.007179572971585585:	delta_J = 0.00014980322645999355:
+-g 0.000543276826567315
+-g 0.000543276826567315
+-g 0.000543276826567315
+-g 0.000543276826567315
+-g 0.000543276826567315
+-g 0.000543276826567315
+-g 0.000543276826567315
+-g 0.000543276826567315
+iteration = 11:	objective = 0.011841211273545902:	grad_norm = 0.007045594761243818:	delta_J = 0.0006689666269009582:
+iteration = 11:	objective = 0.011841211273545902:	grad_norm = 0.007045594761243818:	delta_J = 0.0006689666269009582:
+iteration = 11:	objective = 0.011841211273545902:	grad_norm = 0.007045594761243818:	delta_J = 0.0006689666269009582:
+iteration = 11:	objective = 0.011841211273545902:	grad_norm = 0.007045594761243818:	delta_J = 0.0006689666269009582:
+iteration = 11:	objective = 0.011841211273545902:	grad_norm = 0.007045594761243818:	delta_J = 0.0006689666269009582:
+iteration = 11:	objective = 0.011841211273545902:	grad_norm = 0.007045594761243818:	delta_J = 0.0006689666269009582:
+iteration = 11:	objective = 0.011841211273545902:	grad_norm = 0.007045594761243818:	delta_J = 0.0006689666269009582:
+iteration = 11:	objective = 0.011841211273545902:	grad_norm = 0.007045594761243818:	delta_J = 0.0006689666269009582:
+-g 0.0005353338834660973
+-g 0.0005353338834660973
+-g 0.0005353338834660973
+-g 0.0005353338834660973
+-g 0.0005353338834660973
+-g 0.0005353338834660973
+-g 0.0005353338834660973
+-g 0.0005353338834660973
+iteration = 12:	objective = 0.011264438444826476:	grad_norm = 0.008506181006554417:	delta_J = 0.0005767728287194261:
+iteration = 12:	objective = 0.011264438444826476:	grad_norm = 0.008506181006554417:	delta_J = 0.0005767728287194261:
+iteration = 12:	objective = 0.011264438444826476:	grad_norm = 0.008506181006554417:	delta_J = 0.0005767728287194261:
+iteration = 12:	objective = 0.011264438444826476:	grad_norm = 0.008506181006554417:	delta_J = 0.0005767728287194261:
+iteration = 12:	objective = 0.011264438444826476:	grad_norm = 0.008506181006554417:	delta_J = 0.0005767728287194261:
+iteration = 12:	objective = 0.011264438444826476:	grad_norm = 0.008506181006554417:	delta_J = 0.0005767728287194261:
+iteration = 12:	objective = 0.011264438444826476:	grad_norm = 0.008506181006554417:	delta_J = 0.0005767728287194261:
+iteration = 12:	objective = 0.011264438444826476:	grad_norm = 0.008506181006554417:	delta_J = 0.0005767728287194261:
+-g 0.0010505110846699504
+-g 0.0010505110846699504
+-g 0.0010505110846699504
+-g 0.0010505110846699504
+-g 0.0010505110846699504
+-g 0.0010505110846699504
+-g 0.0010505110846699504
+-g 0.0010505110846699504
+iteration = 13:	objective = 0.010611785230845536:	grad_norm = 0.010095490799325247:	delta_J = 0.0006526532139809402:
+iteration = 13:	objective = 0.010611785230845536:	grad_norm = 0.010095490799325247:	delta_J = 0.0006526532139809402:
+iteration = 13:	objective = 0.010611785230845536:	grad_norm = 0.010095490799325247:	delta_J = 0.0006526532139809402:
+iteration = 13:	objective = 0.010611785230845536:	grad_norm = 0.010095490799325247:	delta_J = 0.0006526532139809402:
+iteration = 13:	objective = 0.010611785230845536:	grad_norm = 0.010095490799325247:	delta_J = 0.0006526532139809402:
+iteration = 13:	objective = 0.010611785230845536:	grad_norm = 0.010095490799325247:	delta_J = 0.0006526532139809402:
+iteration = 13:	objective = 0.010611785230845536:	grad_norm = 0.010095490799325247:	delta_J = 0.0006526532139809402:
+iteration = 13:	objective = 0.010611785230845536:	grad_norm = 0.010095490799325247:	delta_J = 0.0006526532139809402:
+-g 0.0036620366410993585
+-g 0.0036620366410993585
+-g 0.0036620366410993585
+-g 0.0036620366410993585
+-g 0.0036620366410993585
+-g 0.0036620366410993585
+-g 0.0036620366410993585
+-g 0.0036620366410993585
+iteration = 14:	objective = 0.010448383228149921:	grad_norm = 0.00864206375599123:	delta_J = 0.00016340200269561456:
+iteration = 14:	objective = 0.010448383228149921:	grad_norm = 0.00864206375599123:	delta_J = 0.00016340200269561456:
+iteration = 14:	objective = 0.010448383228149921:	grad_norm = 0.00864206375599123:	delta_J = 0.00016340200269561456:
+iteration = 14:	objective = 0.010448383228149921:	grad_norm = 0.00864206375599123:	delta_J = 0.00016340200269561456:
+iteration = 14:	objective = 0.010448383228149921:	grad_norm = 0.00864206375599123:	delta_J = 0.00016340200269561456:
+iteration = 14:	objective = 0.010448383228149921:	grad_norm = 0.00864206375599123:	delta_J = 0.00016340200269561456:
+iteration = 14:	objective = 0.010448383228149921:	grad_norm = 0.00864206375599123:	delta_J = 0.00016340200269561456:
+iteration = 14:	objective = 0.010448383228149921:	grad_norm = 0.00864206375599123:	delta_J = 0.00016340200269561456:
+-g 0.0005043075390998556
+-g 0.0005043075390998556
+-g 0.0005043075390998556
+-g 0.0005043075390998556
+-g 0.0005043075390998556
+-g 0.0005043075390998556
+-g 0.0005043075390998556
+-g 0.0005043075390998556
+iteration = 15:	objective = 0.009823967469901081:	grad_norm = 0.00747599587289181:	delta_J = 0.0006244157582488401:
+iteration = 15:	objective = 0.009823967469901081:	grad_norm = 0.00747599587289181:	delta_J = 0.0006244157582488401:
+iteration = 15:	objective = 0.009823967469901081:	grad_norm = 0.00747599587289181:	delta_J = 0.0006244157582488401:
+iteration = 15:	objective = 0.009823967469901081:	grad_norm = 0.00747599587289181:	delta_J = 0.0006244157582488401:
+iteration = 15:	objective = 0.009823967469901081:	grad_norm = 0.00747599587289181:	delta_J = 0.0006244157582488401:
+iteration = 15:	objective = 0.009823967469901081:	grad_norm = 0.00747599587289181:	delta_J = 0.0006244157582488401:
+iteration = 15:	objective = 0.009823967469901081:	grad_norm = 0.00747599587289181:	delta_J = 0.0006244157582488401:
+iteration = 15:	objective = 0.009823967469901081:	grad_norm = 0.00747599587289181:	delta_J = 0.0006244157582488401:
+-g 0.00040668576854429494
+-g 0.00040668576854429494
+-g 0.00040668576854429494
+-g 0.00040668576854429494
+-g 0.00040668576854429494
+-g 0.00040668576854429494
+-g 0.00040668576854429494
+-g 0.00040668576854429494
+iteration = 16:	objective = 0.009271503003426572:	grad_norm = 0.013110312927129697:	delta_J = 0.0005524644664745091:
+iteration = 16:	objective = 0.009271503003426572:	grad_norm = 0.013110312927129697:	delta_J = 0.0005524644664745091:
+iteration = 16:	objective = 0.009271503003426572:	grad_norm = 0.013110312927129697:	delta_J = 0.0005524644664745091:
+iteration = 16:	objective = 0.009271503003426572:	grad_norm = 0.013110312927129697:	delta_J = 0.0005524644664745091:
+iteration = 16:	objective = 0.009271503003426572:	grad_norm = 0.013110312927129697:	delta_J = 0.0005524644664745091:
+iteration = 16:	objective = 0.009271503003426572:	grad_norm = 0.013110312927129697:	delta_J = 0.0005524644664745091:
+iteration = 16:	objective = 0.009271503003426572:	grad_norm = 0.013110312927129697:	delta_J = 0.0005524644664745091:
+iteration = 16:	objective = 0.009271503003426572:	grad_norm = 0.013110312927129697:	delta_J = 0.0005524644664745091:
+-g 0.0009379664331941172
+-g 0.0009379664331941172
+-g 0.0009379664331941172
+-g 0.0009379664331941172
+-g 0.0009379664331941172
+-g 0.0009379664331941172
+-g 0.0009379664331941172
+-g 0.0009379664331941172
 
-Tolerance reached: delta_j < jtol.
+Maximum number of iterations reached.
 
-iteration = 4:	objective = 0.002946418919406474:	grad_norm = 0.003010065988177571:	delta_J = 8.342615098909031e-05:
 
-Tolerance reached: delta_j < jtol.
+Maximum number of iterations reached.
 
-iteration = 4:	objective = 0.002946418919406474:	grad_norm = 0.003010065988177571:	delta_J = 8.342615098909031e-05:
+iteration = 17:	objective = 0.008414647796150554:	grad_norm = 0.009236381795682952:	delta_J = 0.0008568552072760176:
 
-Tolerance reached: delta_j < jtol.
+Maximum number of iterations reached.
 
-iteration = 4:	objective = 0.002946418919406474:	grad_norm = 0.003010065988177571:	delta_J = 8.342615098909031e-05:
+iteration = 17:	objective = 0.008414647796150554:	grad_norm = 0.009236381795682952:	delta_J = 0.0008568552072760176:
 
-Tolerance reached: delta_j < jtol.
+Maximum number of iterations reached.
 
-iteration = 4:	objective = 0.002946418919406474:	grad_norm = 0.003010065988177571:	delta_J = 8.342615098909031e-05:
+iteration = 17:	objective = 0.008414647796150554:	grad_norm = 0.009236381795682952:	delta_J = 0.0008568552072760176:
+iteration = 17:	objective = 0.008414647796150554:	grad_norm = 0.009236381795682952:	delta_J = 0.0008568552072760176:
 
-Tolerance reached: delta_j < jtol.
+Maximum number of iterations reached.
 
-iteration = 4:	objective = 0.002946418919406474:	grad_norm = 0.003010065988177571:	delta_J = 8.342615098909031e-05:
+iteration = 17:	objective = 0.008414647796150554:	grad_norm = 0.009236381795682952:	delta_J = 0.0008568552072760176:
 
-Tolerance reached: delta_j < jtol.
+Maximum number of iterations reached.
 
-iteration = 4:	objective = 0.002946418919406474:	grad_norm = 0.003010065988177571:	delta_J = 8.342615098909031e-05:
+iteration = 17:	objective = 0.008414647796150554:	grad_norm = 0.009236381795682952:	delta_J = 0.0008568552072760176:
 
-Tolerance reached: delta_j < jtol.
+Maximum number of iterations reached.
 
-iteration = 4:	objective = 0.002946418919406474:	grad_norm = 0.003010065988177571:	delta_J = 8.342615098909031e-05:
+iteration = 17:	objective = 0.008414647796150554:	grad_norm = 0.009236381795682952:	delta_J = 0.0008568552072760176:
 
-Tolerance reached: delta_j < jtol.
+Maximum number of iterations reached.
 
-iteration = 4:	objective = 0.002946418919406474:	grad_norm = 0.003010065988177571:	delta_J = 8.342615098909031e-05:
-h_opt min: -12.342301660762894, h_opt max: 2.7291278479471215, mean|h_opt|: 0.0
+iteration = 17:	objective = 0.008414647796150554:	grad_norm = 0.009236381795682952:	delta_J = 0.0008568552072760176:
+h_opt min: -7.5003409454816055, h_opt max: 2.862052894382207, mean|h_opt|: 1.6192478239771513
 Optimization result saved to outputs/result_5per_noise.h5
-h_opt min: -12.342301660762894, h_opt max: 2.7291278479471215, mean|h_opt|: 2.1788970984885787
+h_opt min: -7.5003409454816055, h_opt max: 2.862052894382207, mean|h_opt|: 0.4303881393681889
 Optimization result saved to outputs/result_5per_noise.h5
-h_opt min: -12.342301660762894, h_opt max: 2.7291278479471215, mean|h_opt|: 0.0
+h_opt min: -7.5003409454816055, h_opt max: 2.862052894382207, mean|h_opt|: 0.0
 Optimization result saved to outputs/result_5per_noise.h5
-h_opt min: -12.342301660762894, h_opt max: 2.7291278479471215, mean|h_opt|: 0.23300966522539643
+h_opt min: -7.5003409454816055, h_opt max: 2.862052894382207, mean|h_opt|: 0.5654742304156459
 Optimization result saved to outputs/result_5per_noise.h5
-h_opt min: -12.342301660762894, h_opt max: 2.7291278479471215, mean|h_opt|: 0.26367775152714507
-h_opt min: -12.342301660762894, h_opt max: 2.7291278479471215, mean|h_opt|: 1.8006633960738445
+h_opt min: -7.5003409454816055, h_opt max: 2.862052894382207, mean|h_opt|: 0.0
 Optimization result saved to outputs/result_5per_noise.h5
-h_opt min: -12.342301660762894, h_opt max: 2.7291278479471215, mean|h_opt|: 0.0
+h_opt min: -7.5003409454816055, h_opt max: 2.862052894382207, mean|h_opt|: 0.0
 Optimization result saved to outputs/result_5per_noise.h5
-h_opt min: -12.342301660762894, h_opt max: 2.7291278479471215, mean|h_opt|: 1.5762564978045066
+h_opt min: -7.5003409454816055, h_opt max: 2.862052894382207, mean|h_opt|: 0.15307924886267926
 Optimization result saved to outputs/result_5per_noise.h5
+h_opt min: -7.5003409454816055, h_opt max: 2.862052894382207, mean|h_opt|: 0.05045039510317622
 Optimization result saved to outputs/result_5per_noise.h5
 
 Mesh deformation plot saved to outputs/mesh_deformation_5per_noise.png
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_torso/opt_script.py", line 103, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_torso/opt_script.py", line 103, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_torso/opt_script.py", line 103, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_torso/opt_script.py", line 103, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_torso/opt_script.py", line 103, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_torso/opt_script.py", line 103, in <module>
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_torso/opt_script.py", line 103, in <module>
+    plot_mesh_deformation_from_result(
+    plot_mesh_deformation_from_result(
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 274, in plot_mesh_deformation_from_result
+    plot_mesh_deformation_from_result(
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 274, in plot_mesh_deformation_from_result
+    plot_mesh_deformation_from_result(
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 274, in plot_mesh_deformation_from_result
+    plot_mesh_deformation_from_result(
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 274, in plot_mesh_deformation_from_result
+    plot_mesh_deformation_from_result(
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 274, in plot_mesh_deformation_from_result
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 274, in plot_mesh_deformation_from_result
+    plot_mesh_deformation_from_result(
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 274, in plot_mesh_deformation_from_result
+Saved boundary points to boundary_original.csv
+Saved boundary points to boundary_goal.csv
+Saved boundary points to boundary_optimized.csv
 Warning: Different number of boundary points (648 vs 481)
+    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
+    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
+    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
+    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
+    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
+    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
+    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
+    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
+    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
+    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
+    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
+    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
+    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
+    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
+    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
+    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
+AttributeError: 'NoneType' object has no attribute 'shape'
+AttributeError: 'NoneType' object has no attribute 'shape'
+    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
+AttributeError: 'NoneType' object has no attribute 'shape'
+    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
+    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
+    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
+AttributeError: 'NoneType' object has no attribute 'shape'
+    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
+AttributeError: 'NoneType' object has no attribute 'shape'
+AttributeError: 'NoneType' object has no attribute 'shape'
+AttributeError: 'NoneType' object has no attribute 'shape'
 Overlay mesh outline saved to outputs/mesh_overlay_5per_noise.png
-[n23m0172.hpc.itc.rwth-aachen.de:500977] SET PYTHONPATH=
+--------------------------------------------------------------------------
+prterun detected that one or more processes exited with non-zero status,
+thus causing the job to be terminated. The first process to do so was:
+
+   Process name: [prterun-n23m0174-163570@1,1]
+   Exit code:    1
+--------------------------------------------------------------------------
+[n23m0174.hpc.itc.rwth-aachen.de:173643] SET PYTHONPATH=
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
   import pkg_resources
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
@@ -248,70 +536,70 @@ Overlay mesh outline saved to outputs/mesh_overlay_5per_noise.png
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
   import pkg_resources
 Process 0: Solving linear variational problem.
-Process 4: Solving linear variational problem.
-Process 5: Solving linear variational problem.
-Process 2: Solving linear variational problem.
-Process 1: Solving linear variational problem.
 Process 6: Solving linear variational problem.
+Process 1: Solving linear variational problem.
+Process 2: Solving linear variational problem.
 Process 3: Solving linear variational problem.
+Process 5: Solving linear variational problem.
+Process 4: Solving linear variational problem.
 Process 7: Solving linear variational problem.
 Process 0: Solving linear variational problem.
+Process 1: Solving linear variational problem.
+Process 7: Solving linear variational problem.
 Process 5: Solving linear variational problem.
 Process 6: Solving linear variational problem.
+Process 3: Solving linear variational problem.
 Process 2: Solving linear variational problem.
 Process 4: Solving linear variational problem.
-Process 3: Solving linear variational problem.
-Process 7: Solving linear variational problem.
-Process 1: Solving linear variational problem.
 Process 0: Solving linear variational problem.
-Process 1: Solving linear variational problem.
-Process 6: Solving linear variational problem.
-Process 3: Solving linear variational problem.
-Process 7: Solving linear variational problem.
-Process 4: Solving linear variational problem.
-Process 5: Solving linear variational problem.
 Process 2: Solving linear variational problem.
-Process 6: Computed global bounding box tree with 15 boxes.
+Process 1: Solving linear variational problem.
+Process 3: Solving linear variational problem.
+Process 4: Solving linear variational problem.
+Process 6: Solving linear variational problem.
+Process 7: Solving linear variational problem.
+Process 5: Solving linear variational problem.
 Process 4: Computed global bounding box tree with 15 boxes.
-Process 0: Computed global bounding box tree with 15 boxes.
 Process 5: Computed global bounding box tree with 15 boxes.
-Process 1: Computed global bounding box tree with 15 boxes.
+Process 6: Computed global bounding box tree with 15 boxes.
 Process 7: Computed global bounding box tree with 15 boxes.
-Process 3: Computed global bounding box tree with 15 boxes.
+Process 1: Computed global bounding box tree with 15 boxes.
 Process 2: Computed global bounding box tree with 15 boxes.
-Sum of magnitude error square: 0.00011686157371332127
+Process 0: Computed global bounding box tree with 15 boxes.
+Process 3: Computed global bounding box tree with 15 boxes.
+Sum of magnitude error square: 1.654886457590741e-05
 Projected error plots saved to outputs/error_5per_noise_0.png
 Process 0: Solving linear variational problem.
-Process 5: Solving linear variational problem.
-Process 4: Solving linear variational problem.
-Process 7: Solving linear variational problem.
-Process 6: Solving linear variational problem.
+Process 1: Solving linear variational problem.
 Process 2: Solving linear variational problem.
 Process 3: Solving linear variational problem.
-Process 1: Solving linear variational problem.
+Process 5: Solving linear variational problem.
+Process 7: Solving linear variational problem.
+Process 6: Solving linear variational problem.
+Process 4: Solving linear variational problem.
 Process 0: Solving linear variational problem.
-Process 4: Solving linear variational problem.
+Process 1: Solving linear variational problem.
+Process 2: Solving linear variational problem.
+Process 3: Solving linear variational problem.
 Process 6: Solving linear variational problem.
 Process 7: Solving linear variational problem.
-Process 1: Solving linear variational problem.
 Process 5: Solving linear variational problem.
-Process 3: Solving linear variational problem.
-Process 2: Solving linear variational problem.
+Process 4: Solving linear variational problem.
 Process 0: Solving linear variational problem.
-Process 3: Solving linear variational problem.
-Process 6: Solving linear variational problem.
 Process 5: Solving linear variational problem.
+Process 6: Solving linear variational problem.
 Process 7: Solving linear variational problem.
 Process 1: Solving linear variational problem.
-Process 4: Solving linear variational problem.
 Process 2: Solving linear variational problem.
-Process 6: Computed global bounding box tree with 15 boxes.
+Process 3: Solving linear variational problem.
+Process 4: Solving linear variational problem.
 Process 5: Computed global bounding box tree with 15 boxes.
+Process 6: Computed global bounding box tree with 15 boxes.
 Process 4: Computed global bounding box tree with 15 boxes.
 Process 7: Computed global bounding box tree with 15 boxes.
-Process 3: Computed global bounding box tree with 15 boxes.
+Process 0: Computed global bounding box tree with 15 boxes.
 Process 2: Computed global bounding box tree with 15 boxes.
 Process 1: Computed global bounding box tree with 15 boxes.
-Process 0: Computed global bounding box tree with 15 boxes.
-Sum of magnitude error square: 5.34432108756089e-05
+Process 3: Computed global bounding box tree with 15 boxes.
+Sum of magnitude error square: 1.8776538272086122e-05
 Projected error plots saved to outputs/error_5per_noise_1.png

@@ -162,7 +162,7 @@ def generate_torso_sim_mesh(
 
 
 if __name__ == "__main__":
-    print("Generating square with hole mesh...")
+    
 
     c = 299792458
     freq_max = 6.5e9  # 5GHz
@@ -170,7 +170,34 @@ if __name__ == "__main__":
     # Parameters
     wavelength = c / freq_max  # Physical wavelength
     mesh_size = wavelength / 5
+
+    """
+    df = pd.read_csv('meshes/torso_points.csv')
+    df_sampled = df.iloc[::1]
+
+    # Offset points inward by wavelength/6
+    offset_distance = -wavelength / 8
+    print("offset distance: ", offset_distance)
     
+    # Calculate centroid
+    centroid_x = df_sampled['x'].mean()
+    centroid_y = df_sampled['y'].mean()
+    
+    # Offset each point radially toward/away from centroid
+    for idx in df_sampled.index:
+        x = df_sampled.loc[idx, 'x']
+        y = df_sampled.loc[idx, 'y']
+        
+        # Only offset points in the x range [-0.1, 0.1]
+        if -0.75 <= x <= 0.125:
+            # Apply offset inward outward oscillating
+            df_sampled.loc[idx, 'x'] = x
+            df_sampled.loc[idx, 'y'] = y + offset_distance
+
+    # Save to new CSV file
+    df_sampled.to_csv('meshes/torso_initial_points.csv', index=False)
+    
+    """
     """
     # Generate and visualize mesh
     mesh_file = generate_torso_sim_mesh("meshes/boundary_points.csv",
