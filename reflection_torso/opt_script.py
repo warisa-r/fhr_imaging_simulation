@@ -18,7 +18,7 @@ os.chdir(script_dir)
 
 set_log_level(LogLevel.ERROR)
 
-frequency = 6.5e9
+frequency = 5e9
 offset = 1e-8
 wave_sources = [(-0.1, -offset), (0.1, -offset)]
 amp = 1
@@ -85,7 +85,7 @@ h_moola = moola.DolfinPrimalVector(h)
 
 solver = moola.BFGS(problem, h_moola,
                     options={
-                        "maxiter": 17
+                        "maxiter": 30
                     })
 
 sol = solver.solve()
