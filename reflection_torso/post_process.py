@@ -36,7 +36,16 @@ initial_guess_mesh_util = MeshUtil(
     msh_file_path, markers_dict, obstacle_stiffness)
 
 result_path = "outputs/result_5per_noise.h5"
+goal_geometry_msh_path = "meshes/torso_sim_mesh_solution.msh"
 matlab_fullfield_csv_path = "measurements/scattering_results.csv"
+
+plot_mesh_deformation_from_result(
+    result_path,
+    goal_geometry_msh_path,
+    initial_guess_mesh_util,
+    plot_file_name="outputs/mesh_deformation_5per_noise.png",
+    mesh_overlay_plot_file_name = "outputs/mesh_overlay_5per_noise.png"
+)
 
 df_exact_measurement = pd.read_csv(matlab_fullfield_csv_path)
 
