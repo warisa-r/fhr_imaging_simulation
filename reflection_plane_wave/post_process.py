@@ -28,7 +28,7 @@ obstacle_stiffness = 25
 initial_guess_mesh_util = MeshUtil(
     msh_file_path, markers_dict, obstacle_stiffness)
 
-result_path = "outputs/result_sin0.5_5per_noise_scat.h5"
+result_path = "outputs/result_sin0.5_scat_noisy.h5"
 goal_geometry_msh_path = "meshes/square_with_halfsin_perturbed_rect_obstacle.msh"
 matlab_fullfield_csv_path = "measurements/matlab_fullfield_sin0.5_CG1_scatter.csv"
 results = calculate_magnitude_and_phase_error(matlab_fullfield_csv_path, result_path,
