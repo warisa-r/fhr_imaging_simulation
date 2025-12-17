@@ -45,8 +45,8 @@ Requirement already satisfied: mdurl~=0.1 in /rwthfs/rz/cluster/home/nj616237/mi
 Building wheels for collected packages: HH_shape_opt
   Building editable for HH_shape_opt (pyproject.toml): started
   Building editable for HH_shape_opt (pyproject.toml): finished with status 'done'
-  Created wheel for HH_shape_opt: filename=hh_shape_opt-0.1.0-0.editable-py3-none-any.whl size=2851 sha256=86bcdb6417180304984b44a9831ec31c22b1dea6d375e72be070f11dbde51577
-  Stored in directory: /w0/tmp/slurm_nj616237.63143107/pip-ephem-wheel-cache-t1yug0sz/wheels/39/70/7d/5e5508084c54e08a05fee6e869cc3da8d156967369f49dc757
+  Created wheel for HH_shape_opt: filename=hh_shape_opt-0.1.0-0.editable-py3-none-any.whl size=2851 sha256=913e831f56011463a4baa0a5d6c2853e45e8e5cc4521aebc2d6dc91365e39f2b
+  Stored in directory: /w0/tmp/slurm_nj616237.63157146/pip-ephem-wheel-cache-4t0dvhtm/wheels/39/70/7d/5e5508084c54e08a05fee6e869cc3da8d156967369f49dc757
 Successfully built HH_shape_opt
 Installing collected packages: HH_shape_opt
   Attempting uninstall: HH_shape_opt
@@ -57,7 +57,7 @@ Successfully installed HH_shape_opt-0.1.0
 
 [notice] A new release of pip is available: 25.2 -> 25.3
 [notice] To update, run: pip install --upgrade pip
-[r23m0135.hpc.itc.rwth-aachen.de:191021] SET PYTHONPATH=
+[n23m0062.hpc.itc.rwth-aachen.de:169441] SET PYTHONPATH=
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
   import pkg_resources
 /rwthfs/rz/cluster/home/nj616237/miniforge3/envs/dolfin_adj-env/lib/python3.10/site-packages/ufl/__init__.py:250: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
@@ -76,36 +76,70 @@ Successfully installed HH_shape_opt-0.1.0
   import pkg_resources
 Process 0: Solving linear variational problem.
 Process 7: Solving linear variational problem.
-Process 6: Solving linear variational problem.
-Process 5: Solving linear variational problem.
-Process 1: Solving linear variational problem.
-Process 3: Solving linear variational problem.
-Process 2: Solving linear variational problem.
 Process 4: Solving linear variational problem.
+Process 3: Solving linear variational problem.
+Process 1: Solving linear variational problem.
+Process 5: Solving linear variational problem.
+Process 6: Solving linear variational problem.
+Process 2: Solving linear variational problem.
 Process 0: Solving linear variational problem.
+Process 4: Solving linear variational problem.
+Process 7: Solving linear variational problem.
+Process 1: Solving linear variational problem.
 Process 3: Solving linear variational problem.
 Process 5: Solving linear variational problem.
-Process 7: Solving linear variational problem.
 Process 6: Solving linear variational problem.
+Process 2: Solving linear variational problem.
+Process 0: Solving linear variational problem.
+Process 4: Solving linear variational problem.
+Process 2: Solving linear variational problem.
+Process 3: Solving linear variational problem.
+Process 7: Solving linear variational problem.
+Process 1: Solving linear variational problem.
+Process 6: Solving linear variational problem.
+Process 5: Solving linear variational problem.
+Process 2: Computed global bounding box tree with 15 boxes.
+Process 1: Computed global bounding box tree with 15 boxes.
+Process 0: Computed global bounding box tree with 15 boxes.
+Process 3: Computed global bounding box tree with 15 boxes.
+Process 4: Computed global bounding box tree with 15 boxes.
+Process 5: Computed global bounding box tree with 15 boxes.
+Process 6: Computed global bounding box tree with 15 boxes.
+Process 7: Computed global bounding box tree with 15 boxes.
+Sum of magnitude error square: 11.212384355662548
+Projected error plots saved to outputs/error_sin0.5_scatter_DG0_matlab.png
+Process 0: Solving linear variational problem.
+Process 4: Solving linear variational problem.
+Process 1: Solving linear variational problem.
+Process 3: Solving linear variational problem.
+Process 6: Solving linear variational problem.
+Process 7: Solving linear variational problem.
+Process 5: Solving linear variational problem.
+Process 2: Solving linear variational problem.
+Process 0: Solving linear variational problem.
 Process 4: Solving linear variational problem.
 Process 1: Solving linear variational problem.
 Process 2: Solving linear variational problem.
+Process 3: Solving linear variational problem.
+Process 7: Solving linear variational problem.
+Process 5: Solving linear variational problem.
+Process 6: Solving linear variational problem.
 
-Mesh deformation plot saved to outputs/mesh_deformation_5per_noise.png
-Traceback (most recent call last):
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_torso/post_process.py", line 42, in <module>
-Traceback (most recent call last):
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_torso/post_process.py", line 42, in <module>
-Traceback (most recent call last):
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_torso/post_process.py", line 42, in <module>
-Traceback (most recent call last):
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_torso/post_process.py", line 42, in <module>
-Traceback (most recent call last):
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_torso/post_process.py", line 42, in <module>
+Mesh deformation plot saved to outputs/mesh_deformation_sin0.5_scatter_DG0_matlab.png
 Traceback (most recent call last):
 Traceback (most recent call last):
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_torso/post_process.py", line 42, in <module>
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_torso/post_process.py", line 42, in <module>
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_cylindrical_wave/post_process.py", line 41, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_cylindrical_wave/post_process.py", line 41, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_cylindrical_wave/post_process.py", line 41, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_cylindrical_wave/post_process.py", line 41, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_cylindrical_wave/post_process.py", line 41, in <module>
+Traceback (most recent call last):
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_cylindrical_wave/post_process.py", line 41, in <module>
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/reflection_cylindrical_wave/post_process.py", line 41, in <module>
     plot_mesh_deformation_from_result(
     plot_mesh_deformation_from_result(
   File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 274, in plot_mesh_deformation_from_result
@@ -113,57 +147,64 @@ Traceback (most recent call last):
   File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 274, in plot_mesh_deformation_from_result
     plot_mesh_deformation_from_result(
   File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 274, in plot_mesh_deformation_from_result
-    plot_mesh_deformation_from_result(
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 274, in plot_mesh_deformation_from_result
   File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 274, in plot_mesh_deformation_from_result
     plot_mesh_deformation_from_result(
   File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 274, in plot_mesh_deformation_from_result
     plot_mesh_deformation_from_result(
   File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 274, in plot_mesh_deformation_from_result
-    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
-    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
-    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
-    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
-    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
-    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
-    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
-    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
-    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
-    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
-    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
-    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
-    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
-    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
-AttributeError: 'NoneType' object has no attribute 'shape'
-    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
-  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
-    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
-    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
-AttributeError: 'NoneType' object has no attribute 'shape'
-    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
-AttributeError: 'NoneType' object has no attribute 'shape'
-    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
-    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
-AttributeError: 'NoneType' object has no attribute 'shape'
-AttributeError: 'NoneType' object has no attribute 'shape'
-    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
-AttributeError: 'NoneType' object has no attribute 'shape'
-AttributeError: 'NoneType' object has no attribute 'shape'
+    plot_mesh_deformation_from_result(
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 274, in plot_mesh_deformation_from_result
 Saved boundary points to boundary_original.csv
 Saved boundary points to boundary_goal.csv
 Saved boundary points to boundary_optimized.csv
-Warning: Different number of boundary points (648 vs 381)
-Overlay mesh outline saved to outputs/mesh_overlay_5per_noise.png
+Warning: Different number of boundary points (531 vs 530)
+    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
+    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
+    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
+    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
+    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
+    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
+    extract_and_overlay_mesh_outlines(mesh, mesh_goal, mesh_copy, mesh_overlay_plot_file_name, print_at_x)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 158, in extract_and_overlay_mesh_outlines
+    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
+    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
+    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
+    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
+    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
+    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
+    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
+    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
+AttributeError: 'NoneType' object has no attribute 'shape'
+AttributeError: 'NoneType' object has no attribute 'shape'
+    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
+    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
+AttributeError: 'NoneType' object has no attribute 'shape'
+    boundary_diff = calculate_boundary_difference_arrays(coords_goal, coords_opt, print_at_x, tolerance=0.01)
+  File "/rwthfs/rz/cluster/home/nj616237/fhr_imaging_simulation/HH_shape_opt/visualize.py", line 100, in calculate_boundary_difference_arrays
+    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
+AttributeError: 'NoneType' object has no attribute 'shape'
+AttributeError: 'NoneType' object has no attribute 'shape'
+    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
+    if coords1.shape[0] == 0 or coords2.shape[0] == 0:
+AttributeError: 'NoneType' object has no attribute 'shape'
+AttributeError: 'NoneType' object has no attribute 'shape'
+Overlay mesh outline saved to outputs/mesh_overlay_sin0.5_scatter_DG0_matlab.png
+--------------------------------------------------------------------------
+prterun detected that one or more processes exited with non-zero status,
+thus causing the job to be terminated. The first process to do so was:
+
+   Process name: [prterun-n23m0062-169441@1,5]
+   Exit code:    1
+--------------------------------------------------------------------------
