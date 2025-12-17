@@ -73,8 +73,8 @@ h_moola = moola.DolfinPrimalVector(h)
 
 solver = moola.BFGS(problem, h_moola,
                     options={
-                        "maxiter": 20,
-                        "line_search_options" : {"ftol": 1e-3, "gtol": 0.9, "xtol": 1e-1, "start_stp": 1, "ignore_warnings": True}
+                        "maxiter": 2,
+                        #"line_search_options" : {"ftol": 1e-3, "gtol": 0.9, "xtol": 1e-1, "start_stp": 1, "ignore_warnings": True}
                     })
 
 sol = solver.solve()
